@@ -106,9 +106,19 @@ export default function Footer() {
         <div className={`pt-8 border-t flex flex-col sm:flex-row items-center justify-between gap-4 text-xs font-medium ${
           isSunlight ? 'border-slate-300 text-slate-600' : 'border-slate-800/80 text-slate-400'
         }`}>
-          <p>
-            © {anioActual} MOTION LAB. Todos los derechos reservados. Desarrollado con Next.js, React y PostgreSQL.
-          </p>
+          <div className="flex flex-wrap items-center justify-center gap-x-2 gap-y-1">
+            <p>
+              © {anioActual} MOTION LAB. Todos los derechos reservados.
+            </p>
+            <span className={isSunlight ? 'text-slate-400' : 'text-slate-600'}>·</span>
+            <a href="/privacidad" className={`font-bold underline underline-offset-2 ${isSunlight ? 'hover:text-blue-700' : 'hover:text-sky-400'}`}>
+              Privacidad
+            </a>
+            <span className={isSunlight ? 'text-slate-400' : 'text-slate-600'}>·</span>
+            <a href="/terminos" className={`font-bold underline underline-offset-2 ${isSunlight ? 'hover:text-blue-700' : 'hover:text-sky-400'}`}>
+              Términos
+            </a>
+          </div>
           <p className="text-[11px] max-w-sm text-center sm:text-right font-medium">
             Aviso médico: Consulta con un profesional de la salud antes de iniciar planes de entrenamiento de alta exigencia.
           </p>
