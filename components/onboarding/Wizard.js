@@ -17,6 +17,14 @@ import {
 } from 'lucide-react';
 import MotionLabLogo from '@/components/MotionLabLogo';
 import { useTheme } from '@/components/ThemeProvider';
+import {
+  guardarDatosOnboardingGoogle,
+  leerDatosOnboardingGoogle,
+  eliminarDatosOnboardingGoogle,
+  marcarGooglePendiente,
+  googlePendienteDeOnboarding,
+  limpiarGooglePendiente,
+} from '@/lib/googleOnboarding';
 
 export default function Wizard() {
   // ------------------------------------------------------------------------
@@ -107,25 +115,58 @@ export default function Wizard() {
   }, []);
 
   // Al volver de Google, recuperamos los datos del Wizard y completamos la
-  // ficha deportiva del usuario autenticado.
+  // ficha deportiva del usuario autenticado. Si el usuario canceló, cerró la
+  // ventana o volvió atrás, restauramos el formulario en el último paso y le
+  // mostramos un error para que pueda reintentar.
   useEffect(() => {
     if (googleProcesado.current) return;
 
     const params = new URLSearchParams(window.location.search);
-    if (params.get('google') !== '1') return;
+    const vieneDeGoogle = params.get('google') === '1';
+    const vieneConError =
+      params.get('googleError') === '1' || Boolean(params.get('error'));
+    const datosGuardados = leerDatosOnboardingGoogle();
 
-    let datosGuardados = null;
-    try {
-      const crudo = localStorage.getItem('motionlab_onboarding_google');
-      if (crudo) datosGuardados = JSON.parse(crudo);
-    } catch {
-      datosGuardados = null;
+    const restaurarYMostrarError = (mensaje) => {
+      googleProcesado.current = true;
+
+      if (datosGuardados) {
+        setFormData((prev) => ({
+          ...prev,
+          ...datosGuardados,
+          password: '',
+        }));
+        setPaso(5);
+      }
+
+      setErrorMsg(mensaje);
+      limpiarGooglePendiente();
+
+      if (vieneConError || vieneDeGoogle) {
+        window.history.replaceState({}, '', '/onboarding');
+      }
+    };
+
+    if (!vieneDeGoogle) {
+      if (datosGuardados && googlePendienteDeOnboarding()) {
+        restaurarYMostrarError(
+          'No pudimos vincular tu cuenta con Google. Intentá de nuevo.'
+        );
+      } else if (vieneConError) {
+        restaurarYMostrarError(
+          'No pudimos vincular tu cuenta con Google. Intentá de nuevo.'
+        );
+      }
+      return;
     }
 
     if (!datosGuardados) {
+      googleProcesado.current = true;
       setErrorMsg(
         'No encontramos los datos de tu registro. Volvé a completar el formulario.'
       );
+      limpiarGooglePendiente();
+      window.history.replaceState({}, '', '/onboarding');
       return;
     }
 
@@ -139,7 +180,7 @@ export default function Wizard() {
 
         if (!session?.user?.email) {
           throw new Error(
-            'No pudimos validar tu sesión de Google. Volvé a intentarlo.'
+            'No pudimos validar tu sesión de Google. Intentá de nuevo.'
           );
         }
 
@@ -158,7 +199,8 @@ export default function Wizard() {
           throw new Error(data.error || 'No pudimos completar tu registro.');
         }
 
-        localStorage.removeItem('motionlab_onboarding_google');
+        eliminarDatosOnboardingGoogle();
+        limpiarGooglePendiente();
         setFormData((prev) => ({
           ...prev,
           ...datosGuardados,
@@ -172,10 +214,18 @@ export default function Wizard() {
         window.history.replaceState({}, '', '/onboarding');
       } catch (err) {
         console.error('Error al completar el registro con Google:', err);
+        setFormData((prev) => ({
+          ...prev,
+          ...datosGuardados,
+          password: '',
+        }));
+        setPaso(5);
         setErrorMsg(
           err.message ||
-            'No pudimos completar tu registro con Google. Intentá de nuevo.'
+            'No pudimos vincular tu cuenta con Google. Intentá de nuevo.'
         );
+        limpiarGooglePendiente();
+        window.history.replaceState({}, '', '/onboarding');
       } finally {
         setGoogleCargando(false);
       }
@@ -280,6 +330,8 @@ export default function Wizard() {
         throw new Error(data.error || 'Error al procesar el registro');
       }
 
+      eliminarDatosOnboardingGoogle();
+      limpiarGooglePendiente();
       setWhatsappLink(data.whatsappUrl);
       setRegistroCompletado(true);
     } catch (err) {
@@ -328,17 +380,16 @@ export default function Wizard() {
 
     try {
       const { password, ...datosParaGuardar } = formData;
-      localStorage.setItem(
-        'motionlab_onboarding_google',
-        JSON.stringify({ ...datosParaGuardar, password: '' })
-      );
+      guardarDatosOnboardingGoogle({ ...datosParaGuardar, password: '' });
+      marcarGooglePendiente();
 
       await signIn('google', {
         callbackUrl: '/onboarding?google=1',
       });
     } catch (err) {
       console.error('Error al iniciar con Google:', err);
-      localStorage.removeItem('motionlab_onboarding_google');
+      eliminarDatosOnboardingGoogle();
+      limpiarGooglePendiente();
       setGoogleCargando(false);
       setErrorMsg(
         'No pudimos abrir Google. Revisá la configuración e intentá de nuevo.'

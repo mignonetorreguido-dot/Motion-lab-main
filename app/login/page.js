@@ -6,6 +6,7 @@ import { ArrowRight, LogIn, Loader2 } from 'lucide-react';
 import Link from 'next/link';
 import Navbar from '@/components/Navbar';
 import { useTheme } from '@/components/ThemeProvider';
+import { googlePendienteDeOnboarding } from '@/lib/googleOnboarding';
 
 function destinoSegunSesion(session) {
   return session?.user?.rol === 'ENTRENADOR' ? '/admin' : '/entrenamiento';
@@ -44,8 +45,16 @@ export default function LoginPage() {
     let activo = true;
     const params = new URLSearchParams(window.location.search);
     const vieneDeGoogle = params.get('google') === '1';
+    const errorGoogle = params.get('error');
 
-    if (params.get('error')) {
+    // Si el usuario venía vinculando Google desde el onboarding y canceló o
+    // cerró el flujo, volvemos a su formulario para que pueda reintentar.
+    if (errorGoogle && googlePendienteDeOnboarding()) {
+      window.location.replace('/onboarding?googleError=1');
+      return undefined;
+    }
+
+    if (errorGoogle) {
       setError('No pudimos completar el ingreso con Google. Intentá de nuevo.');
     }
 
