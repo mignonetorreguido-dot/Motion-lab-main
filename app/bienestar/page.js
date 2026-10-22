@@ -2,11 +2,12 @@
  * ========================================================================
  * PÁGINA: Chequeo de Bienestar (app/bienestar/page.js)
  * ========================================================================
- * Página pública para que cualquier persona pueda hacer el test de
- * bienestar. Si el alumno inició sesión, el resultado se guarda y queda
- * disponible en su ficha y en el panel de Matías.
+ * Página privada del alumno. El test de bienestar sólo está disponible con
+ * sesión iniciada y el resultado se guarda en su ficha y en el panel de
+ * Matías.
  */
 
+import { redirect } from 'next/navigation';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/app/api/auth/[...nextauth]/route';
 import Navbar from '@/components/Navbar';
@@ -23,7 +24,11 @@ export const metadata = {
 
 export default async function BienestarPage() {
   const session = await getServerSession(authOptions);
-  const logueado = Boolean(session?.user?.id);
+
+  // Defensa extra además del middleware: sin sesión no se muestra el test.
+  if (!session?.user?.id) {
+    redirect('/login');
+  }
 
   return (
     <div className="min-h-screen flex flex-col">
@@ -31,9 +36,9 @@ export default async function BienestarPage() {
 
       <main className="flex-grow pt-24 sm:pt-28 pb-12 px-4 sm:px-6 lg:px-8">
         <BienestarTest
-          alumnoId={session?.user?.id || null}
-          alumnoNombre={session?.user?.name || ''}
-          logueado={logueado}
+          alumnoId={session.user.id}
+          alumnoNombre={session.user.name || ''}
+          logueado
         />
       </main>
 

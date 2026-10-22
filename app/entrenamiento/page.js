@@ -8,6 +8,7 @@
  * 3. Registra series interactivas con auto-minimización y notas técnicas.
  */
 
+import { redirect } from 'next/navigation';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/app/api/auth/[...nextauth]/route';
 import TrainingContainer from '@/components/training/TrainingContainer';
@@ -20,9 +21,16 @@ export const metadata = {
 
 export default async function EntrenamientoPage() {
   const session = await getServerSession(authOptions);
-  const alumnoId = session?.user?.id || 'demo-alumno-1';
-  const alumnoNombre = session?.user?.name || '';
-  const estadoPago = session?.user?.estadoPago || 'ACTIVO';
+
+  // Defensa extra además del middleware: sin sesión no se muestra ningún
+  // entrenamiento, ni siquiera el alumno de demostración.
+  if (!session?.user?.id) {
+    redirect('/login');
+  }
+
+  const alumnoId = session.user.id;
+  const alumnoNombre = session.user.name || '';
+  const estadoPago = session.user.estadoPago || 'ACTIVO';
 
   return (
     <div className="min-h-screen flex flex-col justify-between py-6 px-4 sm:px-6 lg:px-8 relative overflow-hidden transition-colors duration-200">

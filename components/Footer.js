@@ -57,14 +57,10 @@ export default function Footer() {
               </li>
               <li>
                 <a href="/onboarding" className={`transition-colors ${isSunlight ? 'hover:text-blue-700' : 'hover:text-sky-400'}`}>
-                  Onboarding Alumno
+                  Comenzar ahora
                 </a>
               </li>
-              <li>
-                <a href="/entrenamiento" className={`transition-colors ${isSunlight ? 'hover:text-blue-700' : 'hover:text-sky-400'}`}>
-                  Mi Entrenamiento
-                </a>
-              </li>
+
             </ul>
           </div>
 
@@ -93,9 +89,14 @@ export default function Footer() {
               </li>
               <li className="flex items-center gap-2">
                 <Instagram className={`w-4 h-4 ${isSunlight ? 'text-blue-700' : 'text-sky-400'}`} />
-                <span className={`cursor-pointer ${isSunlight ? 'hover:text-blue-700 text-slate-800' : 'hover:text-white'}`}>
-                  @motionlab.performance
-                </span>
+                <a
+                  href="https://www.instagram.com/motionlab_pf/"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className={`transition-colors ${isSunlight ? 'text-slate-800 hover:text-blue-700' : 'hover:text-white'}`}
+                >
+                  @motionlab_pf
+                </a>
               </li>
             </ul>
           </div>

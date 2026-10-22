@@ -78,15 +78,17 @@ export default function Navbar() {
 
           {/* ENLACES DE NAVEGACIÓN EN ESCRITORIO */}
           <div className="hidden lg:flex items-center gap-6 text-sm font-semibold">
-            <Link 
-              href="/entrenamiento" 
-              className={`transition-colors flex items-center gap-1.5 font-semibold ${
-                isSunlight ? 'text-slate-800 hover:text-blue-700' : 'text-slate-200 hover:text-sky-400'
-              }`}
-            >
-              <Dumbbell className={`w-4 h-4 ${isSunlight ? 'text-blue-600' : 'text-cyan-400'}`} />
-              Mi Entrenamiento
-            </Link>
+            {sesionCargada && sesion && (
+              <Link
+                href="/entrenamiento"
+                className={`transition-colors flex items-center gap-1.5 font-semibold ${
+                  isSunlight ? 'text-slate-800 hover:text-blue-700' : 'text-slate-200 hover:text-sky-400'
+                }`}
+              >
+                <Dumbbell className={`w-4 h-4 ${isSunlight ? 'text-blue-600' : 'text-cyan-400'}`} />
+                Mi Entrenamiento
+              </Link>
+            )}
             <a 
               href="/#sobre-mi" 
               className={`transition-colors font-semibold ${
@@ -103,15 +105,17 @@ export default function Navbar() {
             >
               Resultados
             </a>
-            <Link
-              href="/bienestar"
-              className={`transition-colors flex items-center gap-1.5 font-semibold ${
-                isSunlight ? 'text-sky-700 hover:text-sky-800' : 'text-sky-300 hover:text-sky-200'
-              }`}
-            >
-              <HeartPulse className="w-4 h-4" />
-              Bienestar
-            </Link>
+            {sesionCargada && sesion && (
+              <Link
+                href="/bienestar"
+                className={`transition-colors flex items-center gap-1.5 font-semibold ${
+                  isSunlight ? 'text-sky-700 hover:text-sky-800' : 'text-sky-300 hover:text-sky-200'
+                }`}
+              >
+                <HeartPulse className="w-4 h-4" />
+                Bienestar
+              </Link>
+            )}
           </div>
 
           {/* BOTONES DE ACCIÓN + TOGGLE MODO SOLEADO */}
@@ -278,16 +282,18 @@ export default function Navbar() {
               <span>Iniciar Sesión</span>
             </Link>
           )}
-          <Link
-            href="/entrenamiento"
-            onClick={() => setMenuAbierto(false)}
-            className={`block text-base font-semibold py-2.5 flex items-center gap-2.5 touch-target ${
-              isSunlight ? 'text-slate-900 hover:text-blue-700' : 'text-slate-200 hover:text-sky-400'
-            }`}
-          >
-            <Dumbbell className="w-5 h-5 text-cyan-500" />
-            <span>Mi Planilla de Entrenamiento</span>
-          </Link>
+          {sesionCargada && sesion && (
+            <Link
+              href="/entrenamiento"
+              onClick={() => setMenuAbierto(false)}
+              className={`block text-base font-semibold py-2.5 flex items-center gap-2.5 touch-target ${
+                isSunlight ? 'text-slate-900 hover:text-blue-700' : 'text-slate-200 hover:text-sky-400'
+              }`}
+            >
+              <Dumbbell className="w-5 h-5 text-cyan-500" />
+              <span>Mi Planilla de Entrenamiento</span>
+            </Link>
+          )}
           <a
             href="/#sobre-mi"
             onClick={() => setMenuAbierto(false)}
@@ -306,16 +312,18 @@ export default function Navbar() {
           >
             Resultados MOTION LAB
           </a>
-          <Link
-            href="/bienestar"
-            onClick={() => setMenuAbierto(false)}
-            className={`block text-base font-semibold py-2.5 flex items-center gap-2.5 touch-target ${
-              isSunlight ? 'text-sky-700 hover:text-sky-800' : 'text-sky-300 hover:text-sky-200'
-            }`}
-          >
-            <HeartPulse className="w-5 h-5" />
-            <span>Chequeo de Bienestar</span>
-          </Link>
+          {sesionCargada && sesion && (
+            <Link
+              href="/bienestar"
+              onClick={() => setMenuAbierto(false)}
+              className={`block text-base font-semibold py-2.5 flex items-center gap-2.5 touch-target ${
+                isSunlight ? 'text-sky-700 hover:text-sky-800' : 'text-sky-300 hover:text-sky-200'
+              }`}
+            >
+              <HeartPulse className="w-5 h-5" />
+              <span>Chequeo de Bienestar</span>
+            </Link>
+          )}
         </div>
       )}
     </nav>
