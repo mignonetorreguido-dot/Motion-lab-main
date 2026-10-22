@@ -6,10 +6,11 @@
  * ========================================================================
  * - Muestra de forma dinámica el "Entrenamiento de Hoy" sugerido por Matías.
  * - Los días completados quedan marcados con tilde verde y botón de "✏️ Editar Día X".
- * - Vinculación de reloj deportivo para medir pulso, pasos y calorías.
+ * - Vinculación real de relojes en la nube (Junction) y pulso en vivo por BLE.
  * - Soporte de Modo Soleado de Alto Contraste para entrenar al aire libre bajo el sol.
  */
 
+import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { 
   Calendar, Clock, ArrowRight, CheckCircle2, 
@@ -17,6 +18,7 @@ import {
   HeartPulse
 } from 'lucide-react';
 import { useTheme } from '@/components/ThemeProvider';
+import { esChequeoDeEstaSemana } from '@/lib/bienestar';
 import WatchLinkCard from './WatchLinkCard';
 
 export default function StudentHub({ 
@@ -26,6 +28,38 @@ export default function StudentHub({
   onReiniciarProgreso = null
 }) {
   const { isSunlight } = useTheme();
+  const [chequeoSemana, setChequeoSemana] = useState(null);
+
+  // Recordatorio semanal: consultamos si el alumno ya completó el chequeo
+  // de bienestar de la semana en curso.
+  useEffect(() => {
+    let activo = true;
+
+    fetch('/api/bienestar')
+      .then((res) => res.json())
+      .then((data) => {
+        if (!activo || !data?.success) return;
+        const encontrado =
+          data.chequeoEstaSemana ||
+          (data.chequeos || []).find((item) => esChequeoDeEstaSemana(item.fecha)) ||
+          null;
+        setChequeoSemana(encontrado);
+      })
+      .catch(() => {
+        // El recordatorio es complementario: si falla, el hub sigue funcionando.
+      });
+
+    return () => {
+      activo = false;
+    };
+  }, []);
+
+  const fechaChequeoSemana = chequeoSemana?.fecha
+    ? new Date(chequeoSemana.fecha).toLocaleDateString('es-AR', {
+        day: '2-digit',
+        month: 'short',
+      })
+    : null;
 
   // Encontrar el día sugerido para hoy
   const primerNoCompletado = planSemanal.find((d) => d.estado !== 'COMPLETADO');
@@ -96,16 +130,21 @@ export default function StudentHub({
                 Chequeo de Bienestar
               </h2>
               <span className={`text-[10px] font-black uppercase tracking-wider px-2 py-0.5 rounded-full border ${
-                isSunlight
-                  ? 'bg-white text-sky-700 border-sky-300'
-                  : 'bg-sky-500/10 text-sky-300 border-sky-500/30'
+                chequeoSemana
+                  ? isSunlight
+                    ? 'bg-emerald-50 text-emerald-700 border-emerald-300'
+                    : 'bg-emerald-500/10 text-emerald-300 border-emerald-500/30'
+                  : isSunlight
+                    ? 'bg-white text-sky-700 border-sky-300'
+                    : 'bg-sky-500/10 text-sky-300 border-sky-500/30'
               }`}>
-                10 preguntas · 2 min
+                {chequeoSemana ? 'Semana completada' : 'Chequeo semanal'}
               </span>
             </div>
             <p className={`text-xs mt-1 leading-relaxed ${isSunlight ? 'text-slate-700' : 'text-slate-300'}`}>
-              Contanos cómo venís de descanso, estrés, ánimo, energía y motivación.
-              Recibí tus resultados y recomendaciones al instante.
+              {chequeoSemana
+                ? `Ya registraste cómo venís esta semana${fechaChequeoSemana ? ` (${fechaChequeoSemana})` : ''}. Matías puede verlo en tu ficha.`
+                : 'Una vez por semana: descanso, estrés, ánimo, energía y motivación. Son 2 minutos y Matías lo usa para ajustar tu plan.'}
             </p>
           </div>
         </div>
@@ -113,7 +152,7 @@ export default function StudentHub({
         <span className={`inline-flex items-center gap-1.5 text-xs font-black shrink-0 self-end sm:self-center ${
           isSunlight ? 'text-sky-700' : 'text-sky-300'
         }`}>
-          Hacer el chequeo
+          {chequeoSemana ? 'Ver mi chequeo' : 'Hacer el chequeo'}
           <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-0.5" />
         </span>
       </Link>

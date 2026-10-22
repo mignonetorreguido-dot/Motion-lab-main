@@ -8,7 +8,7 @@
  * 1. Navbar: Barra de navegación con selector de modo soleado/noche
  * 2. Hero: Portada de presentación de alto rendimiento con llamado a acción
  * 3. AboutTrainer: Filosofía de entrenamiento, biomecánica y método
- * 4. GallerySection: Resultados y áreas de entrenamiento (pista, sala, campo)
+ * 4. GallerySection: Resultados y entornos donde se aplica la ciencia
  * 5. Footer: Pie de página y canales de contacto oficial
  * 6. WhatsAppButton: Botón flotante para escritorio
  */

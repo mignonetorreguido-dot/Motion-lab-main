@@ -2,14 +2,16 @@
 
 import { useEffect, useState } from 'react';
 import { signIn, getProviders } from 'next-auth/react';
-import { useRouter } from 'next/navigation';
 import { ArrowRight, LogIn, Loader2 } from 'lucide-react';
 import Link from 'next/link';
 import Navbar from '@/components/Navbar';
 import { useTheme } from '@/components/ThemeProvider';
 
+function destinoSegunSesion(session) {
+  return session?.user?.rol === 'ENTRENADOR' ? '/admin' : '/entrenamiento';
+}
+
 export default function LoginPage() {
-  const router = useRouter();
   const { isSunlight } = useTheme();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -35,33 +37,58 @@ export default function LoginPage() {
     };
   }, []);
 
-  // Al volver de Google, resolvemos el rol y enviamos al panel correcto.
+  // Si ya hay una sesión activa, no mostramos el formulario: llevamos al panel
+  // que corresponde. También se revisa al volver con el botón "atrás" para que
+  // la sesión no parezca cerrada.
   useEffect(() => {
+    let activo = true;
     const params = new URLSearchParams(window.location.search);
+    const vieneDeGoogle = params.get('google') === '1';
 
     if (params.get('error')) {
       setError('No pudimos completar el ingreso con Google. Intentá de nuevo.');
     }
 
-    if (params.get('google') !== '1') return;
+    if (vieneDeGoogle) setGoogleCargando(true);
 
-    setGoogleCargando(true);
+    const revisarSesion = async () => {
+      try {
+        const res = await fetch('/api/auth/session', { cache: 'no-store' });
+        const session = await res.json();
 
-    fetch('/api/auth/session')
-      .then((res) => res.json())
-      .then((session) => {
-        if (!session?.user) {
-          throw new Error('No pudimos validar tu sesión de Google.');
+        if (!activo) return;
+
+        if (session?.user) {
+          window.location.replace(destinoSegunSesion(session));
+          return;
         }
 
-        const destino =
-          session.user.rol === 'ENTRENADOR' ? '/admin' : '/entrenamiento';
-        window.location.href = destino;
-      })
-      .catch((err) => {
-        setError(err.message || 'No pudimos completar el ingreso con Google.');
-        setGoogleCargando(false);
-      });
+        if (vieneDeGoogle) {
+          setError('No pudimos validar tu sesión de Google.');
+          setGoogleCargando(false);
+        }
+      } catch {
+        if (activo && vieneDeGoogle) {
+          setError('No pudimos validar tu sesión de Google.');
+          setGoogleCargando(false);
+        }
+      }
+    };
+
+    revisarSesion();
+
+    // Al volver desde el historial, el navegador puede restaurar la página
+    // desde caché sin ejecutar el montaje de React. Revisamos la sesión otra vez.
+    const alMostrar = (evento) => {
+      if (evento.persisted) revisarSesion();
+    };
+
+    window.addEventListener('pageshow', alMostrar);
+
+    return () => {
+      activo = false;
+      window.removeEventListener('pageshow', alMostrar);
+    };
   }, []);
 
   const iniciarConGoogle = async () => {
@@ -105,11 +132,16 @@ export default function LoginPage() {
         setError(res.error);
         setLoading(false);
       } else {
-        const sessionRes = await fetch('/api/auth/session');
+        const sessionRes = await fetch('/api/auth/session', { cache: 'no-store' });
         const sessionData = await sessionRes.json();
 
-        const destino = sessionData?.user?.rol === 'ENTRENADOR' ? '/admin' : '/entrenamiento';
-        window.location.href = destino;
+        if (!sessionRes.ok || !sessionData?.user) {
+          throw new Error('No pudimos validar tu sesión. Intentá de nuevo.');
+        }
+
+        // replace() evita que la página de login quede en el historial y que
+        // el botón "atrás" muestre un formulario como si la sesión se hubiera cerrado.
+        window.location.replace(destinoSegunSesion(sessionData));
       }
     } catch (err) {
       setError('Ocurrió un error inesperado al iniciar sesión.');

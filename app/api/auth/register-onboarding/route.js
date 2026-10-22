@@ -46,6 +46,16 @@ export async function POST(request) {
       );
     }
 
+    if (!whatsapp || !whatsapp.trim()) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: 'Ingresá tu número de WhatsApp para que Matías pueda contactarte.',
+        },
+        { status: 400 }
+      );
+    }
+
     const emailNormalizado = email.toLowerCase().trim();
     let passwordHash = null;
 
@@ -112,6 +122,7 @@ export async function POST(request) {
         nombre,
         apellido,
         email: emailNormalizado,
+        whatsapp,
         tipoPlan,
         estadoPago: 'PENDIENTE',
       };
@@ -129,6 +140,7 @@ export async function POST(request) {
       disponibilidad,
       rmEstimado,
       lesiones,
+      whatsapp,
     });
 
     return NextResponse.json({
@@ -140,6 +152,7 @@ export async function POST(request) {
         id: usuarioGuardado.id,
         nombre: usuarioGuardado.nombre,
         email: usuarioGuardado.email,
+        whatsapp: usuarioGuardado.whatsapp || whatsapp || '',
         tipoPlan: usuarioGuardado.tipoPlan,
         estadoPago: usuarioGuardado.estadoPago,
       },

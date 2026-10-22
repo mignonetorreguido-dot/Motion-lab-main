@@ -11,7 +11,8 @@
  */
 
 import Link from 'next/link';
-import { ArrowLeft } from 'lucide-react';
+import { ArrowLeft, LogOut } from 'lucide-react';
+import LogoutButton from '@/components/LogoutButton';
 import MotionLabLogo from '@/components/MotionLabLogo';
 import ThemeToggle from '@/components/ThemeToggle';
 import { useTheme } from '@/components/ThemeProvider';
@@ -41,6 +42,17 @@ export default function AdminShell({ children }) {
         <div className="flex items-center gap-3 self-end sm:self-center">
           {/* TOGGLE MODO SOLEADO / NOCHE EN EL PANEL DEL ENTRENADOR */}
           <ThemeToggle />
+          <LogoutButton
+            className={`inline-flex items-center gap-1.5 text-xs font-bold px-3 py-2 rounded-full border transition-colors ${
+              isSunlight
+                ? 'text-slate-600 border-slate-300 hover:text-red-700 hover:border-red-300 hover:bg-red-50'
+                : 'text-slate-400 border-slate-700 hover:text-red-300 hover:border-red-500/40 hover:bg-red-500/10'
+            }`}
+            title="Cerrar sesión"
+          >
+            <LogOut className="w-3.5 h-3.5" />
+            <span className="hidden sm:inline">Cerrar sesión</span>
+          </LogoutButton>
           <Link href="/" className="group">
             <MotionLabLogo className="group-hover:scale-105 transition-transform" />
           </Link>

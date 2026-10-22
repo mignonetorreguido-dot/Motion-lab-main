@@ -165,6 +165,7 @@ export default function Wizard() {
           nombre: data.usuario?.nombre || prev.nombre,
           apellido: data.usuario?.apellido || prev.apellido,
           email: data.usuario?.email || session.user.email || prev.email,
+          whatsapp: data.usuario?.whatsapp || datosGuardados.whatsapp || prev.whatsapp,
         }));
         setWhatsappLink(data.whatsappUrl);
         setRegistroCompletado(true);
@@ -254,8 +255,8 @@ export default function Wizard() {
   const manejarRegistro = async (e) => {
     e?.preventDefault();
 
-    if (!formData.nombre.trim() || !formData.email.trim() || !formData.password) {
-      setErrorMsg('Por favor completa tu nombre, correo y contraseña.');
+    if (!formData.nombre.trim() || !formData.email.trim() || !formData.whatsapp.trim() || !formData.password) {
+      setErrorMsg('Por favor completa tu nombre, correo, WhatsApp y contraseña.');
       return;
     }
     if (formData.password.length < 6) {
@@ -299,6 +300,27 @@ export default function Wizard() {
           ? 'El acceso con Google estará disponible próximamente. Mientras tanto, podés crear tu cuenta con tu email.'
           : 'Estamos verificando el acceso con Google. Intentá de nuevo en un segundo.'
       );
+      return;
+    }
+
+    // Google no comparte el número de WhatsApp. Lo pedimos antes de abrir
+    // OAuth para que quede guardado en la cuenta y Matías pueda contactarte.
+    const telefono = formData.whatsapp.trim();
+    if (!telefono) {
+      setErrorMsg(
+        'Completá tu número de WhatsApp antes de continuar con Google. Es el canal por el que Matías coordina el pago y el seguimiento.'
+      );
+      document.getElementById('whatsapp-onboarding')?.scrollIntoView({
+        behavior: 'smooth',
+        block: 'center',
+      });
+      document.getElementById('whatsapp-onboarding')?.focus();
+      return;
+    }
+
+    if (telefono.replace(/\D/g, '').length < 8) {
+      setErrorMsg('Ingresá un número de WhatsApp válido, con código de área.');
+      document.getElementById('whatsapp-onboarding')?.focus();
       return;
     }
 
@@ -392,7 +414,7 @@ export default function Wizard() {
                 ¡Bienvenido a Motion Lab, {formData.nombre}!
               </h3>
               <p className={`text-sm max-w-md mx-auto mt-2 leading-relaxed ${isSunlight ? 'text-slate-700' : 'text-slate-300'}`}>
-                Tu perfil deportivo ha sido guardado. Para que el entrenador Matías active tu cuenta y comience la planificación de tu rutina, coordina el pago por WhatsApp:
+                Tu perfil deportivo y tu número de WhatsApp han sido guardados. Para que el entrenador Matías active tu cuenta y comience la planificación de tu rutina, coordina el pago por WhatsApp:
               </p>
             </div>
 
@@ -408,6 +430,12 @@ export default function Wizard() {
                 <span className={tema.parrafo}>Objetivo:</span>
                 <span className={`font-bold ${tema.titulo}`}>{formData.objetivo} ({formData.deporte})</span>
               </div>
+              {formData.whatsapp && (
+                <div className={`flex justify-between border-b pb-2 ${tema.bordeSuave}`}>
+                  <span className={tema.parrafo}>WhatsApp:</span>
+                  <span className={`font-bold ${tema.titulo}`}>{formData.whatsapp}</span>
+                </div>
+              )}
               <div className="flex justify-between">
                 <span className={tema.parrafo}>Frecuencia:</span>
                 <span className={`font-bold ${tema.titulo}`}>{formData.disponibilidad}</span>
@@ -426,8 +454,16 @@ export default function Wizard() {
                 <span>Coordinar Pago con Matías por WhatsApp</span>
               </a>
               <span className={`text-[11px] block mt-2 ${isSunlight ? 'text-slate-600' : 'text-slate-500'}`}>
-                Se abrirá un chat directo con tu ficha deportiva pre-cargada.
+                Se abrirá un chat directo con tu ficha deportiva pre-cargada. El mensaje es opcional: tu cuenta ya quedó creada.
               </span>
+              <a
+                href="/login?callbackUrl=/entrenamiento"
+                className={`text-[11px] font-bold underline underline-offset-2 mt-3 inline-block ${
+                  isSunlight ? 'text-sky-700 hover:text-sky-900' : 'text-sky-300 hover:text-sky-200'
+                }`}
+              >
+                Más tarde, iniciar sesión
+              </a>
             </div>
           </div>
         ) : (
@@ -442,7 +478,7 @@ export default function Wizard() {
                     Paso 0 • Membresía
                   </span>
                   <h3 className={`text-2xl sm:text-3xl font-black mt-1 ${tema.titulo}`}>
-                    Selecciona tu Modalidad de Entrenamiento
+                    Elegí tu Modalidad de Entrenamiento
                   </h3>
                   <p className={`text-xs sm:text-sm mt-1 ${tema.parrafo}`}>
                     Elige el nivel de acompañamiento que necesitas de Matías en Motion Lab.
@@ -469,7 +505,7 @@ export default function Wizard() {
                       </div>
                       <div className={`font-extrabold text-lg ${tema.titulo}`}>Plan Base</div>
                       <p className={`text-xs mt-1 leading-relaxed ${tema.parrafo}`}>
-                        Rutina personalizada estructurada. Ideal para quienes entrenan por su cuenta con disciplina.
+                        Vos llevás el mando: Matías te deja los ejercicios y la planificación; entrenás por tu cuenta con disciplina.
                       </p>
                     </div>
                     <div className={`mt-4 pt-4 border-t flex items-center justify-between ${tema.bordeSuave}`}>
@@ -503,7 +539,7 @@ export default function Wizard() {
                       </div>
                       <div className={`font-extrabold text-lg ${tema.titulo}`}>Plan Premium</div>
                       <p className={`text-xs mt-1 leading-relaxed ${isSunlight ? 'text-slate-700' : 'text-slate-300'}`}>
-                        Asistencia inmediata, revisión de técnica por video, coordinación de clases presenciales y seguimiento 1 a 1.
+                        1 a 1 presencial en la zona o videollamada y seguimiento a distancia. Matías se adapta a tus horarios y deporte, con correcciones inmediatas.
                       </p>
                     </div>
                     <div className={`mt-4 pt-4 border-t flex items-center justify-between ${tema.bordeSuave}`}>
@@ -854,6 +890,12 @@ export default function Wizard() {
                   </span>
                 </button>
 
+                {!formData.whatsapp.trim() && (
+                  <p className={`text-[11px] text-center leading-relaxed ${isSunlight ? 'text-sky-700' : 'text-sky-300'}`}>
+                    Google no comparte tu número. Completá tu WhatsApp más abajo antes de continuar.
+                  </p>
+                )}
+
                 {googleDisponible === false && (
                   <p className={`text-[11px] text-center leading-relaxed ${isSunlight ? 'text-slate-600' : 'text-slate-400'}`}>
                     El acceso con Google estará disponible próximamente. Mientras tanto, podés crear tu cuenta con tu email.
@@ -904,6 +946,7 @@ export default function Wizard() {
                   <div className="relative">
                     <Phone className="w-4 h-4 text-slate-500 absolute left-3.5 top-3.5" />
                     <input
+                      id="whatsapp-onboarding"
                       type="tel"
                       required
                       placeholder="+54 9 11 1234-5678"

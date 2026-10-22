@@ -17,6 +17,7 @@ import { authOptions } from '@/app/api/auth/[...nextauth]/route';
 import prisma from '@/lib/prisma';
 import {
   calcularResultado,
+  esChequeoDeEstaSemana,
   respuestasCompletas,
 } from '@/lib/bienestar';
 import {
@@ -107,6 +108,41 @@ export async function POST(request) {
       );
     }
 
+    // El chequeo es semanal: si el alumno ya lo completó esta semana,
+    // devolvemos el existente para no duplicar el seguimiento.
+    let chequeoExistente =
+      obtenerChequeosBienestarDeStore(session.user.id).find((item) =>
+        esChequeoDeEstaSemana(item.fecha)
+      ) || null;
+
+    if (!chequeoExistente && process.env.DATABASE_URL) {
+      try {
+        const recientes = await prisma.chequeoBienestar.findMany({
+          where: { alumnoId: session.user.id },
+          orderBy: { fecha: 'desc' },
+          take: 10,
+        });
+        chequeoExistente =
+          recientes.find((item) => esChequeoDeEstaSemana(item.fecha)) || null;
+      } catch (dbError) {
+        console.warn(
+          '⚠️ No se pudo verificar el chequeo semanal en PostgreSQL:',
+          dbError.message
+        );
+      }
+    }
+
+    if (chequeoExistente) {
+      return NextResponse.json({
+        success: true,
+        yaRealizado: true,
+        persistido: true,
+        mensaje:
+          'Ya completaste tu chequeo de bienestar de esta semana. Podés volver la próxima semana.',
+        chequeo: normalizarChequeo(chequeoExistente),
+      });
+    }
+
     const resultado = calcularResultado(respuestas);
     const id = `bienestar-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
 
@@ -190,7 +226,7 @@ export async function GET(request) {
 
     // Sin sesión no exponemos historiales de alumnos.
     if (!session?.user?.id) {
-      return NextResponse.json({ success: true, chequeos: [] });
+      return NextResponse.json({ success: true, chequeos: [], chequeoEstaSemana: null });
     }
 
     const alumnoId = esEntrenador
@@ -228,11 +264,15 @@ export async function GET(request) {
       .map(normalizarChequeo)
       .filter(Boolean);
 
+    const chequeoEstaSemana =
+      chequeos.find((item) => esChequeoDeEstaSemana(item.fecha)) || null;
+
     return NextResponse.json({
       success: true,
       alumnoId,
       total: chequeos.length,
       chequeos,
+      chequeoEstaSemana,
     });
   } catch (error) {
     console.error('❌ Error al obtener el historial de bienestar:', error);

@@ -40,6 +40,7 @@ import {
   DIMENSIONES,
   PREGUNTAS,
   calcularResultado,
+  esChequeoDeEstaSemana,
   obtenerNivelGeneral,
   respuestasCompletas,
 } from '@/lib/bienestar';
@@ -188,9 +189,20 @@ function HistorialBienestar({ historial, isSunlight }) {
               }`}
             >
               <div className="min-w-0">
-                <p className={`text-xs font-bold ${isSunlight ? 'text-slate-800' : 'text-slate-200'}`}>
-                  {formatearFecha(item.fecha)}
-                </p>
+                <div className="flex items-center gap-1.5 flex-wrap">
+                  <p className={`text-xs font-bold ${isSunlight ? 'text-slate-800' : 'text-slate-200'}`}>
+                    {formatearFecha(item.fecha)}
+                  </p>
+                  {esChequeoDeEstaSemana(item.fecha) && (
+                    <span className={`text-[9px] font-black uppercase tracking-wide px-1.5 py-0.5 rounded border ${
+                      isSunlight
+                        ? 'bg-sky-100 text-sky-800 border-sky-300'
+                        : 'bg-sky-500/10 text-sky-300 border-sky-500/30'
+                    }`}>
+                      Esta semana
+                    </span>
+                  )}
+                </div>
                 <p className="text-[10px] text-slate-500 truncate">
                   {item.nivelGeneral === 'ALERTA'
                     ? 'Varias áreas necesitan atención'
@@ -238,6 +250,10 @@ export default function BienestarTest({
   const respuestaActual = preguntaActual ? respuestas[preguntaActual.id] : undefined;
   const progreso = Math.round(((indice + 1) / PREGUNTAS.length) * 100);
   const respuestasListas = useMemo(() => respuestasCompletas(respuestas), [respuestas]);
+  const chequeoEstaSemana = useMemo(
+    () => historial.find((item) => esChequeoDeEstaSemana(item.fecha)) || null,
+    [historial]
+  );
 
   const textoPrincipal = isSunlight ? 'text-slate-950' : 'text-white';
   const textoSuave = isSunlight ? 'text-slate-700' : 'text-slate-300';
@@ -319,10 +335,25 @@ export default function BienestarTest({
         throw new Error(data.error || 'No pudimos guardar el chequeo.');
       }
 
+      if (data.yaRealizado) {
+        setMensajeGuardado(
+          data.mensaje ||
+            'Ya completaste tu chequeo de esta semana. Podés volver la próxima.'
+        );
+        if (data.chequeo?.resultado) setResultado(data.chequeo.resultado);
+        if (data.chequeo) {
+          setHistorial((prev) => {
+            const sinDuplicado = prev.filter((item) => item.id !== data.chequeo.id);
+            return [data.chequeo, ...sinDuplicado];
+          });
+        }
+        return;
+      }
+
       setMensajeGuardado(
         data.persistido
-          ? 'Chequeo guardado. Matías ya puede ver tus resultados.'
-          : 'Chequeo guardado temporalmente. Matías podrá verlo en esta sesión.'
+          ? 'Chequeo semanal guardado. Matías ya puede ver tus resultados.'
+          : 'Chequeo semanal guardado temporalmente. Matías podrá verlo en esta sesión.'
       );
 
       if (data.chequeo) {
@@ -355,6 +386,24 @@ export default function BienestarTest({
     setError('');
   };
 
+  const verChequeoSemanal = () => {
+    if (!chequeoEstaSemana) return;
+
+    const resultadoSemanal =
+      chequeoEstaSemana.resultado ||
+      (chequeoEstaSemana.respuestas &&
+      respuestasCompletas(chequeoEstaSemana.respuestas)
+        ? calcularResultado(chequeoEstaSemana.respuestas)
+        : null);
+
+    if (!resultadoSemanal) return;
+
+    setResultado(resultadoSemanal);
+    setEtapa('resultado');
+    setError('');
+    setMensajeGuardado('');
+  };
+
   // ================================================================
   // ETAPA 1: PRESENTACIÓN
   // ================================================================
@@ -363,6 +412,9 @@ export default function BienestarTest({
     const nivelUltimo = ultimoChequeo
       ? ultimoChequeo.resultado?.nivelGeneral || obtenerNivelGeneral(ultimoChequeo.puntajeGeneral)
       : null;
+    const ultimoEsDeEstaSemana = Boolean(
+      ultimoChequeo && esChequeoDeEstaSemana(ultimoChequeo.fecha)
+    );
 
     return (
       <div className="max-w-5xl mx-auto space-y-6">
@@ -379,7 +431,7 @@ export default function BienestarTest({
                 }`}
               >
                 <Leaf className="w-3.5 h-3.5" />
-                Chequeo de bienestar
+                Chequeo semanal de bienestar
               </span>
 
               <h1 className={`mt-5 text-3xl sm:text-4xl lg:text-5xl font-black tracking-tight leading-[1.05] ${textoPrincipal}`}>
@@ -395,11 +447,15 @@ export default function BienestarTest({
                 resultados y algunas recomendaciones para acompañar tu entrenamiento.
               </p>
 
+              <p className={`mt-2 text-xs font-bold leading-relaxed max-w-xl ${isSunlight ? 'text-sky-700' : 'text-sky-300'}`}>
+                Se completa una vez por semana. Si ya lo hiciste, podés ver tu resultado y volver la próxima.
+              </p>
+
               <div className="grid grid-cols-3 gap-3 mt-6 max-w-md">
                 {[
+                  { valor: '1', label: 'por semana' },
                   { valor: '10', label: 'preguntas' },
                   { valor: '2', label: 'minutos' },
-                  { valor: '100%', label: 'confidencial' },
                 ].map((item) => (
                   <div key={item.label} className={`rounded-2xl border px-3 py-3 text-center ${fondoSuave}`}>
                     <span className={`block text-lg font-black ${isSunlight ? 'text-sky-700' : 'text-sky-300'}`}>
@@ -415,14 +471,14 @@ export default function BienestarTest({
               <div className="flex flex-col sm:flex-row gap-3 mt-7">
                 <button
                   type="button"
-                  onClick={irAPreguntas}
+                  onClick={chequeoEstaSemana ? verChequeoSemanal : irAPreguntas}
                   className="inline-flex items-center justify-center gap-2 py-3.5 px-6 rounded-2xl bg-blue-600 hover:bg-blue-500 text-white font-black text-sm shadow-lg shadow-blue-600/25 transition-all active:scale-[0.98]"
                 >
-                  Empezar el chequeo
+                  {chequeoEstaSemana ? 'Ver chequeo de esta semana' : 'Empezar chequeo semanal'}
                   <ArrowRight className="w-4 h-4" />
                 </button>
 
-                {ultimoChequeo?.resultado && (
+                {ultimoChequeo?.resultado && !chequeoEstaSemana && (
                   <button
                     type="button"
                     onClick={() => {
@@ -496,7 +552,9 @@ export default function BienestarTest({
                 <CheckCircle2 className="w-5 h-5" />
               </span>
               <div>
-                <p className={`text-xs font-black ${textoPrincipal}`}>Último chequeo: {formatearFecha(ultimoChequeo.fecha)}</p>
+                <p className={`text-xs font-black ${textoPrincipal}`}>
+                  {ultimoEsDeEstaSemana ? 'Chequeo de esta semana' : 'Último chequeo'}: {formatearFecha(ultimoChequeo.fecha)}
+                </p>
                 <p className={`text-[11px] ${textoMuted}`}>
                   Bienestar general {ultimoChequeo.puntajeGeneral}/100 · {nivelUltimo?.etiqueta}
                 </p>
@@ -505,7 +563,7 @@ export default function BienestarTest({
             {ultimoChequeo.resultado && (
               <button
                 type="button"
-                onClick={() => {
+                onClick={ultimoEsDeEstaSemana ? verChequeoSemanal : () => {
                   setResultado(ultimoChequeo.resultado);
                   setEtapa('resultado');
                 }}
@@ -796,18 +854,29 @@ export default function BienestarTest({
         </div>
 
         <div className="flex flex-col sm:flex-row items-center justify-between gap-3">
-          <button
-            type="button"
-            onClick={reiniciar}
-            className={`inline-flex items-center gap-2 py-2.5 px-4 rounded-xl text-xs font-bold border transition-all ${
+          {chequeoEstaSemana ? (
+            <span className={`inline-flex items-center gap-2 py-2.5 px-4 rounded-xl text-xs font-bold border ${
               isSunlight
-                ? 'bg-white border-slate-300 text-slate-700 hover:bg-slate-50'
-                : 'bg-slate-900 border-slate-700 text-slate-300 hover:bg-slate-800'
-            }`}
-          >
-            <RotateCcw className="w-4 h-4" />
-            Volver a hacer el test
-          </button>
+                ? 'bg-sky-50 border-sky-300 text-sky-800'
+                : 'bg-sky-500/10 border-sky-500/30 text-sky-300'
+            }`}>
+              <CheckCircle2 className="w-4 h-4 shrink-0" />
+              Ya completaste el chequeo de esta semana. Volvé la próxima.
+            </span>
+          ) : (
+            <button
+              type="button"
+              onClick={reiniciar}
+              className={`inline-flex items-center gap-2 py-2.5 px-4 rounded-xl text-xs font-bold border transition-all ${
+                isSunlight
+                  ? 'bg-white border-slate-300 text-slate-700 hover:bg-slate-50'
+                  : 'bg-slate-900 border-slate-700 text-slate-300 hover:bg-slate-800'
+              }`}
+            >
+              <RotateCcw className="w-4 h-4" />
+              Hacer chequeo de esta semana
+            </button>
+          )}
 
           <Link
             href="/entrenamiento"

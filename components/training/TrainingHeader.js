@@ -1,11 +1,10 @@
 'use client';
 
 import Link from 'next/link';
-import { ArrowLeft, Sun, Moon, HeartPulse } from 'lucide-react';
+import { ArrowLeft, Sun, Moon, HeartPulse, LogOut } from 'lucide-react';
+import LogoutButton from '@/components/LogoutButton';
 import MotionLabLogo from '@/components/MotionLabLogo';
 import { useTheme } from '@/components/ThemeProvider';
-
-import { signOut } from 'next-auth/react';
 
 export default function TrainingHeader({ user = null }) {
   const { isSunlight, toggleSunlight } = useTheme();
@@ -70,6 +69,20 @@ export default function TrainingHeader({ user = null }) {
             </>
           )}
         </button>
+
+        {user && (
+          <LogoutButton
+            className={`inline-flex items-center gap-1.5 text-xs font-bold px-2.5 py-1.5 rounded-full border transition-colors ${
+              isSunlight
+                ? 'text-slate-600 border-slate-300 hover:text-red-700 hover:border-red-300 hover:bg-red-50'
+                : 'text-slate-400 border-slate-700 hover:text-red-300 hover:border-red-500/40 hover:bg-red-500/10'
+            }`}
+            title="Cerrar sesión"
+          >
+            <LogOut className="w-3.5 h-3.5" />
+            <span className="hidden sm:inline">Salir</span>
+          </LogoutButton>
+        )}
 
         <Link href="/" className="group">
           <MotionLabLogo className="group-hover:scale-105 transition-transform" />

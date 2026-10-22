@@ -38,8 +38,12 @@ const googleProvider = googleEstaConfigurado
 
 export const authOptions = {
   session: {
-    // Usamos estrategia JWT para compatibilidad total con Credentials y Google
+    // Usamos estrategia JWT para compatibilidad total con Credentials y Google.
+    // La sesión queda activa 30 días, incluso si se cierra el navegador o se
+    // navega hacia atrás. Sólo se cierra cuando el usuario elige "Cerrar sesión".
     strategy: 'jwt',
+    maxAge: 30 * 24 * 60 * 60,
+    updateAge: 24 * 60 * 60,
   },
 
   providers: [

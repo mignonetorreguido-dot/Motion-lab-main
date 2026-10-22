@@ -1,7 +1,11 @@
 import { NextResponse } from 'next/server';
 import { actualizarAlumno } from '@/lib/actualizarAlumno';
+import { requireTrainer } from '@/lib/requireTrainer';
 
 export async function PUT(req, { params }) {
+  const auth = await requireTrainer();
+  if (auth.response) return auth.response;
+
   try {
     let data;
     try {

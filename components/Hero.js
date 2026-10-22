@@ -57,6 +57,11 @@ export default function Hero() {
             <p className={`text-base sm:text-lg font-medium mb-8 leading-relaxed max-w-xl transition-colors ${
               isSunlight ? 'text-slate-800' : 'text-slate-200'
             }`}>
+              <span className={`block text-[11px] sm:text-xs font-black uppercase tracking-[0.18em] mb-2 ${
+                isSunlight ? 'text-blue-700' : 'text-sky-300'
+              }`}>
+                App hecha para la optimización de los usuarios
+              </span>
               En <strong className={isSunlight ? 'text-black font-extrabold' : 'text-white font-bold'}>MOTION LAB</strong> planificamos cada serie, repetición y descanso según tus métricas reales. Sin improvisación: optimizamos tu fuerza, composición corporal y rendimiento atlético.
             </p>
 

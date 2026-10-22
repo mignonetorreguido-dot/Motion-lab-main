@@ -8,8 +8,12 @@
 
 import { NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
+import { requireTrainer } from '@/lib/requireTrainer';
 
 export async function POST(request, { params }) {
+  const auth = await requireTrainer();
+  if (auth.response) return auth.response;
+
   try {
     const { id } = params;
     const body = await request.json();

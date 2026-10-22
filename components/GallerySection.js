@@ -4,8 +4,9 @@
  * ========================================================================
  * COMPONENTE: Resultados & Áreas de Entrenamiento (GallerySection.js)
  * ========================================================================
- * Galería visual oficial con las áreas de entrenamiento de MOTION LAB:
- * pista de velocidad, sala de fuerza y campo deportivo.
+ * Galería visual oficial de MOTION LAB. Las fotos se mantienen como
+ * muestra de los entornos de entrenamiento; el mensaje central es que la
+ * ciencia se aplica a cualquier contexto.
  * Con resplandor exterior dinámico visible tanto en modo soleado como noche.
  */
 
@@ -37,10 +38,14 @@ export default function GallerySection() {
               RESULTADOS
             </span>
           </h2>
-          <p className={`text-sm sm:text-base mt-2 font-medium ${
+          <p className={`text-sm sm:text-base mt-3 font-medium ${
             isSunlight ? 'text-slate-700' : 'text-slate-300'
           }`}>
-            Pista de velocidad, sala de fuerza, campo deportivo o en casa: adaptamos la ciencia a tu entorno.
+            <span className={`font-black uppercase tracking-[0.14em] ${
+              isSunlight ? 'text-blue-700' : 'text-sky-300'
+            }`}>
+              La ciencia se aplica a tu entorno
+            </span>
           </p>
         </div>
 

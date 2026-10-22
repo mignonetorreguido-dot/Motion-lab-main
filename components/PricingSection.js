@@ -83,7 +83,7 @@ export default function PricingSection() {
               <p className={`text-xs sm:text-sm mt-2 leading-relaxed font-medium ${
                 isSunlight ? 'text-slate-700' : 'text-slate-300'
               }`}>
-                Ideal para alumnos que conocen la técnica básica y solo necesitan una rutina estructurada y científicamente periodizada para progresar por su cuenta.
+                Para alumnos que ya entrenan y quieren llevar el mando. Matías te deja los ejercicios y la planificación; vos dirigís tus sesiones y tu progreso.
               </p>
 
               {/* Información */}
@@ -93,8 +93,8 @@ export default function PricingSection() {
                 <p className="text-sm font-semibold">
                   Los valores y métodos de pago se coordinan de forma personalizada según tu país y necesidades.
                 </p>
-                <span className={`text-xs font-bold block mt-2 ${isSunlight ? 'text-blue-700' : 'text-sky-400'}`}>
-                  Rutina mensual 100% estructurada para progresar
+                <span className={`text-xs font-black uppercase tracking-wide block mt-2 ${isSunlight ? 'text-blue-700' : 'text-sky-400'}`}>
+                  El entrenador te deja los ejercicios; vos llevás el mando
                 </span>
               </div>
 
@@ -107,10 +107,10 @@ export default function PricingSection() {
                 </span>
 
                 {[
-                  'Rutina estructurada mensual en PDF interactivo',
+                  'El entrenador te deja los ejercicios y la planificación',
+                  'Vos llevás el mando de tus sesiones y tu progreso',
                   'Periodización de cargas, series y repeticiones',
                   'Guía nutricional general y cálculo de mantenimiento calórico',
-                  'Acceso a la comunidad privada de alumnos MOTION LAB',
                   'Actualización de la planificación cada 4 semanas',
                   'Soporte por correo electrónico para consultas',
                 ].map((item, index) => (
@@ -174,7 +174,7 @@ export default function PricingSection() {
               <p className={`text-xs sm:text-sm mt-2 leading-relaxed font-medium ${
                 isSunlight ? 'text-slate-800' : 'text-slate-200'
               }`}>
-                El laboratorio completo para ti. Planificación ajustada a tu anatomía, horarios y equipamiento con revisión de técnica diaria y contacto 24/7.
+                Si vivís en la zona, entrenás 1 a 1 presencial con Matías. Si estás lejos, la asistencia es por videollamada y seguimiento. El entrenador se adapta a tus horarios y a tu deporte, con correcciones inmediatas para guiarte.
               </p>
 
               {/* Información */}
@@ -198,13 +198,14 @@ export default function PricingSection() {
                 </span>
 
                 {[
+                  'Entrenamiento 1 a 1 presencial si vivís en la zona',
+                  'Videollamada y seguimiento continuo si entrenás a distancia',
+                  'Matías se adapta a tus horarios y a tu deporte (ej. básquet por la mañana)',
+                  'Correcciones inmediatas en cada ejercicio para guiarte',
                   'Planificación 100% individualizada a tu nivel y equipo',
                   'Adaptación estricta para cuidar lesiones o molestias articulares',
-                  'Cálculo de macros y calorías exactas según gasto energético',
-                  'Corrección de técnica por video (me envías tus grabaciones)',
-                  'Acompañamiento y resolución de dudas por WhatsApp 24/7',
                   'Ajustes semanales basados en tu fatiga, fuerza y peso',
-                  '1 Videollamada mensual de revisión y mentalidad',
+                  'Cálculo de macros y calorías exactas según gasto energético',
                 ].map((item, index) => (
                   <div key={index} className="flex items-start gap-3">
                     <div className={`w-5 h-5 rounded-full flex items-center justify-center shrink-0 mt-0.5 ${

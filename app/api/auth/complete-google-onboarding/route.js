@@ -73,6 +73,16 @@ export async function POST(request) {
       );
     }
 
+    if (!texto(whatsapp)) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: 'Ingresá tu número de WhatsApp para que Matías pueda contactarte.',
+        },
+        { status: 400 }
+      );
+    }
+
     const pesoNumero = Number.parseFloat(peso);
     const alturaNumero = Number.parseFloat(altura);
 
@@ -140,6 +150,7 @@ export async function POST(request) {
       disponibilidad: datosPerfil.disponibilidad,
       rmEstimado: datosPerfil.rmEstimado || '',
       lesiones: texto(lesiones),
+      whatsapp: texto(whatsapp),
     });
 
     return NextResponse.json({
@@ -150,6 +161,7 @@ export async function POST(request) {
         nombre: usuario.nombre,
         apellido: usuario.apellido || '',
         email: usuario.email,
+        whatsapp: usuario.whatsapp || '',
         tipoPlan: usuario.tipoPlan,
         estadoPago: usuario.estadoPago,
       },

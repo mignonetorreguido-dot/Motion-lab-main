@@ -19,6 +19,7 @@ import {
 } from '@/lib/fallbackStore';
 import { ALUMNOS_DEMO } from '@/lib/demoAlumnos';
 import { actualizarAlumno } from '@/lib/actualizarAlumno';
+import { requireTrainer } from '@/lib/requireTrainer';
 
 function calcularBienestar(checkins) {
   if (!checkins || checkins.length === 0) {
@@ -91,6 +92,9 @@ function calcularAlertaMental(chequeos = []) {
 }
 
 export async function GET() {
+  const auth = await requireTrainer();
+  if (auth.response) return auth.response;
+
   try {
     let alumnos = [];
     let chequeosBienestarDB = [];
@@ -295,6 +299,9 @@ export async function GET() {
 }
 
 export async function PUT(req) {
+  const auth = await requireTrainer();
+  if (auth.response) return auth.response;
+
   try {
     let data;
     try {
@@ -323,6 +330,9 @@ export async function PUT(req) {
 }
 
 export async function PATCH(req) {
+  const auth = await requireTrainer();
+  if (auth.response) return auth.response;
+
   try {
     const body = await req.json();
     const alumnoId = body.alumnoId || body.id;
@@ -392,6 +402,9 @@ export async function PATCH(req) {
 }
 
 export async function POST(req) {
+  const auth = await requireTrainer();
+  if (auth.response) return auth.response;
+
   try {
     const data = await req.json();
     const {

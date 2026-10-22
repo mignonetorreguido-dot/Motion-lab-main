@@ -14,7 +14,7 @@
  *    - Bloque de Desarrollo
  * 5. Ver el contador de sesiones completadas de cada alumno dentro de la
  *    columna 'Bienestar & Fatiga' (sube cuando el alumno finaliza un día).
- * 6. Compartir un código QR con los clientes para que abran la web desde el celular.
+ * 6. Abrir la rutina completa del alumno con sus series, cargas y notas.
  * 7. Cambiar entre Modo Noche y Modo Soleado en toda la pantalla.
  */
 
@@ -22,11 +22,40 @@ import { useState, useEffect } from 'react';
 import { 
   Users, CheckCircle2, Clock, Dumbbell, ShieldCheck, 
   Search, Eye, Plus, Trash2, ArrowRight, X, Sparkles, Activity, RotateCcw,
-  HeartPulse
+  HeartPulse, ChevronDown, ChevronUp
 } from 'lucide-react';
 import RoutineBuilder from './RoutineBuilder';
-import QrShareCard from './QrShareCard';
+import WatchSummary from './WatchSummary';
 import { useTheme } from '@/components/ThemeProvider';
+
+// Alumnos de prueba que no deben mezclarse con los clientes reales del panel.
+const IDS_DEMO_PANEL = new Set(['demo-alumno-1', 'demo-alumno-2', 'demo-alumno-3']);
+
+const esAlumnoDemoPanel = (alumno) =>
+  IDS_DEMO_PANEL.has(alumno?.id) || alumno?.email === 'alumno@motionlab.com';
+
+const ETIQUETAS_BLOQUE = {
+  MOVILIDAD: 'Movilidad',
+  ACTIVACION: 'Activación',
+  DESARROLLO: 'Desarrollo',
+};
+
+function formatearRegistro(valor, sufijo = '') {
+  if (valor === null || valor === undefined || valor === '') return '—';
+  return `${valor}${sufijo}`;
+}
+
+function contarSeriesDeDia(dia) {
+  return (dia?.bloques || []).reduce(
+    (total, bloque) =>
+      total +
+      (bloque.ejercicios || []).reduce(
+        (subtotal, ejercicio) => subtotal + (ejercicio.series?.length || 0),
+        0
+      ),
+    0
+  );
+}
 
 const DIMENSIONES_BIENESTAR = [
   { id: 'descanso', nombre: 'Descanso', color: '#a78bfa' },
@@ -74,6 +103,7 @@ export default function DashboardTrainer() {
   const [rutinaActivaAlumno, setRutinaActivaAlumno] = useState(null);
   const [cargandoRutina, setCargandoRutina] = useState(false);
   const [mostrarConstructor, setMostrarConstructor] = useState(false);
+  const [diaDetalleAbierto, setDiaDetalleAbierto] = useState(null);
   
   const [diasParaConstructor, setDiasParaConstructor] = useState(null);
   const [cargandoImportacion, setCargandoImportacion] = useState(false);
@@ -103,6 +133,7 @@ export default function DashboardTrainer() {
     setAlumnoSeleccionado(null);
     setRutinaActivaAlumno(null);
     setMostrarConstructor(false);
+    setDiaDetalleAbierto(null);
     setDiasParaConstructor(null);
     setImportKey('new');
     setModalAbierto(true);
@@ -137,6 +168,7 @@ export default function DashboardTrainer() {
     setAlumnoSeleccionado(alumno);
     setRutinaActivaAlumno(null);
     setMostrarConstructor(false);
+    setDiaDetalleAbierto(null);
     setDiasParaConstructor(null);
     setImportKey('new');
     setModalAbierto(true);
@@ -386,8 +418,11 @@ export default function DashboardTrainer() {
     setTimeout(() => setNotificacion(''), 4000);
   };
 
+  // El panel muestra sólo alumnos reales: excluimos las cuentas de prueba.
+  const alumnosVisibles = alumnos.filter((alumno) => !esAlumnoDemoPanel(alumno));
+
   // Filtrado de alumnos
-  const alumnosFiltrados = alumnos.filter((a) => {
+  const alumnosFiltrados = alumnosVisibles.filter((a) => {
     const coincideFiltro =
       filtro === 'TODOS'
         ? true
@@ -468,14 +503,14 @@ export default function DashboardTrainer() {
             isSunlight ? 'bg-white border-slate-300' : 'bg-slate-900 border-slate-800'
           }`}>
             <span className={`text-xs block font-medium ${isSunlight ? 'text-slate-600' : 'text-slate-400'}`}>Total Alumnos</span>
-            <span className={`text-xl font-black ${isSunlight ? 'text-slate-900' : 'text-white'}`}>{alumnos.length}</span>
+            <span className={`text-xl font-black ${isSunlight ? 'text-slate-900' : 'text-white'}`}>{alumnosVisibles.length}</span>
           </div>
           <div className={`px-4 py-2.5 rounded-2xl border text-center ${
             isSunlight ? 'bg-amber-50 border-amber-300' : 'bg-amber-500/10 border-amber-500/30'
           }`}>
             <span className={`text-xs block font-bold ${isSunlight ? 'text-amber-700' : 'text-amber-400'}`}>Pendientes</span>
             <span className={`text-xl font-black ${isSunlight ? 'text-amber-700' : 'text-amber-400'}`}>
-              {alumnos.filter((a) => a.estadoPago === 'PENDIENTE').length}
+              {alumnosVisibles.filter((a) => a.estadoPago === 'PENDIENTE').length}
             </span>
           </div>
           <div className={`px-4 py-2.5 rounded-2xl border text-center ${
@@ -483,7 +518,7 @@ export default function DashboardTrainer() {
           }`}>
             <span className={`text-xs block font-bold ${isSunlight ? 'text-sky-700' : 'text-sky-400'}`}>Activos</span>
             <span className={`text-xl font-black ${isSunlight ? 'text-sky-700' : 'text-sky-400'}`}>
-              {alumnos.filter((a) => a.estadoPago === 'ACTIVO').length}
+              {alumnosVisibles.filter((a) => a.estadoPago === 'ACTIVO').length}
             </span>
           </div>
           <div className={`px-4 py-2.5 rounded-2xl border text-center ${
@@ -491,7 +526,7 @@ export default function DashboardTrainer() {
           }`}>
             <span className={`text-xs block font-bold ${isSunlight ? 'text-emerald-700' : 'text-emerald-400'}`}>Sesiones Totales</span>
             <span className={`text-xl font-black ${isSunlight ? 'text-emerald-700' : 'text-emerald-400'}`}>
-              {alumnos.reduce((acc, a) => acc + (a.sesionesCompletadas || 0), 0)}
+              {alumnosVisibles.reduce((acc, a) => acc + (a.sesionesCompletadas || 0), 0)}
             </span>
           </div>
           <div className={`px-4 py-2.5 rounded-2xl border text-center ${
@@ -499,7 +534,7 @@ export default function DashboardTrainer() {
           }`}>
             <span className={`text-xs block font-bold ${isSunlight ? 'text-red-600' : 'text-red-400'}`}>Alertas de Bienestar</span>
             <span className={`text-xl font-black ${isSunlight ? 'text-red-600' : 'text-red-400'}`}>
-              {alumnos.filter((a) =>
+              {alumnosVisibles.filter((a) =>
                 a.alertaMental === 'ROJA' ||
                 a.alertaMental === 'AMARILLA'
               ).length}
@@ -507,9 +542,6 @@ export default function DashboardTrainer() {
           </div>
         </div>
       </div>
-
-      {/* TARJETA DE QR PARA COMPARTIR EL ACCESO CON CLIENTES */}
-      <QrShareCard />
 
       {/* FILTROS Y BÚSQUEDA */}
       <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
@@ -1300,6 +1332,11 @@ export default function DashboardTrainer() {
                     </p>
                   )}
                 </div>
+
+                {/* SECCIÓN: RELOJ Y RECUPERACIÓN (JUNCTION) */}
+                {!esNuevoUsuario && (
+                  <WatchSummary alumnoId={alumnoSeleccionado?.id} />
+                )}
               </>
             )}
 
@@ -1336,17 +1373,232 @@ export default function DashboardTrainer() {
                     </div>
                     
                     <div className="grid gap-3 sm:grid-cols-2">
-                      {rutinaActivaAlumno.map(dia => (
-                        <div key={dia.id} className={`p-4 rounded-xl border ${
-                          isSunlight ? 'bg-white border-slate-300' : 'bg-slate-950 border-slate-800'
-                        }`}>
-                          <div className={`font-bold text-sm mb-1 ${isSunlight ? 'text-slate-900' : 'text-white'}`}>Día {dia.numeroDia}: {dia.nombre}</div>
-                          <div className={`text-xs ${isSunlight ? 'text-slate-600' : 'text-slate-400'}`}>{dia.enfoque || 'Sin descripción'}</div>
-                          <div className={`text-[10px] font-bold mt-2 uppercase ${isSunlight ? 'text-sky-700' : 'text-sky-400'}`}>
-                            {dia.bloquesCount} Bloques • {dia.ejerciciosCount} Ejercicios
+                      {rutinaActivaAlumno.map((dia) => {
+                        const abierto = diaDetalleAbierto === dia.id;
+                        const seriesDia = contarSeriesDeDia(dia);
+                        const tieneCheckin = [
+                          dia.energiaInicial,
+                          dia.animoInicial,
+                          dia.descansoInicial,
+                          dia.esfuerzoFinal,
+                          dia.animoFinal,
+                          dia.desahogoFinal,
+                        ].some((valor) => valor !== null && valor !== undefined && valor !== '');
+
+                        return (
+                          <div
+                            key={dia.id}
+                            className={`p-4 rounded-xl border transition-all ${
+                              abierto ? 'sm:col-span-2' : ''
+                            } ${
+                              isSunlight ? 'bg-white border-slate-300' : 'bg-slate-950 border-slate-800'
+                            }`}
+                          >
+                            <div className="flex items-start justify-between gap-3">
+                              <div>
+                                <div className={`font-bold text-sm mb-1 ${isSunlight ? 'text-slate-900' : 'text-white'}`}>
+                                  Día {dia.numeroDia}: {dia.nombre}
+                                </div>
+                                <div className={`text-xs ${isSunlight ? 'text-slate-600' : 'text-slate-400'}`}>
+                                  {dia.enfoque || 'Sin descripción'}
+                                </div>
+                              </div>
+                              <span className={`shrink-0 rounded-full border px-2 py-0.5 text-[10px] font-black uppercase tracking-wide ${
+                                seriesDia > 0
+                                  ? isSunlight
+                                    ? 'bg-sky-50 text-sky-800 border-sky-300'
+                                    : 'bg-sky-500/10 text-sky-300 border-sky-500/30'
+                                  : isSunlight
+                                    ? 'bg-slate-100 text-slate-600 border-slate-300'
+                                    : 'bg-slate-900 text-slate-400 border-slate-700'
+                              }`}>
+                                {seriesDia} {seriesDia === 1 ? 'serie' : 'series'}
+                              </span>
+                            </div>
+
+                            <div className={`text-[10px] font-bold mt-2 uppercase ${isSunlight ? 'text-sky-700' : 'text-sky-400'}`}>
+                              {dia.bloquesCount ?? dia.bloques?.length ?? 0} Bloques • {dia.ejerciciosCount ?? 0} Ejercicios
+                            </div>
+
+                            {tieneCheckin && (
+                              <div className={`mt-3 rounded-lg border p-2.5 ${
+                                isSunlight ? 'bg-slate-50 border-slate-200' : 'bg-slate-900/60 border-slate-800'
+                              }`}>
+                                <p className={`text-[10px] font-black uppercase tracking-wide ${isSunlight ? 'text-slate-600' : 'text-slate-400'}`}>
+                                  Check-in del alumno
+                                </p>
+                                <div className={`mt-1 flex flex-wrap gap-x-3 gap-y-1 text-[11px] font-medium ${isSunlight ? 'text-slate-700' : 'text-slate-300'}`}>
+                                  <span>Energía {formatearRegistro(dia.energiaInicial, '/5')}</span>
+                                  <span>Ánimo {formatearRegistro(dia.animoInicial, '/5')}</span>
+                                  <span>Descanso {formatearRegistro(dia.descansoInicial)}</span>
+                                  <span>RPE {formatearRegistro(dia.esfuerzoFinal, '/10')}</span>
+                                  <span>Ánimo final {formatearRegistro(dia.animoFinal, '/5')}</span>
+                                  <span>Desahogo {formatearRegistro(dia.desahogoFinal)}</span>
+                                </div>
+                              </div>
+                            )}
+
+                            <button
+                              type="button"
+                              onClick={() => setDiaDetalleAbierto(abierto ? null : dia.id)}
+                              className={`mt-3 inline-flex w-full items-center justify-center gap-1.5 rounded-xl border px-3 py-2 text-xs font-black transition-colors ${
+                                isSunlight
+                                  ? 'bg-slate-50 hover:bg-slate-100 border-slate-300 text-slate-800'
+                                  : 'bg-slate-900 hover:bg-slate-800 border-slate-700 text-slate-200'
+                              }`}
+                            >
+                              {abierto ? 'Ocultar ejercicios y registros' : 'Ver ejercicios y registros'}
+                              {abierto ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
+                            </button>
+
+                            {abierto && (
+                              <div className="mt-3 space-y-3">
+                                {(dia.bloques || []).length === 0 ? (
+                                  <p className={`text-xs ${isSunlight ? 'text-slate-600' : 'text-slate-400'}`}>
+                                    Este día todavía no tiene bloques cargados.
+                                  </p>
+                                ) : (
+                                  dia.bloques.map((bloque, indiceBloque) => (
+                                    <div
+                                      key={bloque.id || `${dia.id}-bloque-${indiceBloque}`}
+                                      className={`rounded-xl border p-3 ${
+                                        isSunlight ? 'bg-slate-50 border-slate-200' : 'bg-slate-900/50 border-slate-800'
+                                      }`}
+                                    >
+                                      <div className="flex items-center justify-between gap-2 mb-2">
+                                        <span className={`rounded-md px-2 py-0.5 text-[10px] font-black uppercase tracking-wide ${
+                                          isSunlight ? 'bg-blue-100 text-blue-800' : 'bg-blue-500/10 text-sky-300'
+                                        }`}>
+                                          {ETIQUETAS_BLOQUE[bloque.tipo] || bloque.tipo}
+                                        </span>
+                                        <span className={`text-[10px] font-bold ${isSunlight ? 'text-slate-500' : 'text-slate-400'}`}>
+                                          {bloque.ejercicios?.length || 0} ejercicios
+                                        </span>
+                                      </div>
+
+                                      <div className="space-y-2">
+                                        {(bloque.ejercicios || []).map((ejercicio, indiceEjercicio) => (
+                                          <div
+                                            key={ejercicio.id || `${dia.id}-${indiceBloque}-${indiceEjercicio}`}
+                                            className={`rounded-lg border p-3 ${
+                                              isSunlight ? 'bg-white border-slate-200' : 'bg-slate-950 border-slate-800'
+                                            }`}
+                                          >
+                                            <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-2">
+                                              <div className="min-w-0">
+                                                <p className={`text-xs font-extrabold ${isSunlight ? 'text-slate-900' : 'text-white'}`}>
+                                                  {ejercicio.nombre || 'Ejercicio sin nombre'}
+                                                </p>
+                                                {ejercicio.indicacionProfe && (
+                                                  <p className={`mt-1 text-[11px] leading-relaxed ${isSunlight ? 'text-slate-600' : 'text-slate-400'}`}>
+                                                    {ejercicio.indicacionProfe}
+                                                  </p>
+                                                )}
+                                              </div>
+                                              <span className={`shrink-0 self-start rounded-full border px-2 py-0.5 text-[10px] font-black uppercase ${
+                                                ejercicio.completado
+                                                  ? isSunlight
+                                                    ? 'bg-emerald-50 text-emerald-700 border-emerald-300'
+                                                    : 'bg-emerald-500/10 text-emerald-300 border-emerald-500/30'
+                                                  : isSunlight
+                                                    ? 'bg-slate-100 text-slate-600 border-slate-300'
+                                                    : 'bg-slate-900 text-slate-400 border-slate-700'
+                                              }`}>
+                                                {ejercicio.completado ? 'Completado' : 'Pendiente'}
+                                              </span>
+                                            </div>
+
+                                            {ejercicio.series?.length > 0 ? (
+                                              <div className={`mt-2 overflow-x-auto rounded-lg border ${
+                                                isSunlight ? 'border-slate-200' : 'border-slate-800'
+                                              }`}>
+                                                <table className="w-full min-w-[440px] text-left text-[11px]">
+                                                  <thead className={isSunlight ? 'bg-slate-100 text-slate-600' : 'bg-slate-900 text-slate-400'}>
+                                                    <tr>
+                                                      <th className="px-2 py-1.5 font-black">Serie</th>
+                                                      <th className="px-2 py-1.5 font-black">Reps</th>
+                                                      <th className="px-2 py-1.5 font-black">Kg</th>
+                                                      <th className="px-2 py-1.5 font-black">RIR</th>
+                                                      <th className="px-2 py-1.5 font-black">RPE</th>
+                                                      <th className="px-2 py-1.5 font-black">Estado</th>
+                                                    </tr>
+                                                  </thead>
+                                                  <tbody>
+                                                    {ejercicio.series.map((serie, indiceSerie) => (
+                                                      <tr
+                                                        key={serie.id || `${ejercicio.id}-serie-${indiceSerie}`}
+                                                        className={`border-t ${
+                                                          isSunlight ? 'border-slate-200' : 'border-slate-800'
+                                                        }`}
+                                                      >
+                                                        <td className={`px-2 py-1.5 font-bold ${isSunlight ? 'text-slate-800' : 'text-slate-200'}`}>
+                                                          {serie.numeroSerie ?? indiceSerie + 1}
+                                                        </td>
+                                                        <td className={`px-2 py-1.5 ${isSunlight ? 'text-slate-700' : 'text-slate-300'}`}>
+                                                          {formatearRegistro(serie.repsRealizadas)}
+                                                        </td>
+                                                        <td className={`px-2 py-1.5 ${isSunlight ? 'text-slate-700' : 'text-slate-300'}`}>
+                                                          {formatearRegistro(serie.cargaKg)}
+                                                        </td>
+                                                        <td className={`px-2 py-1.5 ${isSunlight ? 'text-slate-700' : 'text-slate-300'}`}>
+                                                          {formatearRegistro(serie.rir)}
+                                                        </td>
+                                                        <td className={`px-2 py-1.5 ${isSunlight ? 'text-slate-700' : 'text-slate-300'}`}>
+                                                          {formatearRegistro(serie.rpe)}
+                                                        </td>
+                                                        <td className={`px-2 py-1.5 font-bold ${
+                                                          serie.completado
+                                                            ? isSunlight ? 'text-emerald-700' : 'text-emerald-300'
+                                                            : isSunlight ? 'text-slate-500' : 'text-slate-500'
+                                                        }`}>
+                                                          {serie.completado ? 'Hecha' : 'Pendiente'}
+                                                        </td>
+                                                      </tr>
+                                                    ))}
+                                                  </tbody>
+                                                </table>
+                                              </div>
+                                            ) : (
+                                              <p className={`mt-2 text-[11px] ${isSunlight ? 'text-slate-500' : 'text-slate-500'}`}>
+                                                Sin series registradas para este ejercicio.
+                                              </p>
+                                            )}
+
+                                            {ejercicio.observacion && (
+                                              <div className={`mt-2 rounded-lg border px-2.5 py-2 text-[11px] ${
+                                                isSunlight
+                                                  ? 'bg-sky-50 border-sky-200 text-sky-900'
+                                                  : 'bg-sky-500/10 border-sky-500/20 text-sky-200'
+                                              }`}>
+                                                <span className="font-black uppercase tracking-wide">Nota del alumno: </span>
+                                                {ejercicio.observacion}
+                                              </div>
+                                            )}
+
+                                            {ejercicio.videoUrl && (
+                                              <a
+                                                href={ejercicio.videoUrl}
+                                                target="_blank"
+                                                rel="noopener noreferrer"
+                                                className={`mt-2 inline-flex items-center gap-1 text-[11px] font-bold ${
+                                                  isSunlight ? 'text-sky-700 hover:text-sky-900' : 'text-sky-300 hover:text-sky-200'
+                                                }`}
+                                              >
+                                                Ver video de referencia
+                                                <ArrowRight className="w-3 h-3" />
+                                              </a>
+                                            )}
+                                          </div>
+                                        ))}
+                                      </div>
+                                    </div>
+                                  ))
+                                )}
+                              </div>
+                            )}
                           </div>
-                        </div>
-                      ))}
+                        );
+                      })}
                     </div>
                   </div>
                 ) : (
@@ -1374,7 +1626,7 @@ export default function DashboardTrainer() {
                           disabled={cargandoImportacion}
                         >
                           <option value="" disabled>Copiar rutina de...</option>
-                          {alumnos
+                          {alumnosVisibles
                             .filter(a => a.id !== alumnoSeleccionado?.id)
                             .map(a => (
                               <option key={a.id} value={a.id}>{a.nombre} {a.apellido || ''}</option>

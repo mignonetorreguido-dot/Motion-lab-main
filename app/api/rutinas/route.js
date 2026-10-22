@@ -11,6 +11,7 @@
 import { NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
 import { guardarRutinasEnStore, obtenerRutinasDeStore } from '@/lib/fallbackStore';
+import { requireTrainer } from '@/lib/requireTrainer';
 
 // ------------------------------------------------------------------------
 // GET: Obtener las rutinas activas del alumno para armar el plan semanal
@@ -120,6 +121,9 @@ export async function GET(request) {
 // POST: Asignar o crear una rutina de múltiples días
 // ------------------------------------------------------------------------
 export async function POST(request) {
+  const auth = await requireTrainer();
+  if (auth.response) return auth.response;
+
   try {
     const body = await request.json();
     const { alumnoId, dias } = body;
