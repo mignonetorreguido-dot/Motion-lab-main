@@ -64,6 +64,10 @@ const websiteJsonLd = {
   url: `${SITE_URL}/`,
   description: SITE_DESCRIPTION,
   inLanguage: 'es-AR',
+  areaServed: {
+    '@type': 'AdministrativeArea',
+    name: 'Chaco, Argentina',
+  },
   publisher: {
     '@type': 'Organization',
     name: SITE_NAME,

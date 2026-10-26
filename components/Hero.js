@@ -37,7 +37,7 @@ export default function Hero() {
                 : 'bg-slate-900 border border-sky-500/30 text-sky-300 shadow-inner'
             }`}>
               <Sparkles className={`w-4 h-4 ${isSunlight ? 'text-blue-700' : 'text-cyan-400'}`} />
-              <span>Laboratorio de Movimiento & Alto Rendimiento</span>
+              <span>Entrenamiento & Alto Rendimiento</span>
             </div>
 
             {/* TÍTULO PRINCIPAL CON MÁXIMO CONTRASTE PARA EXTERIORES */}

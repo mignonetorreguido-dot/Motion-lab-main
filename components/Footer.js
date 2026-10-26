@@ -33,7 +33,7 @@ export default function Footer() {
             <p className={`text-xs sm:text-sm max-w-md leading-relaxed font-medium ${
               isSunlight ? 'text-slate-800' : 'text-slate-300'
             }`}>
-              Centro de rendimiento deportivo y planificación física individualizada. Ciencia, biomecánica y sobrecarga progresiva aplicadas a tu objetivo.
+              Entrenamiento de fuerza y rendimiento atlético. Planes personalizados 1 a 1, seguimiento semanal y datos de tu reloj. Online, con base en Chaco, Argentina.
             </p>
           </div>
 
