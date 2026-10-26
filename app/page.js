@@ -19,10 +19,73 @@ import AboutTrainer from '@/components/AboutTrainer';
 import GallerySection from '@/components/GallerySection';
 import Footer from '@/components/Footer';
 import WhatsAppButton from '@/components/WhatsAppButton';
+import {
+  SITE_DESCRIPTION,
+  SITE_NAME,
+  SITE_TITLE,
+  SITE_URL,
+} from '@/lib/site';
+
+export const metadata = {
+  alternates: {
+    canonical: '/',
+  },
+  openGraph: {
+    type: 'website',
+    locale: 'es_AR',
+    url: '/',
+    siteName: SITE_NAME,
+    title: SITE_TITLE,
+    description: SITE_DESCRIPTION,
+    images: [
+      {
+        url: '/images/motion-lab-field.jpg',
+        width: 1200,
+        height: 630,
+        alt: 'MOTION LAB – entrenamiento de alto rendimiento',
+      },
+    ],
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: SITE_TITLE,
+    description: SITE_DESCRIPTION,
+    images: ['/images/motion-lab-field.jpg'],
+  },
+};
+
+// Datos estructurados para que Google identifique el nombre del sitio
+// ("MOTION LAB") en los resultados de búsqueda. Deben estar en la home.
+const websiteJsonLd = {
+  '@context': 'https://schema.org',
+  '@type': 'WebSite',
+  name: SITE_NAME,
+  alternateName: ['Motion Lab', 'MOTION LAB High Performance'],
+  url: `${SITE_URL}/`,
+  description: SITE_DESCRIPTION,
+  inLanguage: 'es-AR',
+  publisher: {
+    '@type': 'Organization',
+    name: SITE_NAME,
+    url: SITE_URL,
+    logo: {
+      '@type': 'ImageObject',
+      url: `${SITE_URL}/icon-512.png`,
+      width: 512,
+      height: 512,
+    },
+    sameAs: ['https://www.instagram.com/motionlab_pf/'],
+  },
+};
 
 export default function Home() {
   return (
     <div className="flex flex-col min-h-screen">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(websiteJsonLd) }}
+      />
+
       {/* 1. Barra de menú superior fija con toggle exterior */}
       <Navbar />
 

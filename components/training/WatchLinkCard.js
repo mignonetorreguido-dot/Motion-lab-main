@@ -4,18 +4,23 @@
  * ========================================================================
  * COMPONENTE: Reloj, recuperación y pulso en vivo (components/training/WatchLinkCard.js)
  * ========================================================================
- * 1. Sincronización real de relojes en la nube mediante Junction (ex Vital):
- *    Garmin, Polar, Fitbit, Google Health/Pixel Watch, Oura, Withings, etc.
- *    El alumno autoriza su cuenta con OAuth y Matías ve actividad, sueño y
- *    frecuencia cardíaca de los últimos 7 días.
+ * 1. Google Fit como puente universal para las apps que sincronizan ahí:
+ *    Da Fit, Samsung Health, Mi Fitness, Huawei Health y otras. Lee pasos,
+ *    pulso, sueño, peso y oxígeno de los últimos 7 días sin guardar nada en
+ *    PostgreSQL.
  *
- * 2. Pulso en vivo por Bluetooth Low Energy (BLE) para bandas y relojes que
+ * 2. Sincronización real de relojes en la nube mediante Junction (ex Vital):
+ *    Garmin, Polar, Fitbit, Oura, Withings, etc. El alumno autoriza su cuenta
+ *    con OAuth y Matías ve actividad, sueño y frecuencia cardíaca.
+ *
+ * 3. Pulso en vivo por Bluetooth Low Energy (BLE) para bandas y relojes que
  *    exponen el servicio estándar `heart_rate`. Es una lectura real, no
  *    simulada, y no promete historial.
  *
  * Limitaciones reales:
- * - Apple Watch (HealthKit) y Samsung Health requieren una app móvil con su
- *   SDK; no se pueden vincular desde la web. La tarjeta lo informa.
+ * - Apple Watch (HealthKit) requiere una app móvil con su SDK; no se puede
+ *   vincular desde la web. La tarjeta lo informa.
+ * - Google Fit está deprecado y puede dejar de funcionar durante 2026.
  * - Garmin/Samsung/Polar pueden transmitir pulso por BLE en algunos modelos,
  *   pero el historial completo se obtiene con su API o con Junction.
  */
@@ -38,6 +43,7 @@ import {
   Activity,
 } from 'lucide-react';
 import { useTheme } from '@/components/ThemeProvider';
+import GoogleFitTestCard from '@/components/bienestar/GoogleFitTestCard';
 
 const CLAVE_ULTIMO_DISPOSITIVO = 'motion_lab_ble_hr_dispositivo';
 
@@ -101,7 +107,7 @@ function Dato({ icono: Icono, etiqueta, valor, detalle, isSunlight }) {
   );
 }
 
-export default function WatchLinkCard() {
+export default function WatchLinkCard({ googleFitTestActivo = false }) {
   const { isSunlight } = useTheme();
 
   // ---------------------------------------------------------------------
@@ -113,6 +119,15 @@ export default function WatchLinkCard() {
   const [errorNube, setErrorNube] = useState('');
   const [esperandoVinculo, setEsperandoVinculo] = useState(false);
   const [linkPendiente, setLinkPendiente] = useState('');
+
+  // ---------------------------------------------------------------------
+  // Google Fit (puente universal para Da Fit, Samsung Health y similares)
+  // ---------------------------------------------------------------------
+  const [estadoGoogleFit, setEstadoGoogleFit] = useState({
+    disponible: false,
+    conectado: false,
+    cargando: true,
+  });
 
   const cargarEstadoNube = useCallback(async ({ silencioso = false } = {}) => {
     if (!silencioso) setCargandoNube(true);
@@ -406,6 +421,20 @@ export default function WatchLinkCard() {
     setError('');
   };
 
+  // Estado general de la tarjeta unificada. Google Fit y Junction aportan
+  // historial; BLE solo aporta pulso en vivo.
+  const fuentesConectadas = [
+    estadoGoogleFit.conectado ? 'Google Fit' : null,
+    estadoNube?.conectado ? 'Junction' : null,
+  ].filter(Boolean);
+  const hayConexion = fuentesConectadas.length > 0 || conectado;
+  const etiquetaEstado =
+    fuentesConectadas.length > 0
+      ? 'Conectado'
+      : conectado
+        ? 'Pulso en vivo'
+        : 'Sin conectar';
+
   return (
     <div
       className={`rounded-3xl p-5 sm:p-6 border-2 transition-all ${
@@ -432,22 +461,32 @@ export default function WatchLinkCard() {
                 isSunlight ? 'text-slate-900' : 'text-white'
               }`}
             >
-              Reloj y recuperación
+              Conectar reloj
             </h3>
             <p
               className={`text-xs sm:text-sm font-medium mt-1 leading-relaxed ${
                 isSunlight ? 'text-slate-700' : 'text-slate-300'
               }`}
             >
-              Vinculá tu reloj para que Matías vea tu actividad, sueño y pulso.
-              También podés medir tu frecuencia cardíaca en vivo.
+              {estadoGoogleFit.disponible !== false
+                ? 'Unificá tu reloj o app en un solo lugar: Google Fit, Junction y pulso en vivo por Bluetooth.'
+                : 'Vinculá tu reloj para que Matías vea tu actividad, sueño y pulso. También podés medir tu frecuencia cardíaca en vivo.'}
             </p>
+            {fuentesConectadas.length > 0 && (
+              <p
+                className={`text-[10px] font-black mt-1.5 ${
+                  isSunlight ? 'text-emerald-700' : 'text-emerald-300'
+                }`}
+              >
+                Fuentes activas: {fuentesConectadas.join(' + ')}
+              </p>
+            )}
           </div>
         </div>
 
         <span
           className={`text-[10px] font-black uppercase tracking-wider px-2.5 py-1 rounded-full border ${
-            estadoNube?.conectado
+            hayConexion
               ? isSunlight
                 ? 'bg-emerald-100 text-emerald-800 border-emerald-300'
                 : 'bg-emerald-500/15 text-emerald-300 border-emerald-500/30'
@@ -456,11 +495,20 @@ export default function WatchLinkCard() {
                 : 'bg-slate-900 text-slate-400 border-slate-800'
           }`}
         >
-          {estadoNube?.conectado ? 'Sincronizado' : 'Sin sincronizar'}
+          {etiquetaEstado}
         </span>
       </div>
 
-      {/* SINCRONIZACIÓN EN LA NUBE */}
+      {/* GOOGLE FIT: PUENTE UNIVERSAL (solo con GOOGLE_FIT_TEST=1) */}
+      {googleFitTestActivo && (
+        <GoogleFitTestCard
+          embedded
+          returnPath="/entrenamiento"
+          onEstadoChange={setEstadoGoogleFit}
+        />
+      )}
+
+      {/* SINCRONIZACIÓN EN LA NUBE (JUNCTION) */}
       <div
         className={`mt-5 rounded-2xl border p-4 ${
           isSunlight
@@ -468,6 +516,21 @@ export default function WatchLinkCard() {
             : 'bg-sky-950/20 border-sky-500/25'
         }`}
       >
+        <div className="flex items-center gap-2 mb-3">
+          <Smartphone
+            className={`w-4 h-4 ${
+              isSunlight ? 'text-blue-700' : 'text-sky-400'
+            }`}
+          />
+          <h4
+            className={`text-xs font-black uppercase tracking-wider ${
+              isSunlight ? 'text-slate-800' : 'text-slate-200'
+            }`}
+          >
+            Garmin, Polar, Fitbit, Oura y Withings
+          </h4>
+        </div>
+
         {cargandoNube ? (
           <div className="flex items-center gap-2 text-xs font-bold">
             <Loader2 className="w-4 h-4 animate-spin text-sky-500" />
@@ -655,18 +718,22 @@ export default function WatchLinkCard() {
                 isSunlight ? 'text-slate-700' : 'text-slate-300'
               }`}
             >
-              Conectá tu cuenta de <strong>Garmin, Polar, Fitbit, Google
-              Health/Pixel Watch, Oura o Withings</strong> y autorizá el acceso.
-              Matías verá actividad, sueño y pulso de la semana.
+              Conectá tu cuenta de <strong>Garmin, Polar, Fitbit, Oura o
+              Withings</strong> y autorizá el acceso. Matías verá actividad,
+              sueño y pulso de la semana.
             </p>
             <p
               className={`text-[10px] font-medium leading-relaxed mt-1.5 ${
                 isSunlight ? 'text-slate-500' : 'text-slate-500'
               }`}
             >
-              Apple Watch (HealthKit) y Samsung Health necesitan una app móvil;
-              no se pueden vincular desde la web. No mostramos una conexión
-              falsa: si tu modelo no aparece, no está soportado por este flujo.
+              Apple Watch (HealthKit) necesita una app móvil y no se puede
+              vincular desde la web.
+              {estadoGoogleFit.disponible
+                ? ' Si usás Samsung Health, Da Fit, Mi Fitness o Huawei Health, conectá Google Fit arriba.'
+                : ''}{' '}
+              No mostramos una conexión falsa: si tu modelo no aparece, no está
+              soportado por este flujo.
             </p>
 
             <button

@@ -1,0 +1,31 @@
+{
+  "name": "MOTION LAB",
+  "short_name": "MOTION LAB",
+  "description": "Entrenamiento de fuerza y rendimiento atlético. Plan Base y Plan Premium Personalizado 1 a 1, con seguimiento semanal y datos de tu reloj.",
+  "lang": "es-AR",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#05070c",
+  "theme_color": "#0066ff",
+  "icons": [
+    {
+      "src": "/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    }
+  ]
+}

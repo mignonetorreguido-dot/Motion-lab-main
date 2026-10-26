@@ -71,7 +71,7 @@ Abre tu navegador y entra a:
 La aplicación usa **Prisma** con PostgreSQL. La forma recomendada en producción es conectar una base **Prisma Postgres** desde el panel de Vercel; también podés usar cualquier PostgreSQL local o en la nube.
 
 ### Opción A: Prisma Postgres desde Vercel (producción)
-1. Entrá al proyecto `motion-lab-main` en Vercel.
+1. Entrá al proyecto `motion-lab-high-performance` en Vercel.
 2. Abrí **Storage** y conectá el store de Prisma Postgres.
 3. Vercel agrega automáticamente `DATABASE_URL` (y `POSTGRES_URL` / `PRISMA_DATABASE_URL`).
 4. Desde una terminal con esa `DATABASE_URL`, creá las tablas y cargá los alumnos:
@@ -148,10 +148,10 @@ El botón **Continuar con Google** ya está integrado en el login y en el paso f
 4. Andá a **Credentials → Create Credentials → OAuth client ID**:
    - Tipo: **Web application**.
    - **Authorized JavaScript origins:**
-     - `https://motion-lab-main.vercel.app`
+     - `https://motion-lab-high-performance.vercel.app`
      - `http://localhost:3000`
    - **Authorized redirect URIs:**
-     - `https://motion-lab-main.vercel.app/api/auth/callback/google`
+     - `https://motion-lab-high-performance.vercel.app/api/auth/callback/google`
      - `http://localhost:3000/api/auth/callback/google`
 5. Copiá el **Client ID** y el **Client Secret**.
 6. En Vercel, entrá al proyecto → **Settings → Environment Variables** y agregá:

@@ -1,5 +1,11 @@
 import './globals.css';
 import { ThemeProvider } from '@/components/ThemeProvider';
+import {
+  SITE_DESCRIPTION,
+  SITE_NAME,
+  SITE_TITLE,
+  SITE_URL,
+} from '@/lib/site';
 
 /**
  * ========================================================================
@@ -10,9 +16,51 @@ import { ThemeProvider } from '@/components/ThemeProvider';
  */
 
 export const metadata = {
-  title: 'MOTION LAB | High Performance Training & Planificación Personalizada',
-  description: 'Laboratorio de movimiento y rendimiento atlético. Planes de entrenamiento con base científica: Plan Base y Plan Premium Personalizado 1 a 1.',
-  keywords: ['MOTION LAB', 'entrenamiento de alto rendimiento', 'personal trainer', 'planificación de fuerza', 'biomecánica', 'hipertrofia'],
+  metadataBase: new URL(SITE_URL),
+  title: SITE_TITLE,
+  applicationName: SITE_NAME,
+  description: SITE_DESCRIPTION,
+  keywords: [
+    'MOTION LAB',
+    'Motion Lab',
+    'entrenamiento de alto rendimiento',
+    'personal trainer',
+    'planificación de fuerza',
+    'biomecánica',
+    'hipertrofia',
+  ],
+  authors: [{ name: SITE_NAME, url: SITE_URL }],
+  creator: SITE_NAME,
+  publisher: SITE_NAME,
+  icons: {
+    icon: [
+      { url: '/favicon.ico', sizes: '48x48', type: 'image/x-icon' },
+      { url: '/icon-48.png', sizes: '48x48', type: 'image/png' },
+      { url: '/icon-192.png', sizes: '192x192', type: 'image/png' },
+      { url: '/icon-512.png', sizes: '512x512', type: 'image/png' },
+      { url: '/icon.svg', sizes: 'any', type: 'image/svg+xml' },
+    ],
+    apple: [
+      {
+        url: '/apple-touch-icon.png',
+        sizes: '180x180',
+        type: 'image/png',
+      },
+    ],
+    shortcut: '/favicon.ico',
+  },
+  manifest: '/site.webmanifest',
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: {
+      index: true,
+      follow: true,
+      'max-video-preview': -1,
+      'max-image-preview': 'large',
+      'max-snippet': -1,
+    },
+  },
 };
 
 export const viewport = {

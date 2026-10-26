@@ -25,7 +25,8 @@ export default function StudentHub({
   planSemanal = [], 
   diaHoyId = 'dia-1', 
   onSeleccionarDia,
-  onReiniciarProgreso = null
+  onReiniciarProgreso = null,
+  googleFitTestActivo = false,
 }) {
   const { isSunlight } = useTheme();
   const [chequeoSemana, setChequeoSemana] = useState(null);
@@ -460,7 +461,7 @@ export default function StudentHub({
       {/* ================================================================
           VINCULACIÓN DE RELOJ DEPORTIVO PARA MEDICIONES
          ================================================================ */}
-      <WatchLinkCard />
+      <WatchLinkCard googleFitTestActivo={googleFitTestActivo} />
 
     </div>
   );

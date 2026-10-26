@@ -44,6 +44,7 @@ export default function Hero() {
             <h1 className={`text-4xl sm:text-6xl lg:text-7xl font-black tracking-tight leading-[1.05] mb-5 transition-colors ${
               isSunlight ? 'text-[#020617]' : 'text-white'
             }`}>
+              <span className="sr-only">MOTION LAB – </span>
               ENTRENA CON <br />
               <span className={isSunlight 
                 ? 'text-blue-700' 

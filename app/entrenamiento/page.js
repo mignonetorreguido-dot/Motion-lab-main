@@ -32,6 +32,11 @@ export default async function EntrenamientoPage() {
   const alumnoNombre = session.user.name || '';
   const estadoPago = session.user.estadoPago || 'ACTIVO';
 
+  // La prueba de Google Fit solo se muestra en desarrollo local. En
+  // producción, sin GOOGLE_FIT_TEST=1, la tarjeta unificada queda igual que
+  // antes: Junction y pulso en vivo, sin pedidos innecesarios a la API.
+  const googleFitTestActivo = process.env.GOOGLE_FIT_TEST === '1';
+
   return (
     <div className="min-h-screen flex flex-col justify-between py-6 px-4 sm:px-6 lg:px-8 relative overflow-hidden transition-colors duration-200">
       {/* CABECERA CON TOGGLE SOLEADO Y SESIÓN */}
@@ -43,6 +48,7 @@ export default async function EntrenamientoPage() {
           alumnoId={alumnoId}
           alumnoNombre={alumnoNombre}
           estadoPago={estadoPago}
+          googleFitTestActivo={googleFitTestActivo}
         />
       </main>
 

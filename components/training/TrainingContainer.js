@@ -15,7 +15,12 @@ import WorkoutView from './WorkoutView';
 
 const getStorageKey = (baseKey, id) => `${baseKey}_${id || 'demo'}`;
 
-export default function TrainingContainer({ alumnoId = 'demo-alumno-1', alumnoNombre = '', estadoPago = 'ACTIVO' }) {
+export default function TrainingContainer({
+  alumnoId = 'demo-alumno-1',
+  alumnoNombre = '',
+  estadoPago = 'ACTIVO',
+  googleFitTestActivo = false,
+}) {
   const [diaSeleccionadoId, setDiaSeleccionadoId] = useState(null);
   const [planSemanal, setPlanSemanal] = useState([]);
   const [rutinasGuardadas, setRutinasGuardadas] = useState({});
@@ -178,6 +183,7 @@ export default function TrainingContainer({ alumnoId = 'demo-alumno-1', alumnoNo
         diaHoyId={diaHoyId}
         onSeleccionarDia={(id) => setDiaSeleccionadoId(id)}
         onReiniciarProgreso={handleReiniciarProgreso}
+        googleFitTestActivo={googleFitTestActivo}
       />
     );
   }

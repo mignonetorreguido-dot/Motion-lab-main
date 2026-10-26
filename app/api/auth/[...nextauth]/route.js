@@ -17,11 +17,28 @@ import NextAuth from 'next-auth';
 import GoogleProvider from 'next-auth/providers/google';
 import CredentialsProvider from 'next-auth/providers/credentials';
 import bcrypt from 'bcryptjs';
+import { cookies } from 'next/headers';
 import prisma from '@/lib/prisma';
+import {
+  GOOGLE_FIT_COOKIE,
+  GOOGLE_FIT_COOKIE_MAX_AGE,
+  GOOGLE_FIT_INTENT_COOKIE,
+} from '@/lib/googleFitScopes';
+import {
+  codificarTokenGoogleFit,
+  googleFitTestActivo,
+} from '@/lib/googleFit';
 
 const googleEstaConfigurado = Boolean(
   process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET
 );
+
+function scopesComoLista(scope) {
+  return String(scope || '')
+    .split(/\s+/)
+    .map((valor) => valor.trim())
+    .filter(Boolean);
+}
 
 const googleProvider = googleEstaConfigurado
   ? GoogleProvider({
@@ -200,6 +217,83 @@ export const authOptions = {
   ],
 
   callbacks: {
+    /**
+     * Vinculación de Google Fit SOLO para la prueba local.
+     *
+     * El botón de la tarjeta pide los scopes de Fitness y deja una cookie
+     * breve (`ml_gfit_intent`). Cuando Google vuelve, guardamos el token en
+     * una cookie HttpOnly cifrada y devolvemos una URL para cortar el flujo
+     * ANTES de que NextAuth cree/actualice la sesión.
+     *
+     * Así no se crea un usuario nuevo en PostgreSQL ni se cambia la sesión
+     * del alumno que ya está usando MOTION LAB.
+     *
+     * Si el login es el normal (sin intención ni scopes de Fitness), sigue
+     * por el camino de siempre.
+     */
+    async signIn({ user, account, profile }) {
+      if (!googleFitTestActivo() || account?.provider !== 'google') {
+        return true;
+      }
+
+      const cookieStore = cookies();
+      const intencion =
+        cookieStore.get(GOOGLE_FIT_INTENT_COOKIE)?.value === '1';
+      const scopes = scopesComoLista(account?.scope);
+      const tieneScopesFitness = scopes.some((scope) =>
+        scope.includes('fitness.')
+      );
+
+      if (!intencion && !tieneScopesFitness) {
+        return true;
+      }
+
+      cookieStore.delete(GOOGLE_FIT_INTENT_COOKIE);
+
+      // Si había una intención vieja pero este login no pidió permisos de
+      // Fitness, dejamos que NextAuth siga con el login normal. Así una
+      // vinculación abandonada no bloquea el ingreso con Google.
+      if (!tieneScopesFitness) {
+        return true;
+      }
+
+      if (!account?.access_token) {
+        return '/entrenamiento?googlefit=error';
+      }
+
+      try {
+        const tokenData = {
+          accessToken: account.access_token,
+          refreshToken: account.refresh_token || null,
+          expiresAt: account.expires_at
+            ? account.expires_at * 1000
+            : Date.now() + 3600 * 1000,
+          scope: scopes,
+          email: user?.email || profile?.email || null,
+          nombre: user?.name || profile?.name || null,
+          conectadoEn: Date.now(),
+        };
+
+        const tokenCifrado = await codificarTokenGoogleFit(tokenData);
+
+        cookieStore.set(GOOGLE_FIT_COOKIE, tokenCifrado, {
+          httpOnly: true,
+          sameSite: 'lax',
+          secure: process.env.NODE_ENV === 'production',
+          path: '/',
+          maxAge: GOOGLE_FIT_COOKIE_MAX_AGE,
+        });
+
+        return '/entrenamiento?googlefit=conectado';
+      } catch (error) {
+        console.error(
+          'No se pudo guardar el permiso de Google Fit:',
+          error?.message || error
+        );
+        return '/entrenamiento?googlefit=error';
+      }
+    },
+
     // El callback 'jwt' se ejecuta cuando se crea o actualiza el token
     async jwt({ token, user, account, trigger, session }) {
       // Alta / ingreso con Google: creamos o recuperamos el usuario en nuestra
