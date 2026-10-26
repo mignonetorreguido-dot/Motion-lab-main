@@ -19,7 +19,7 @@ export default function OnboardingPage() {
     <div className="min-h-screen flex flex-col justify-between py-6 px-4 sm:px-6 lg:px-8 relative overflow-hidden transition-colors duration-200">
       
       {/* CABECERA CON TOGGLE SOLEADO */}
-      <TrainingHeader />
+      <TrainingHeader showBienestar={false} />
 
       {/* CONTENIDO PRINCIPAL: WIZARD */}
       <main className="flex-grow flex items-center justify-center py-4 pb-8">

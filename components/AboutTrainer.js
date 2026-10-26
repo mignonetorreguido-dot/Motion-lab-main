@@ -77,7 +77,7 @@ export default function AboutTrainer() {
                 : 'bg-blue-500/10 text-sky-400 border-blue-500/20'
             }`}>
               <Activity className="w-3.5 h-3.5" />
-              <span>Filosofía MOTION LAB</span>
+              <span>Metodología MOTION LAB</span>
             </div>
 
             <h2 className={`text-3xl sm:text-4xl lg:text-5xl font-black tracking-tight leading-tight ${

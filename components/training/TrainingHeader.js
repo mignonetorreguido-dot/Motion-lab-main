@@ -6,7 +6,7 @@ import LogoutButton from '@/components/LogoutButton';
 import MotionLabLogo from '@/components/MotionLabLogo';
 import { useTheme } from '@/components/ThemeProvider';
 
-export default function TrainingHeader({ user = null }) {
+export default function TrainingHeader({ user = null, showBienestar = true }) {
   const { isSunlight, toggleSunlight } = useTheme();
 
   return (
@@ -24,15 +24,17 @@ export default function TrainingHeader({ user = null }) {
           <span>Inicio</span>
         </Link>
 
-        <Link
-          href="/bienestar"
-          className={`inline-flex items-center gap-1.5 text-xs font-bold transition-colors touch-target ${
-            isSunlight ? 'text-sky-700 hover:text-sky-800' : 'text-sky-300 hover:text-sky-200'
-          }`}
-        >
-          <HeartPulse className="w-4 h-4" />
-          <span>Bienestar</span>
-        </Link>
+        {showBienestar && (
+          <Link
+            href="/bienestar"
+            className={`inline-flex items-center gap-1.5 text-xs font-bold transition-colors touch-target ${
+              isSunlight ? 'text-sky-700 hover:text-sky-800' : 'text-sky-300 hover:text-sky-200'
+            }`}
+          >
+            <HeartPulse className="w-4 h-4" />
+            <span>Bienestar</span>
+          </Link>
+        )}
 
         {user && (
           <span className={`text-[11px] font-semibold px-2.5 py-1 rounded-full border ${
