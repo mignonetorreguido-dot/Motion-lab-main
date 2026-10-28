@@ -15,12 +15,12 @@ export default function AboutTrainer() {
   const { isSunlight } = useTheme();
 
   return (
-    <section id="sobre-mi" className={`py-16 md:py-24 border-t transition-colors duration-200 relative ${
+    <section id="sobre-mi" className={`py-12 sm:py-16 md:py-24 border-t transition-colors duration-200 relative ${
       isSunlight ? 'bg-slate-50 border-slate-300' : 'bg-[#080d1a] border-slate-800/80'
     }`}>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-center">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 sm:gap-8 lg:gap-12 items-center">
           
           {/* COLUMNA IZQUIERDA: Fotografía del Cliente */}
           <div className="lg:col-span-5 flex justify-center">
@@ -38,27 +38,28 @@ export default function AboutTrainer() {
                 <img
                   src="/images/gym-kettlebell.jpg"
                   alt="Planificación y equipamiento en MOTION LAB"
-                  className="w-full h-[380px] sm:h-[450px] object-cover object-center group-hover:scale-105 transition-transform duration-700"
+                  decoding="async"
+                  className="w-full h-[300px] min-[360px]:h-[340px] sm:h-[450px] object-cover object-center group-hover:scale-105 transition-transform duration-700"
                 />
 
                 <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/20 to-transparent" />
 
-                <div className={`absolute bottom-4 left-4 right-4 p-4 rounded-2xl backdrop-blur-md transition-colors ${
+                <div className={`absolute bottom-3 left-3 right-3 sm:bottom-4 sm:left-4 sm:right-4 p-3 sm:p-4 rounded-2xl sm:backdrop-blur-md transition-colors ${
                   isSunlight 
-                    ? 'bg-white/95 border-2 border-slate-300 text-slate-900 shadow-md' 
-                    : 'bg-slate-950/85 border border-slate-800 text-white'
+                    ? 'bg-white sm:bg-white/95 border-2 border-slate-300 text-slate-900 shadow-md' 
+                    : 'bg-slate-950 sm:bg-slate-950/85 border border-slate-800 text-white'
                 }`}>
                   <div className="flex items-center gap-3">
-                    <div className={`w-10 h-10 rounded-xl flex items-center justify-center font-black ${
+                    <div className={`w-9 h-9 sm:w-10 sm:h-10 shrink-0 rounded-xl flex items-center justify-center font-black ${
                       isSunlight ? 'bg-blue-100 text-blue-700 border border-blue-300' : 'bg-sky-500/20 text-sky-400'
                     }`}>
                       ML
                     </div>
-                    <div>
-                      <h4 className={`text-sm font-black ${isSunlight ? 'text-slate-900' : 'text-white'}`}>
+                    <div className="min-w-0">
+                      <h4 className={`text-xs sm:text-sm font-black leading-snug ${isSunlight ? 'text-slate-900' : 'text-white'}`}>
                         Metodología Basada en Evidencia
                       </h4>
-                      <p className={`text-xs font-semibold ${isSunlight ? 'text-slate-600' : 'text-slate-300'}`}>
+                      <p className={`text-[11px] sm:text-xs font-semibold leading-snug ${isSunlight ? 'text-slate-600' : 'text-slate-300'}`}>
                         Biomecánica, sobrecarga progresiva y control
                       </p>
                     </div>
@@ -71,7 +72,7 @@ export default function AboutTrainer() {
 
           {/* COLUMNA DERECHA: El Método MOTION LAB */}
           <div className="lg:col-span-7 space-y-6">
-            <div className={`inline-flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-black uppercase tracking-wider border ${
+            <div className={`inline-flex items-center gap-2 px-3 py-1.5 rounded-lg text-[10px] sm:text-xs font-black uppercase tracking-wider border ${
               isSunlight 
                 ? 'bg-blue-100 text-blue-900 border-blue-300' 
                 : 'bg-blue-500/10 text-sky-400 border-blue-500/20'
@@ -80,7 +81,7 @@ export default function AboutTrainer() {
               <span>Metodología MOTION LAB</span>
             </div>
 
-            <h2 className={`text-3xl sm:text-4xl lg:text-5xl font-black tracking-tight leading-tight ${
+            <h2 className={`text-[1.65rem] min-[360px]:text-3xl sm:text-4xl lg:text-5xl font-black tracking-tight leading-tight ${
               isSunlight ? 'text-[#020617]' : 'text-white'
             }`}>
               NO ES SOLO ENTRENAR, ES{' '}
@@ -89,19 +90,19 @@ export default function AboutTrainer() {
               </span>
             </h2>
 
-            <p className={`text-base font-medium leading-relaxed ${
+            <p className={`text-[15px] sm:text-base font-medium leading-relaxed ${
               isSunlight ? 'text-slate-800' : 'text-slate-200'
             }`}>
               En el mundo del entrenamiento tradicional se copia la rutina del mes sin tener en cuenta las palancas anatómicas, el historial de lesiones ni la capacidad de recuperación del alumno. En <strong className={isSunlight ? 'text-black font-extrabold' : 'text-white'}>MOTION LAB</strong> tratamos tu proceso con rigor científico.
             </p>
 
             <div className="space-y-4 pt-2">
-              <div className={`flex items-start gap-3.5 p-4 rounded-2xl border transition-all ${
+              <div className={`flex items-start gap-3 sm:gap-3.5 p-3.5 sm:p-4 rounded-2xl border transition-all ${
                 isSunlight 
                   ? 'bg-white border-2 border-slate-300 shadow-sm' 
                   : 'bg-slate-900/60 border border-slate-800/80'
               }`}>
-                <div className={`w-9 h-9 rounded-xl flex items-center justify-center shrink-0 mt-0.5 ${
+                <div className={`w-8 h-8 sm:w-9 sm:h-9 rounded-xl flex items-center justify-center shrink-0 mt-0.5 ${
                   isSunlight ? 'bg-blue-100 text-blue-700' : 'bg-blue-500/10 text-sky-400'
                 }`}>
                   <CheckCircle2 className="w-5 h-5" />
@@ -116,12 +117,12 @@ export default function AboutTrainer() {
                 </div>
               </div>
 
-              <div className={`flex items-start gap-3.5 p-4 rounded-2xl border transition-all ${
+              <div className={`flex items-start gap-3 sm:gap-3.5 p-3.5 sm:p-4 rounded-2xl border transition-all ${
                 isSunlight 
                   ? 'bg-white border-2 border-slate-300 shadow-sm' 
                   : 'bg-slate-900/60 border border-slate-800/80'
               }`}>
-                <div className={`w-9 h-9 rounded-xl flex items-center justify-center shrink-0 mt-0.5 ${
+                <div className={`w-8 h-8 sm:w-9 sm:h-9 rounded-xl flex items-center justify-center shrink-0 mt-0.5 ${
                   isSunlight ? 'bg-blue-100 text-blue-700' : 'bg-blue-500/10 text-sky-400'
                 }`}>
                   <Zap className="w-5 h-5" />
@@ -136,12 +137,12 @@ export default function AboutTrainer() {
                 </div>
               </div>
 
-              <div className={`flex items-start gap-3.5 p-4 rounded-2xl border transition-all ${
+              <div className={`flex items-start gap-3 sm:gap-3.5 p-3.5 sm:p-4 rounded-2xl border transition-all ${
                 isSunlight 
                   ? 'bg-white border-2 border-slate-300 shadow-sm' 
                   : 'bg-slate-900/60 border border-slate-800/80'
               }`}>
-                <div className={`w-9 h-9 rounded-xl flex items-center justify-center shrink-0 mt-0.5 ${
+                <div className={`w-8 h-8 sm:w-9 sm:h-9 rounded-xl flex items-center justify-center shrink-0 mt-0.5 ${
                   isSunlight ? 'bg-blue-100 text-blue-700' : 'bg-blue-500/10 text-sky-400'
                 }`}>
                   <Award className="w-5 h-5" />

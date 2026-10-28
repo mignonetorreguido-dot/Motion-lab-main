@@ -41,11 +41,11 @@ export default function Wizard() {
     parrafo: isSunlight ? 'text-slate-600' : 'text-slate-400',
     etiqueta: isSunlight ? 'text-slate-700' : 'text-slate-300',
     campo: isSunlight
-      ? 'w-full bg-white border border-slate-300 rounded-xl px-4 py-3 text-slate-900 text-sm focus:outline-none focus:border-sky-600'
-      : 'w-full bg-slate-900/80 border border-slate-700 rounded-xl px-4 py-3 text-white text-sm focus:outline-none focus:border-sky-400',
+      ? 'w-full bg-white border border-slate-300 rounded-xl px-4 py-3 text-slate-900 text-base sm:text-sm focus:outline-none focus:border-sky-600'
+      : 'w-full bg-slate-900/80 border border-slate-700 rounded-xl px-4 py-3 text-white text-base sm:text-sm focus:outline-none focus:border-sky-400',
     campoIcono: isSunlight
-      ? 'w-full bg-white border border-slate-300 rounded-xl pl-10 pr-4 py-2.5 text-slate-900 text-sm focus:outline-none focus:border-sky-600'
-      : 'w-full bg-slate-900/80 border border-slate-700 rounded-xl pl-10 pr-4 py-2.5 text-white text-sm focus:outline-none focus:border-sky-400',
+      ? 'w-full bg-white border border-slate-300 rounded-xl pl-10 pr-4 py-2.5 text-slate-900 text-base sm:text-sm focus:outline-none focus:border-sky-600'
+      : 'w-full bg-slate-900/80 border border-slate-700 rounded-xl pl-10 pr-4 py-2.5 text-white text-base sm:text-sm focus:outline-none focus:border-sky-400',
     opcion: isSunlight
       ? 'bg-white border-slate-300 text-slate-700 hover:border-slate-400'
       : 'bg-slate-900/60 border-slate-800 text-slate-300 hover:border-slate-700',

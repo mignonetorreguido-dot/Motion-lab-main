@@ -54,7 +54,7 @@ export default function AdminShell({ children }) {
             <span className="hidden sm:inline">Cerrar sesión</span>
           </LogoutButton>
           <Link href="/" className="group">
-            <MotionLabLogo className="group-hover:scale-105 transition-transform" />
+            <MotionLabLogo compact className="group-hover:scale-105 transition-transform" />
           </Link>
         </div>
       </header>

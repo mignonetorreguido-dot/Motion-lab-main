@@ -4,66 +4,78 @@
  * ========================================================================
  * COMPONENTE: Logotipo Oficial MOTION LAB (MotionLabLogo.js)
  * ========================================================================
- * Recreación en formato SVG vectorial del imagotipo de "MOTION LAB".
- * Adaptado dinámicamente para que sea 100% visible tanto en Modo Noche
- * como en Modo Soleado (fondo blanco).
+ * Recreación vectorial del imagotipo de "MOTION LAB": dos barras
+ * diagonales con sus puntos, wordmark y bajada "Preparación Física &
+ * Rendimiento". Se adapta al Modo Noche y al Modo Soleado.
  */
 
 import { useTheme } from './ThemeProvider';
 
-export default function MotionLabLogo({ className = '', iconOnly = false, size = 'default' }) {
+export default function MotionLabLogo({
+  className = '',
+  iconOnly = false,
+  size = 'default',
+  compact = false,
+}) {
   const isLarge = size === 'large';
   const { isSunlight } = useTheme();
 
+  // El azul y el navy son los del logo original. En fondo oscuro se
+  // aclaran un poco para que ambas barras sigan siendo legibles.
+  const azul = isSunlight ? '#0B5CFF' : '#2F7BFF';
+  const marino = isSunlight ? '#071A45' : '#1E3A8A';
+
   return (
-    <div className={`flex items-center gap-2.5 select-none transition-colors ${className}`}>
-      {/* ISOTIPO VECTORIAL: Formas geométricas dinámicas en Azul Eléctrico y Cyan */}
+    <div
+      role="img"
+      aria-label="MOTION LAB — Preparación Física y Rendimiento"
+      className={`flex items-center gap-2 min-[360px]:gap-2.5 select-none transition-colors ${className}`}
+    >
+      {/* ISOTIPO: dos trazos diagonales y dos círculos, como el logo oficial */}
       <svg
-        viewBox="0 0 52 48"
+        viewBox="0 0 120 90"
         fill="none"
         xmlns="http://www.w3.org/2000/svg"
-        className={`${isLarge ? 'w-12 h-12' : 'w-9 h-9'} shrink-0`}
+        aria-hidden="true"
+        className={`${isLarge ? 'w-12' : 'w-8 min-[360px]:w-9'} h-auto shrink-0`}
       >
-        {/* Barra inclinada izquierda */}
-        <path
-          d="M13.5 12L5 38C4.5 39.5 5.8 41 7.5 41H17C18.2 41 19.3 40.2 19.7 39L26 20C26.5 18.5 25.2 17 23.5 17H15.5C14.7 17 13.9 16.4 13.7 15.6L13.5 12Z"
-          fill="url(#motionGrad1)"
-        />
-        {/* Barra inclinada derecha en ángulo complementario */}
-        <path
-          d="M27.5 16L20 39C19.6 40.2 20.5 41 21.8 41H31.5C32.7 41 33.8 40.2 34.2 39L41.5 16H27.5Z"
-          fill="url(#motionGrad2)"
-        />
-        {/* Punto / Círculo superior derecho característico del logo */}
-        <circle cx="39" cy="9" r="4.5" fill={isSunlight ? '#0284C7' : '#38BDF8'} />
-
-        {/* Gradientes que dan el brillo y contraste tecnológico deportivo */}
-        <defs>
-          <linearGradient id="motionGrad1" x1="5" y1="12" x2="26" y2="41" gradientUnits="userSpaceOnUse">
-            <stop stopColor="#0066FF" />
-            <stop offset="1" stopColor={isSunlight ? '#0284C7' : '#00D4FF'} />
-          </linearGradient>
-          <linearGradient id="motionGrad2" x1="20" y1="16" x2="41" y2="41" gradientUnits="userSpaceOnUse">
-            <stop stopColor={isSunlight ? '#003d99' : '#0052CC'} />
-            <stop offset="1" stopColor={isSunlight ? '#0369A1' : '#0284C7'} />
-          </linearGradient>
-        </defs>
+        {/* Barra azul */}
+        <path d="M18 8Q18 4 22 4H36L62 76H44Z" fill={azul} />
+        {/* Barra navy */}
+        <path d="M48 8Q48 4 52 4H66L92 76H74Z" fill={marino} />
+        {/* Punto navy inferior izquierdo */}
+        <circle cx="20" cy="68" r="12" fill={marino} />
+        {/* Punto azul superior derecho */}
+        <circle cx="90" cy="14" r="12" fill={azul} />
       </svg>
 
-      {/* TEXTO DE MARCA (WORDMARK): MOTION LAB */}
+      {/* WORDMARK + BAJADA */}
       {!iconOnly && (
-        <div className="flex flex-col justify-center leading-none">
-          <span className={`font-black tracking-wider uppercase transition-colors sun-text-black ${
-            isLarge ? 'text-2xl sm:text-3xl' : 'text-lg sm:text-xl'
-          } ${
-            isSunlight ? 'text-[#020617]' : 'text-white'
-          }`}>
-            MOTION<span className={isSunlight ? 'text-blue-700' : 'text-sky-400'}>LAB</span>
+        <div className={`${compact ? 'hidden sm:flex' : 'flex'} flex-col justify-center leading-none`}>
+          <span
+            className={`font-black uppercase transition-colors ${
+              isLarge ? 'text-2xl sm:text-3xl' : 'text-[17px] min-[360px]:text-lg sm:text-xl'
+            } ${isSunlight ? 'text-[#071A45]' : 'text-white'}`}
+            style={{ letterSpacing: '0.14em' }}
+          >
+            MOTION{' '}
+            <span className="relative inline-block" style={{ color: azul }}>
+              LAB
+              <span
+                className="absolute -bottom-0.5 left-0 right-0 h-[2px] rounded-full"
+                style={{ backgroundColor: azul }}
+                aria-hidden="true"
+              />
+            </span>
           </span>
-          <span className={`text-[9px] sm:text-[10px] tracking-[0.25em] font-black uppercase mt-0.5 transition-colors ${
-            isSunlight ? 'text-slate-800' : 'text-slate-400'
-          }`}>
-            HIGH PERFORMANCE
+          <span
+            className={`mt-1.5 font-bold uppercase transition-colors ${
+              isLarge
+                ? 'text-[9px] sm:text-[10px] tracking-[0.16em]'
+                : 'text-[6.5px] min-[360px]:text-[7px] sm:text-[8px] tracking-[0.14em] min-[360px]:tracking-[0.16em]'
+            } ${isSunlight ? 'text-[#071A45]' : 'text-slate-300'} whitespace-nowrap`}
+          >
+            Preparación Física &amp; Rendimiento
           </span>
         </div>
       )}

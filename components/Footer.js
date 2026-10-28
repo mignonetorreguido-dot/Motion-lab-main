@@ -18,7 +18,7 @@ export default function Footer() {
   const { isSunlight } = useTheme();
 
   return (
-    <footer className={`border-t py-12 transition-colors duration-200 ${
+    <footer className={`border-t py-10 sm:py-12 pb-[calc(2.5rem+env(safe-area-inset-bottom,0px))] sm:pb-12 transition-colors duration-200 ${
       isSunlight 
         ? 'bg-slate-100 border-slate-300 text-slate-700' 
         : 'bg-[#030509] border-slate-800 text-slate-300'

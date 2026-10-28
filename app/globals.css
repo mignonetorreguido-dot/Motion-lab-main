@@ -48,12 +48,24 @@ body {
 
 html {
   scroll-behavior: smooth;
+  -webkit-text-size-adjust: 100%;
 }
 
 /* Anclas: evitar que la barra fija superior tape los títulos de sección
-   (ej. #sobre-mi, #galeria) */
+   (ej. #sobre-mi, #galeria). En celulares la barra es más baja. */
 section[id] {
-  scroll-margin-top: 6rem;
+  scroll-margin-top: calc(5rem + env(safe-area-inset-top, 0px));
+}
+
+@media (min-width: 640px) {
+  section[id] {
+    scroll-margin-top: 6rem;
+  }
+}
+
+/* La barra fija respeta el notch / isla dinámica de los teléfonos. */
+.nav-safe-top {
+  padding-top: env(safe-area-inset-top, 0px);
 }
 
 /* Clases específicas para el Modo Soleado de Alto Contraste */
@@ -118,13 +130,6 @@ section[id] {
 
 .blue-glow {
   box-shadow: 0 6px 24px -6px rgba(0, 136, 255, 0.35);
-}
-
-/* Espaciado para la barra fija móvil en dispositivos táctiles */
-@media (max-width: 1023px) {
-  main {
-    padding-bottom: 5.5rem;
-  }
 }
 
 /* Botones táctiles optimizados para celular (mínimo 48px) */

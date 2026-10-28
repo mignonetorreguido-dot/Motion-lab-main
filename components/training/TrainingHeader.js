@@ -10,7 +10,7 @@ export default function TrainingHeader({ user = null, showBienestar = true }) {
   const { isSunlight, toggleSunlight } = useTheme();
 
   return (
-    <header className={`max-w-4xl mx-auto w-full flex items-center justify-between pb-5 border-b mb-6 transition-colors ${
+    <header className={`max-w-4xl mx-auto w-full flex flex-wrap items-center justify-between gap-x-3 gap-y-3 pb-5 border-b mb-6 transition-colors ${
       isSunlight ? 'border-slate-300' : 'border-slate-800/80'
     }`}>
       <div className="flex items-center gap-3">
@@ -37,7 +37,7 @@ export default function TrainingHeader({ user = null, showBienestar = true }) {
         )}
 
         {user && (
-          <span className={`text-[11px] font-semibold px-2.5 py-1 rounded-full border ${
+          <span className={`hidden sm:inline-flex text-[11px] font-semibold px-2.5 py-1 rounded-full border ${
             isSunlight
               ? 'bg-slate-100 border-slate-300 text-slate-800'
               : 'bg-slate-900 border-slate-800 text-slate-300'
@@ -86,8 +86,8 @@ export default function TrainingHeader({ user = null, showBienestar = true }) {
           </LogoutButton>
         )}
 
-        <Link href="/" className="group">
-          <MotionLabLogo className="group-hover:scale-105 transition-transform" />
+        <Link href="/" className="hidden sm:block group">
+          <MotionLabLogo compact className="group-hover:scale-105 transition-transform" />
         </Link>
       </div>
     </header>

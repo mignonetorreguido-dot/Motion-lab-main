@@ -11,7 +11,7 @@
  */
 
 import { useEffect, useState } from 'react';
-import { Compass, Maximize2, X } from 'lucide-react';
+import { ArrowRight, Compass, Maximize2, X } from 'lucide-react';
 import { useTheme } from './ThemeProvider';
 
 const FOTOS = [
@@ -65,20 +65,20 @@ export default function GallerySection() {
 
   return (
     <>
-      <section id="galeria" className={`py-16 md:py-24 border-t transition-colors duration-200 ${
+      <section id="galeria" className={`py-12 sm:py-16 md:py-24 border-t transition-colors duration-200 ${
         isSunlight ? 'bg-slate-50 border-slate-300' : 'bg-[#05070c] border-slate-800'
       }`}>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           
           {/* ENCABEZADO */}
-          <div className="text-center max-w-3xl mx-auto mb-12 md:mb-16">
-            <div className={`inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-black uppercase tracking-wider mb-3 border ${
+          <div className="text-center max-w-3xl mx-auto mb-8 sm:mb-12 md:mb-16">
+            <div className={`inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-[10px] sm:text-xs font-black uppercase tracking-wider mb-3 border ${
               isSunlight ? 'bg-blue-100 text-blue-900 border-blue-300' : 'bg-blue-500/10 text-sky-400 border-blue-500/20'
             }`}>
               <Compass className="w-3.5 h-3.5" />
               Resultados MOTION LAB
             </div>
-            <h2 className={`text-3xl sm:text-4xl font-black tracking-tight ${
+            <h2 className={`text-[1.75rem] min-[360px]:text-3xl sm:text-4xl font-black tracking-tight ${
               isSunlight ? 'text-[#020617]' : 'text-white'
             }`}>
               DONDE EL MOVIMIENTO SE CONVIERTE EN{' '}
@@ -97,8 +97,12 @@ export default function GallerySection() {
             </p>
           </div>
 
-          {/* GALERÍA DE FOTOS CON DEGRADÉ PERIMETRAL EXTERIOR */}
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
+          {/* GALERÍA: carrusel táctil en celular, grilla de 3 en tablet/escritorio */}
+          <div
+            role="region"
+            aria-label="Galería de resultados. Desliza horizontalmente para ver las fotos."
+            className="-mx-4 flex snap-x snap-mandatory gap-4 overflow-x-auto px-4 pb-2 pt-1 scroll-px-4 [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden sm:mx-0 sm:grid sm:grid-cols-3 sm:gap-6 sm:overflow-visible sm:px-0 sm:pb-0 sm:pt-0"
+          >
             {FOTOS.map((foto) => (
               <div
                 key={foto.src}
@@ -113,19 +117,21 @@ export default function GallerySection() {
                     setFotoAmpliada(foto);
                   }
                 }}
-                className="relative rounded-2xl group aspect-[4/5] cursor-zoom-in focus:outline-none focus-visible:ring-2 focus-visible:ring-sky-400 focus-visible:ring-offset-2 focus-visible:ring-offset-transparent"
+                className="relative w-[84vw] max-w-[330px] shrink-0 snap-start sm:w-auto sm:max-w-none rounded-2xl group aspect-[4/5] cursor-zoom-in focus:outline-none focus-visible:ring-2 focus-visible:ring-sky-400 focus-visible:ring-offset-2 focus-visible:ring-offset-transparent"
               >
                 <div className={`absolute -inset-1 bg-gradient-to-r ${foto.gradiente} rounded-2xl blur-lg transition duration-500 ${
                   isSunlight ? 'opacity-60 group-hover:opacity-90' : 'opacity-30 group-hover:opacity-60'
                 }`} />
                 <div className={`relative w-full h-full rounded-2xl overflow-hidden shadow-lg ${
-                  isSunlight ? 'border-2 border-slate-300' : 'border border-slate-800'
+                  isSunlight ? 'bg-slate-200 border-2 border-slate-300' : 'bg-slate-900 border border-slate-800'
                 }`}>
                   {/* eslint-disable-next-line @next/next/no-img-element */}
                   <img
                     src={foto.src}
                     alt={foto.alt}
-                    loading="lazy"
+                    loading="eager"
+                    decoding="async"
+                    draggable={false}
                     className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                   />
                   <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/20 to-transparent" />
@@ -135,15 +141,23 @@ export default function GallerySection() {
                   </div>
 
                   <div className="absolute bottom-4 left-4 right-4">
-                    <span className={`text-[10px] font-black uppercase tracking-wider px-2.5 py-1 rounded text-white ${foto.colorEtiqueta}`}>
+                    <span className={`text-[9px] sm:text-[10px] font-black uppercase tracking-wider px-2.5 py-1 rounded text-white ${foto.colorEtiqueta}`}>
                       {foto.etiqueta}
                     </span>
-                    <h4 className="text-white font-black text-sm mt-1.5 drop-shadow">{foto.titulo}</h4>
+                    <h4 className="text-white font-black text-xs sm:text-sm mt-1.5 drop-shadow">{foto.titulo}</h4>
                   </div>
                 </div>
               </div>
             ))}
           </div>
+
+          {/* PISTA DE GESTO PARA CELULAR */}
+          <p className={`sm:hidden mt-4 flex items-center justify-center gap-1.5 text-[10px] font-bold uppercase tracking-[0.14em] ${
+            isSunlight ? 'text-slate-600' : 'text-slate-400'
+          }`}>
+            Deslizá para ver las 3 fotos
+            <ArrowRight className="w-3.5 h-3.5" />
+          </p>
 
         </div>
       </section>

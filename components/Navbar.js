@@ -63,16 +63,16 @@ export default function Navbar() {
   };
 
   return (
-    <nav className={`fixed top-0 left-0 w-full z-50 transition-colors duration-200 border-b ${
+    <nav className={`nav-safe-top fixed top-0 left-0 w-full z-50 transition-colors duration-200 border-b ${
       isSunlight
-        ? 'bg-white/95 backdrop-blur-md border-slate-300 text-slate-900 shadow-md'
-        : 'bg-[#05070c]/90 backdrop-blur-md border-slate-800/80 text-white'
+        ? 'bg-white sm:bg-white/95 sm:backdrop-blur-md border-slate-300 text-slate-900 shadow-md'
+        : 'bg-[#05070c] sm:bg-[#05070c]/90 sm:backdrop-blur-md border-slate-800/80 text-white'
     }`}>
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex items-center justify-between h-20">
+      <div className="max-w-7xl mx-auto px-3 min-[360px]:px-4 sm:px-6 lg:px-8">
+        <div className="flex items-center justify-between min-h-16 sm:min-h-20">
           
           {/* LOGOTIPO OFICIAL DE MOTION LAB */}
-          <Link href="/" className="flex items-center group">
+          <Link href="/" className="flex items-center group shrink-0">
             <MotionLabLogo className="group-hover:scale-105 transition-transform" />
           </Link>
 
@@ -192,12 +192,12 @@ export default function Navbar() {
           </div>
 
           {/* BOTÓN MÓVIL (TOGGLE RÁPIDO Y MENÚ HAMBURGUESA) */}
-          <div className="lg:hidden flex items-center gap-2">
+          <div className="lg:hidden flex items-center gap-1.5 min-[360px]:gap-2 shrink-0">
             
             <button
               onClick={toggleSunlight}
               type="button"
-              className={`sm:hidden p-2.5 rounded-xl border transition-colors touch-target ${
+              className={`hidden min-[360px]:inline-flex sm:hidden p-2.5 rounded-xl border transition-colors touch-target ${
                 isSunlight
                   ? 'bg-slate-100 border-slate-300 text-slate-900'
                   : 'bg-slate-900 border-slate-800 text-amber-400'
@@ -219,7 +219,9 @@ export default function Navbar() {
                   ? 'text-slate-900 border-slate-300 hover:bg-slate-100'
                   : 'text-slate-200 border-slate-800 hover:text-white hover:bg-slate-900'
               }`}
-              aria-label="Abrir menú"
+              aria-label={menuAbierto ? 'Cerrar menú' : 'Abrir menú'}
+              aria-expanded={menuAbierto}
+              aria-controls="menu-movil"
             >
               {menuAbierto ? (
                 <X className={`w-6 h-6 ${isSunlight ? 'text-blue-700' : 'text-sky-400'}`} />
@@ -234,11 +236,14 @@ export default function Navbar() {
 
       {/* MENÚ MÓVIL DESPLEGABLE */}
       {menuAbierto && (
-        <div className={`lg:hidden px-4 pt-3 pb-6 space-y-3 shadow-2xl border-b-2 transition-colors ${
-          isSunlight
-            ? 'bg-white border-slate-300 text-slate-900'
-            : 'bg-[#0a0f1d] border-slate-800 text-slate-100'
-        }`}>
+        <div
+          id="menu-movil"
+          className={`lg:hidden max-h-[calc(100dvh-4rem)] overflow-y-auto overscroll-contain px-4 pt-3 pb-6 space-y-3 shadow-2xl border-b-2 transition-colors ${
+            isSunlight
+              ? 'bg-white border-slate-300 text-slate-900'
+              : 'bg-[#0a0f1d] border-slate-800 text-slate-100'
+          }`}
+        >
           {!sesionCargada ? null : sesion ? (
             <div className={`rounded-2xl border p-3.5 space-y-2 ${
               isSunlight ? 'bg-slate-50 border-slate-300' : 'bg-slate-900/70 border-slate-800'
@@ -324,6 +329,19 @@ export default function Navbar() {
               <span>Chequeo de Bienestar</span>
             </Link>
           )}
+
+          {/* En pantallas muy angostas el toggle del navbar se oculta,
+              pero el cambio de modo sigue disponible dentro del menú. */}
+          <button
+            type="button"
+            onClick={toggleSunlight}
+            className={`flex min-[360px]:hidden items-center gap-2.5 py-2.5 text-base font-semibold touch-target ${
+              isSunlight ? 'text-slate-900' : 'text-amber-300'
+            }`}
+          >
+            {isSunlight ? <Moon className="w-5 h-5" /> : <Sun className="w-5 h-5" />}
+            <span>{isSunlight ? 'Modo Noche' : 'Modo Soleado'}</span>
+          </button>
         </div>
       )}
     </nav>
