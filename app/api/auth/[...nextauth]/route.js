@@ -29,7 +29,11 @@ import {
   codificarTokenGoogleFit,
   googleFitTestActivo,
 } from '@/lib/googleFit';
-import { pinEntrenadorPersonalizado, verificarPinEntrenador } from '@/lib/trainerPin';
+import {
+  emailEntrenadorActual,
+  pinEntrenadorPersonalizado,
+  verificarCredencialesEntrenador,
+} from '@/lib/trainerPin';
 
 const googleEstaConfigurado = Boolean(
   process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET
@@ -56,24 +60,30 @@ const googleProvider = googleEstaConfigurado
   : null;
 
 /**
- * PROVEEDOR EXCLUSIVO DEL ENTRENADOR (PIN)
- * ----------------------------------------
- * El profesor no inicia sesión con email y contraseña: escribe un PIN que
- * sólo conoce él. El PIN se compara en el servidor contra la variable de
- * entorno TRAINER_PIN y nunca se envía ni se guarda en el navegador como
- * parte de la sesión.
+ * PROVEEDOR EXCLUSIVO DEL ENTRENADOR (EMAIL + PIN)
+ * ------------------------------------------------
+ * Existe una sola cuenta de entrenador y está atada a TRAINER_EMAIL. Para
+ * entrar hay que escribir ese email y el PIN privado (TRAINER_PIN). Ambos se
+ * validan en el servidor y nunca se guardan en el navegador como parte de la
+ * sesión.
+ *
+ * La cuenta se crea sola en el primer ingreso (upsert), así que no hay un
+ * formulario público de "registro como profesor": nadie más puede crearse
+ * una cuenta ENTRENADOR.
  */
 const trainerPinProvider = CredentialsProvider({
   id: 'trainer-pin',
-  name: 'Acceso del Entrenador (PIN)',
+  name: 'Acceso del Entrenador (Email + PIN)',
   credentials: {
+    email: { label: 'Email del profesor', type: 'email' },
     pin: { label: 'PIN del profesor', type: 'password' },
   },
   async authorize(credentials) {
+    const email = String(credentials?.email || '').trim().toLowerCase();
     const pin = String(credentials?.pin || '').trim();
 
-    if (!pin) {
-      throw new Error('Ingresá el PIN del profesor.');
+    if (!email || !pin) {
+      throw new Error('Ingresá el email y el PIN del profesor.');
     }
 
     if (!pinEntrenadorPersonalizado()) {
@@ -82,26 +92,31 @@ const trainerPinProvider = CredentialsProvider({
       );
     }
 
-    if (!verificarPinEntrenador(pin)) {
+    if (!verificarCredencialesEntrenador(email, pin)) {
       // Pequeña espera para dificultar los intentos automatizados por fuerza
       // bruta. El PIN recomendado tiene 6 o más dígitos.
       await new Promise((resolve) => setTimeout(resolve, 800));
-      throw new Error('El PIN del profesor es incorrecto.');
+      throw new Error('El email o el PIN del profesor son incorrectos.');
     }
 
-    // Aseguramos que la cuenta del entrenador exista en la base de datos.
-    // Si PostgreSQL está en modo demo/offline, el acceso con PIN igualmente
+    const emailEntrenador = emailEntrenadorActual();
+
+    // Aseguramos que la cuenta ÚNICA del entrenador exista en la base de
+    // datos. Si PostgreSQL está en modo demo/offline, el acceso igualmente
     // funciona porque la sesión se construye con los datos de abajo.
     let entrenadorDb = null;
     try {
       entrenadorDb = await prisma.usuario.upsert({
         where: { id: 'matias-coach-id' },
-        update: {},
+        update: {
+          rol: 'ENTRENADOR',
+          estadoPago: 'ACTIVO',
+        },
         create: {
           id: 'matias-coach-id',
           nombre: 'Matías',
           apellido: 'Entrenador',
-          email: 'matias@motionlab.fit',
+          email: emailEntrenador,
           rol: 'ENTRENADOR',
           estadoPago: 'ACTIVO',
           tipoPlan: 'PREMIUM',
@@ -118,7 +133,7 @@ const trainerPinProvider = CredentialsProvider({
     return {
       id: entrenadorDb?.id || 'matias-coach-id',
       name: nombreEntrenador || 'Matías Entrenador',
-      email: entrenadorDb?.email || 'matias@motionlab.fit',
+      email: emailEntrenador,
       rol: 'ENTRENADOR',
       estadoPago: 'ACTIVO',
       tipoPlan: 'PREMIUM',
@@ -158,17 +173,18 @@ export const authOptions = {
         const inputUser = credentials.email.toLowerCase().trim();
         const inputPass = credentials.password.trim();
 
-        // El entrenador tiene un acceso exclusivo con PIN. Bloqueamos sus
-        // identificadores incluso si la base de datos está en modo demo.
+        // El entrenador tiene un acceso exclusivo con email + PIN. Bloqueamos
+        // sus identificadores incluso si la base de datos está en modo demo.
         const identificadoresEntrenador = [
           'matiasmotionlab',
           'matias@motionlab.fit',
           'matias@motionlab.com',
+          emailEntrenadorActual(),
         ];
 
         if (identificadoresEntrenador.includes(inputUser)) {
           throw new Error(
-            'El acceso del entrenador es mediante PIN. Entrá desde "Comenzar" > "Soy Profesor".'
+            'El acceso del entrenador es con email + PIN. Entrá desde "Comenzar" > "Soy Profesor".'
           );
         }
 
@@ -241,7 +257,7 @@ export const authOptions = {
           // El panel del entrenador es de acceso exclusivo por PIN. Aunque
           // alguien conozca su email, no puede entrar por este formulario.
           if (usuario.rol === 'ENTRENADOR') {
-            throw new Error('El acceso del entrenador es mediante PIN.');
+            throw new Error('El acceso del entrenador es con email + PIN.');
           }
 
           // Si tiene passwordHash encriptado con bcrypt
@@ -366,9 +382,14 @@ export const authOptions = {
           });
 
           // La cuenta del entrenador no se abre con Google: su único acceso
-          // es el PIN del panel. Evita que alguien con su correo entre sin PIN.
-          if (usuarioDb?.rol === 'ENTRENADOR') {
-            throw new Error('El acceso del entrenador es mediante PIN.');
+          // es email + PIN del panel. Bloqueamos el rol ENTRENADOR y también
+          // el email configurado, aunque la cuenta todavía no exista en la
+          // base (si no, alguien podría crearla como alumno).
+          if (
+            usuarioDb?.rol === 'ENTRENADOR' ||
+            email === emailEntrenadorActual()
+          ) {
+            throw new Error('El acceso del entrenador es con email + PIN.');
           }
 
           if (!usuarioDb) {
@@ -400,7 +421,7 @@ export const authOptions = {
           return token;
         } catch (error) {
           console.error('No se pudo registrar/recuperar el usuario de Google:', error);
-          if (error?.message === 'El acceso del entrenador es mediante PIN.') {
+          if (error?.message === 'El acceso del entrenador es con email + PIN.') {
             throw error;
           }
           throw new Error(

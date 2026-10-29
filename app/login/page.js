@@ -347,7 +347,7 @@ export default function LoginPage() {
             <p className={`mt-3 text-xs font-semibold ${isSunlight ? 'text-slate-600' : 'text-slate-400'}`}>
               ¿Sos el entrenador?{' '}
               <Link href="/comenzar?rol=profesor" className="text-amber-600 hover:text-amber-800 font-black transition-colors">
-                Ingresá con tu PIN
+                Ingresá con tu cuenta y PIN
               </Link>
             </p>
           </div>

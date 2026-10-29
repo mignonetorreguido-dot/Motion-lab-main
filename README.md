@@ -135,20 +135,23 @@ Cuando el alumno presiona "Ver mi Diagnóstico":
 
 ---
 
-## 🔐 Acceso del Entrenador con PIN
+## 🔐 Acceso del Entrenador con Cuenta Única + PIN
 
 El botón **Comenzar** de la portada lleva a `/comenzar`, donde se elige el tipo de acceso:
 
 - **Soy Alumno:** crea una cuenta nueva (`/onboarding`) o inicia sesión (`/login`).
-- **Soy Profesor:** abre el panel exclusivo de Matías (`/admin`) con un PIN privado.
+- **Soy Profesor:** abre el panel exclusivo de Matías (`/admin`) con el email de su cuenta única y un PIN privado.
 
-El PIN se configura con la variable de entorno `TRAINER_PIN` (por ejemplo, `482913`) y se valida únicamente en el servidor. Si la variable no está definida, se usa el PIN de demostración `246810`; cambialo antes de publicar la web.
+Existe **una sola cuenta de profesor**. Se identifica con `TRAINER_EMAIL` y se protege con `TRAINER_PIN`; ambos se validan únicamente en el servidor. La cuenta se crea sola en el primer ingreso, así que no hay un registro público de profesores.
 
 ```env
+TRAINER_EMAIL="matias@motionlab.fit"
 TRAINER_PIN="482913"
 ```
 
-> El entrenador ya no puede ingresar con email y contraseña desde el formulario de alumnos: su único acceso es el PIN.
+Si las variables no están definidas se usan los valores de demostración `matias@motionlab.fit` / `246810`; cambialos antes de publicar la web.
+
+> El entrenador no puede ingresar con Google ni con el formulario de alumnos: su único acceso es ese email + PIN. Cualquier otra cuenta se crea siempre como ALUMNO.
 
 ---
 
@@ -192,6 +195,6 @@ El botón **Continuar con Google** ya está integrado en el login y en el paso f
 2. Ve a [vercel.com](https://vercel.com) e inicia sesión con tu cuenta de GitHub.
 3. Haz clic en **"Add New Project"** y selecciona tu repositorio.
 4. En la sección **Storage**, conectá una base **Prisma Postgres**. Vercel configura `DATABASE_URL` automáticamente.
-5. Agregá también `NEXTAUTH_URL`, `NEXTAUTH_SECRET`, `TRAINER_PIN`, `NEXT_PUBLIC_WHATSAPP_PHONE` y, si usás Google, las credenciales OAuth.
+5. Agregá también `NEXTAUTH_URL`, `NEXTAUTH_SECRET`, `TRAINER_EMAIL`, `TRAINER_PIN`, `NEXT_PUBLIC_WHATSAPP_PHONE` y, si usás Google, las credenciales OAuth.
 6. Antes del primer uso, ejecutá una vez `npm run prisma:push` y `npm run db:seed` con la `DATABASE_URL` de producción.
 7. Hacé clic en **Deploy**. ¡En menos de 2 minutos tu web estará activa con un enlace HTTPS público gratuito!

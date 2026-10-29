@@ -18,6 +18,7 @@ import {
   obtenerRutinasEnDesusoDeStore,
 } from '@/lib/fallbackStore';
 import { requireTrainer } from '@/lib/requireTrainer';
+import { emailEntrenadorActual } from '@/lib/trainerPin';
 
 // ------------------------------------------------------------------------
 // GET: Obtener las rutinas activas del alumno para armar el plan semanal
@@ -195,7 +196,7 @@ export async function POST(request) {
             id: 'matias-coach-id',
             nombre: 'Matías',
             apellido: 'Entrenador',
-            email: 'matias@motionlab.fit',
+            email: emailEntrenadorActual(),
             rol: 'ENTRENADOR',
             estadoPago: 'ACTIVO',
             tipoPlan: 'PREMIUM',

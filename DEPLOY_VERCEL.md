@@ -25,6 +25,7 @@ Esta aplicación Next.js 14 con Prisma ORM y Tailwind CSS está lista para despl
 | `DATABASE_URL` | `postgresql://usuario:password@host:5432/motion_lab` *(Recomendado: conectar un store de Prisma Postgres desde Storage en Vercel)* |
 | `NEXTAUTH_URL` | `https://tu-proyecto.vercel.app` *(Tu URL generada por Vercel)* |
 | `NEXTAUTH_SECRET` | Una clave secreta alfanumérica de 32+ caracteres |
+| `TRAINER_EMAIL` | Email de la **única** cuenta de profesor. Ej.: `matias@motionlab.fit` |
 | `TRAINER_PIN` | PIN privado de Matías para entrar al panel (6 o más dígitos). Ej.: `482913` |
 | `NEXT_PUBLIC_WHATSAPP_PHONE` | `5493624654911` *(WhatsApp del Coach Matías)* |
 | `GOOGLE_CLIENT_ID` | *(Opcional)* Tu Client ID de Google Cloud |
@@ -81,11 +82,15 @@ El proyecto ya cuenta con el archivo [`vercel.json`](./vercel.json) configurado:
 Una vez desplegada la aplicación en Vercel, podés probar:
 
 * **Acceso del Entrenador:** entrá a `/comenzar` y elegí **“Soy Profesor”**.
+  * **Email:** el valor configurado en `TRAINER_EMAIL` (cuenta única del profesor).
   * **PIN:** el valor configurado en la variable de entorno `TRAINER_PIN`.
-  * Si todavía no la configuraste, se usa el PIN de demostración `246810`.
+  * Si todavía no las configuraste, se usan los valores de demostración
+    `matias@motionlab.fit` / `246810`.
+  * La cuenta se crea sola en el primer ingreso. No hay registro público de
+    profesores: sólo ese email + PIN abre el panel.
   * *Aquí verás las alertas rojas y amarillas de fatiga, historial de check-ins y asignador de rutinas en 3 bloques.*
 
 * **Área del Alumno:** `/entrenamiento`
   * *Aquí podrás probar el Check-in Pre-Entreno (nivel de energía 1-5, estado mental y descanso), el registro de series y el Check-out Post-Entreno con RPE y escala de impacto.*
 
-> 🔒 El profesor ya no ingresa con email y contraseña: su único acceso es el PIN. Cambiá `TRAINER_PIN` por un valor propio antes de publicar la web.
+> 🔒 El profesor no se registra como alumno: su único acceso es el email de la cuenta única (`TRAINER_EMAIL`) + su PIN privado (`TRAINER_PIN`). Cambiá ambos valores antes de publicar la web.

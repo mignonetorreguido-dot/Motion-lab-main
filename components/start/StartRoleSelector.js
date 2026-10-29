@@ -6,7 +6,8 @@
  * ========================================================================
  * Permite elegir el tipo de acceso a MOTION LAB:
  *   1. Alumno: crear una cuenta nueva o iniciar sesión.
- *   2. Profesor: entrar al panel exclusivo de Matías con un PIN.
+ *   2. Profesor: entrar al panel exclusivo de Matías con su cuenta única
+ *      (email) y su PIN privado.
  *
  * El PIN se valida en el servidor (proveedor `trainer-pin` de NextAuth).
  * Nunca se guarda en el navegador ni se compara contra valores escritos en
@@ -28,6 +29,7 @@ import {
   Loader2,
   LockKeyhole,
   LogIn,
+  Mail,
   ShieldCheck,
   UserPlus,
 } from 'lucide-react';
@@ -37,6 +39,7 @@ export default function StartRoleSelector({ rolInicial = null }) {
   const { isSunlight } = useTheme();
 
   const [rol, setRol] = useState(rolInicial);
+  const [emailProfesor, setEmailProfesor] = useState('');
   const [pin, setPin] = useState('');
   const [mostrarPin, setMostrarPin] = useState(false);
   const [cargando, setCargando] = useState(false);
@@ -66,6 +69,7 @@ export default function StartRoleSelector({ rolInicial = null }) {
   const elegirRol = (nuevoRol) => {
     setRol(nuevoRol);
     setError('');
+    setEmailProfesor('');
     setPin('');
     setMostrarPin(false);
   };
@@ -74,7 +78,18 @@ export default function StartRoleSelector({ rolInicial = null }) {
     evento.preventDefault();
     setError('');
 
+    const emailLimpio = emailProfesor.trim().toLowerCase();
     const pinLimpio = pin.trim();
+
+    if (!emailLimpio) {
+      setError('Ingresá el email de la cuenta del profesor.');
+      return;
+    }
+
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(emailLimpio)) {
+      setError('El email del profesor no tiene un formato válido.');
+      return;
+    }
 
     if (!pinLimpio) {
       setError('Ingresá el PIN de acceso del profesor.');
@@ -86,11 +101,12 @@ export default function StartRoleSelector({ rolInicial = null }) {
     try {
       const respuesta = await signIn('trainer-pin', {
         redirect: false,
+        email: emailLimpio,
         pin: pinLimpio,
       });
 
       if (respuesta?.error) {
-        setError('El PIN no es correcto. Verificalo e intentá nuevamente.');
+        setError('El email o el PIN no son correctos. Verificalos e intentá nuevamente.');
         setPin('');
         setCargando(false);
         return;
@@ -156,7 +172,7 @@ export default function StartRoleSelector({ rolInicial = null }) {
           }`}
         >
           Elegí tu perfil para entrar a la plataforma. Los alumnos crean su cuenta
-          y el profesor accede con su PIN privado.
+          y el profesor accede con su cuenta única y su PIN privado.
         </p>
       </div>
 
@@ -302,7 +318,7 @@ export default function StartRoleSelector({ rolInicial = null }) {
               isSunlight ? 'text-amber-700' : 'text-amber-300'
             }`}
           >
-            Acceso con PIN privado
+            Cuenta única + PIN privado
             <LockKeyhole className="w-3.5 h-3.5" />
           </span>
         </button>
@@ -386,13 +402,53 @@ export default function StartRoleSelector({ rolInicial = null }) {
                 Acceso exclusivo del entrenador
               </h3>
               <p className={`text-sm mt-0.5 ${isSunlight ? 'text-slate-700' : 'text-slate-300'}`}>
-                Ingresá tu PIN personal para abrir el panel de Matías. Este acceso
-                es sólo para el profesor.
+                Existe una sola cuenta de profesor. Ingresá su email y el PIN
+                privado de Matías para abrir el panel.
               </p>
             </div>
           </div>
 
           <form onSubmit={ingresarComoProfesor} className="space-y-4">
+            <div>
+              <label
+                htmlFor="email-profesor"
+                className={`block text-xs font-black uppercase tracking-wider mb-2 ${
+                  isSunlight ? 'text-slate-800' : 'text-slate-300'
+                }`}
+              >
+                Email del profesor
+              </label>
+              <div className="relative">
+                <Mail
+                  className={`w-5 h-5 absolute left-4 top-1/2 -translate-y-1/2 pointer-events-none ${
+                    isSunlight ? 'text-slate-500' : 'text-slate-400'
+                  }`}
+                />
+                <input
+                  id="email-profesor"
+                  type="email"
+                  inputMode="email"
+                  autoComplete="username"
+                  spellCheck={false}
+                  maxLength={160}
+                  value={emailProfesor}
+                  onChange={(evento) => {
+                    setEmailProfesor(evento.target.value);
+                    setError('');
+                  }}
+                  placeholder="profesor@motionlab.fit"
+                  className={`w-full rounded-2xl border-2 py-4 pl-12 pr-4 text-sm font-bold transition-colors focus:outline-none touch-target ${
+                    isSunlight
+                      ? 'bg-white border-slate-300 text-slate-950 placeholder:text-slate-400 focus:border-amber-500'
+                      : 'bg-[#05070c] border-slate-700 text-white placeholder:text-slate-600 focus:border-amber-400'
+                  }`}
+                />
+              </div>
+              <p className={`text-[11px] mt-2 ${isSunlight ? 'text-slate-600' : 'text-slate-400'}`}>
+                Es el email de la única cuenta habilitada como profesor.
+              </p>
+            </div>
+
             <div>
               <label
                 htmlFor="pin-profesor"
@@ -499,7 +555,7 @@ export default function StartRoleSelector({ rolInicial = null }) {
         }`}
       >
         <ShieldCheck className="w-3.5 h-3.5" />
-        El acceso del profesor está protegido con un PIN que sólo conoce Matías.
+        Sólo la cuenta única de Matías, protegida con su PIN privado, puede abrir el panel.
       </p>
     </div>
   );

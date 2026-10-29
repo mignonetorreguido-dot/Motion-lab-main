@@ -5,7 +5,8 @@
  * Punto de entrada elegido desde el botón "Comenzar" de la landing.
  * Ofrece dos caminos:
  *   - Alumno: crear una cuenta o iniciar sesión.
- *   - Profesor: acceder al panel exclusivo de Matías con un PIN.
+ *   - Profesor: acceder al panel exclusivo de Matías con su cuenta única
+ *     (email) y su PIN privado.
  */
 
 import StartShell from '@/components/start/StartShell';
@@ -13,7 +14,7 @@ import StartShell from '@/components/start/StartShell';
 export const metadata = {
   title: 'Comenzar | MOTION LAB',
   description:
-    'Elegí cómo ingresar a MOTION LAB: creá tu cuenta de alumno o accedé al panel del entrenador con PIN.',
+    'Elegí cómo ingresar a MOTION LAB: creá tu cuenta de alumno o accedé al panel del entrenador con su cuenta única y PIN.',
   robots: {
     index: false,
     follow: false,

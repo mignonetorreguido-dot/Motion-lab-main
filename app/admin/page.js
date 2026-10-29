@@ -27,7 +27,7 @@ export default async function AdminPage() {
   const session = await getServerSession(authOptions);
 
   if (!session?.user) {
-    // El acceso del profesor es exclusivamente con PIN.
+    // El acceso del profesor es exclusivamente con email + PIN.
     redirect('/comenzar?rol=profesor');
   }
 
