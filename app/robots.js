@@ -14,6 +14,7 @@ export default function robots() {
           '/admin',
           '/api/',
           '/bienestar',
+          '/comenzar',
           '/entrenamiento',
           '/onboarding',
           '/salir',

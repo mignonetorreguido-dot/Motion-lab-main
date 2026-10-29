@@ -13,7 +13,7 @@ import { signIn, getProviders } from 'next-auth/react';
 import { 
   Zap, Crown, ArrowRight, ArrowLeft, Check, Target, Dumbbell, 
   Activity, Heart, ShieldAlert, Sparkles, MessageCircle, Lock, Mail, User, Phone,
-  Loader2
+  Eye, EyeOff, Loader2
 } from 'lucide-react';
 import MotionLabLogo from '@/components/MotionLabLogo';
 import { useTheme } from '@/components/ThemeProvider';
@@ -68,6 +68,7 @@ export default function Wizard() {
   const [whatsappLink, setWhatsappLink] = useState('');
   const [googleCargando, setGoogleCargando] = useState(false);
   const [googleDisponible, setGoogleDisponible] = useState(null);
+  const [mostrarPassword, setMostrarPassword] = useState(false);
   const googleProcesado = useRef(false);
 
   // Objeto central con todos los datos recolectados
@@ -1028,13 +1029,30 @@ export default function Wizard() {
                   <div className="relative">
                     <Lock className="w-4 h-4 text-slate-500 absolute left-3.5 top-3.5" />
                     <input
-                      type="password"
+                      type={mostrarPassword ? 'text' : 'password'}
                       required
+                      autoComplete="new-password"
                       placeholder="Mínimo 6 caracteres"
                       value={formData.password}
                       onChange={(e) => actualizarCampo('password', e.target.value)}
-                      className={tema.campoIcono}
+                      className={`${tema.campoIcono} !pr-12`}
                     />
+                    <button
+                      type="button"
+                      onClick={() => setMostrarPassword((valor) => !valor)}
+                      aria-label={mostrarPassword ? 'Ocultar contraseña' : 'Mostrar contraseña'}
+                      className={`absolute right-2 top-1/2 -translate-y-1/2 p-2 rounded-lg transition-colors ${
+                        isSunlight
+                          ? 'text-slate-600 hover:bg-slate-100'
+                          : 'text-slate-400 hover:bg-slate-800'
+                      }`}
+                    >
+                      {mostrarPassword ? (
+                        <EyeOff className="w-4 h-4" />
+                      ) : (
+                        <Eye className="w-4 h-4" />
+                      )}
+                    </button>
                   </div>
                 </div>
 

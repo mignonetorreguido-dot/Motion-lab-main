@@ -119,6 +119,10 @@ export default function WatchLinkCard({ googleFitTestActivo = false }) {
   const [errorNube, setErrorNube] = useState('');
   const [esperandoVinculo, setEsperandoVinculo] = useState(false);
   const [linkPendiente, setLinkPendiente] = useState('');
+  const [confirmandoDesvinculo, setConfirmandoDesvinculo] = useState(false);
+  const [desvinculandoNube, setDesvinculandoNube] = useState(false);
+  const [errorDesvinculo, setErrorDesvinculo] = useState('');
+  const [mensajeDesvinculo, setMensajeDesvinculo] = useState('');
 
   // ---------------------------------------------------------------------
   // Google Fit (puente universal para Da Fit, Samsung Health y similares)
@@ -193,6 +197,9 @@ export default function WatchLinkCard({ googleFitTestActivo = false }) {
   const conectarNube = async () => {
     setVinculandoNube(true);
     setErrorNube('');
+    setErrorDesvinculo('');
+    setMensajeDesvinculo('');
+    setConfirmandoDesvinculo(false);
 
     try {
       const respuesta = await fetch('/api/reloj/link-token', {
@@ -219,6 +226,67 @@ export default function WatchLinkCard({ googleFitTestActivo = false }) {
       );
     } finally {
       setVinculandoNube(false);
+    }
+  };
+
+  const desvincularNube = async () => {
+    setDesvinculandoNube(true);
+    setErrorDesvinculo('');
+    setMensajeDesvinculo('');
+
+    try {
+      const respuesta = await fetch('/api/reloj/desvincular', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({}),
+      });
+      const data = await respuesta.json();
+
+      if (!respuesta.ok || !data?.success) {
+        throw new Error(data?.error || 'No pudimos desvincular el reloj.');
+      }
+
+      setConfirmandoDesvinculo(false);
+      setEstadoNube((previo) => ({
+        ...(previo || {}),
+        conectado: false,
+        proveedores: [],
+        resumen: null,
+        errorDatos: undefined,
+      }));
+      setEsperandoVinculo(false);
+      setLinkPendiente('');
+
+      const nombresDesvinculados = (data.desvinculados || [])
+        .map((proveedor) => proveedor.nombre || proveedor.slug)
+        .filter(Boolean);
+      const nombresFallidos = (data.fallidos || [])
+        .map((proveedor) => proveedor.nombre || proveedor.slug)
+        .filter(Boolean);
+
+      setMensajeDesvinculo(
+        nombresDesvinculados.length > 0
+          ? `Se desvinculó ${nombresDesvinculados.join(
+              ' + '
+            )}. Podés volver a conectarlo cuando quieras.`
+          : 'No había un reloj vinculado.'
+      );
+      if (nombresFallidos.length > 0) {
+        setErrorDesvinculo(
+          `No pudimos desvincular ${nombresFallidos.join(
+            ', '
+          )}. Probá de nuevo en unos segundos.`
+        );
+      }
+
+      await cargarEstadoNube({ silencioso: true });
+    } catch (err) {
+      setErrorDesvinculo(
+        err?.message ||
+          'No pudimos desvincular el reloj. Probá de nuevo en unos segundos.'
+      );
+    } finally {
+      setDesvinculandoNube(false);
     }
   };
 
@@ -695,21 +763,112 @@ export default function WatchLinkCard({ googleFitTestActivo = false }) {
               </p>
             )}
 
-            <button
-              type="button"
-              onClick={conectarNube}
-              disabled={vinculandoNube}
-              className={`mt-3 inline-flex items-center gap-1.5 text-[11px] font-black underline underline-offset-2 disabled:opacity-60 ${
-                isSunlight ? 'text-sky-800' : 'text-sky-300'
-              }`}
-            >
-              {vinculandoNube ? (
-                <Loader2 className="w-3.5 h-3.5 animate-spin" />
-              ) : (
-                <Smartphone className="w-3.5 h-3.5" />
+            <div className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-2">
+              <button
+                type="button"
+                onClick={conectarNube}
+                disabled={vinculandoNube || desvinculandoNube}
+                className={`inline-flex items-center gap-1.5 text-[11px] font-black underline underline-offset-2 disabled:opacity-60 ${
+                  isSunlight ? 'text-sky-800' : 'text-sky-300'
+                }`}
+              >
+                {vinculandoNube ? (
+                  <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                ) : (
+                  <Smartphone className="w-3.5 h-3.5" />
+                )}
+                Vincular otro dispositivo
+              </button>
+
+              {!confirmandoDesvinculo && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    setConfirmandoDesvinculo(true);
+                    setErrorDesvinculo('');
+                    setMensajeDesvinculo('');
+                  }}
+                  disabled={desvinculandoNube}
+                  className={`inline-flex items-center gap-1.5 text-[11px] font-black underline underline-offset-2 disabled:opacity-60 ${
+                    isSunlight ? 'text-red-700' : 'text-red-300'
+                  }`}
+                >
+                  <Link2Off className="w-3.5 h-3.5" />
+                  Desvincular reloj
+                </button>
               )}
-              Vincular otro dispositivo
-            </button>
+            </div>
+
+            {confirmandoDesvinculo && (
+              <div
+                className={`mt-3 rounded-xl border p-3 ${
+                  isSunlight
+                    ? 'bg-red-50 border-red-200'
+                    : 'bg-red-500/10 border-red-500/30'
+                }`}
+              >
+                <p
+                  className={`text-[11px] font-bold leading-relaxed ${
+                    isSunlight ? 'text-red-900' : 'text-red-100'
+                  }`}
+                >
+                  ¿Desvincular {nombresProveedores || 'el reloj'}? Se va a
+                  revocar el acceso a los datos de esa cuenta. Podés volver a
+                  conectarla cuando quieras.
+                </p>
+                <div className="mt-2.5 flex flex-wrap items-center gap-2">
+                  <button
+                    type="button"
+                    onClick={desvincularNube}
+                    disabled={desvinculandoNube}
+                    className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl bg-red-600 hover:bg-red-500 disabled:opacity-60 text-white text-[11px] font-black transition-colors"
+                  >
+                    {desvinculandoNube ? (
+                      <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                    ) : (
+                      <Link2Off className="w-3.5 h-3.5" />
+                    )}
+                    {desvinculandoNube
+                      ? 'Desvinculando...'
+                      : 'Sí, desvincular'}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setConfirmandoDesvinculo(false)}
+                    disabled={desvinculandoNube}
+                    className={`px-3 py-2 rounded-xl border text-[11px] font-black transition-colors ${
+                      isSunlight
+                        ? 'bg-white border-slate-300 text-slate-700 hover:bg-slate-50'
+                        : 'bg-slate-900 border-slate-700 text-slate-300 hover:bg-slate-800'
+                    }`}
+                  >
+                    Cancelar
+                  </button>
+                </div>
+              </div>
+            )}
+
+            {errorDesvinculo && (
+              <p
+                className={`mt-2 flex items-start gap-1.5 text-[11px] font-medium ${
+                  isSunlight ? 'text-red-800' : 'text-red-200'
+                }`}
+              >
+                <AlertCircle className="w-4 h-4 shrink-0 mt-0.5" />
+                <span>{errorDesvinculo}</span>
+              </p>
+            )}
+
+            {mensajeDesvinculo && (
+              <p
+                className={`mt-2 flex items-start gap-1.5 text-[11px] font-bold ${
+                  isSunlight ? 'text-emerald-700' : 'text-emerald-300'
+                }`}
+              >
+                <CheckCircle2 className="w-4 h-4 shrink-0 mt-0.5" />
+                <span>{mensajeDesvinculo}</span>
+              </p>
+            )}
           </>
         ) : (
           <>
@@ -751,6 +910,17 @@ export default function WatchLinkCard({ googleFitTestActivo = false }) {
                 {vinculandoNube ? 'Generando enlace...' : 'Conectar reloj'}
               </span>
             </button>
+
+            {mensajeDesvinculo && (
+              <p
+                className={`mt-3 flex items-start gap-1.5 text-[11px] font-bold ${
+                  isSunlight ? 'text-emerald-700' : 'text-emerald-300'
+                }`}
+              >
+                <CheckCircle2 className="w-4 h-4 shrink-0 mt-0.5" />
+                <span>{mensajeDesvinculo}</span>
+              </p>
+            )}
 
             {esperandoVinculo && (
               <div

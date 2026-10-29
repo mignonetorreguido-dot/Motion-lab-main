@@ -61,9 +61,9 @@ export default function MobileBottomBar() {
           )}
         </button>
 
-        {/* 2. ONBOARDING */}
+        {/* 2. COMENZAR / SELECCIÓN DE PERFIL */}
         <Link
-          href="/onboarding"
+          href="/comenzar"
           className={`flex flex-col items-center justify-center h-full rounded-xl transition-all active:scale-95 touch-target ${
             isSunlight
               ? 'text-blue-700 hover:bg-slate-100 font-bold'
@@ -71,7 +71,7 @@ export default function MobileBottomBar() {
           }`}
         >
           <UserPlus className="w-5 h-5" />
-          <span className="text-[11px] mt-0.5 font-bold">Alta</span>
+          <span className="text-[11px] mt-0.5 font-bold">Comenzar</span>
         </Link>
 
         {/* 3. MI ENTRENAMIENTO */}

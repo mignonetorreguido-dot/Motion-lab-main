@@ -135,6 +135,23 @@ Cuando el alumno presiona "Ver mi Diagnóstico":
 
 ---
 
+## 🔐 Acceso del Entrenador con PIN
+
+El botón **Comenzar** de la portada lleva a `/comenzar`, donde se elige el tipo de acceso:
+
+- **Soy Alumno:** crea una cuenta nueva (`/onboarding`) o inicia sesión (`/login`).
+- **Soy Profesor:** abre el panel exclusivo de Matías (`/admin`) con un PIN privado.
+
+El PIN se configura con la variable de entorno `TRAINER_PIN` (por ejemplo, `482913`) y se valida únicamente en el servidor. Si la variable no está definida, se usa el PIN de demostración `246810`; cambialo antes de publicar la web.
+
+```env
+TRAINER_PIN="482913"
+```
+
+> El entrenador ya no puede ingresar con email y contraseña desde el formulario de alumnos: su único acceso es el PIN.
+
+---
+
 ## 🔐 Cómo Activar el Ingreso con Google
 
 El botón **Continuar con Google** ya está integrado en el login y en el paso final del onboarding. Para que funcione en producción, hay que crear un cliente OAuth en Google Cloud y cargar dos variables en Vercel:
@@ -175,6 +192,6 @@ El botón **Continuar con Google** ya está integrado en el login y en el paso f
 2. Ve a [vercel.com](https://vercel.com) e inicia sesión con tu cuenta de GitHub.
 3. Haz clic en **"Add New Project"** y selecciona tu repositorio.
 4. En la sección **Storage**, conectá una base **Prisma Postgres**. Vercel configura `DATABASE_URL` automáticamente.
-5. Agregá también `NEXTAUTH_URL`, `NEXTAUTH_SECRET`, `NEXT_PUBLIC_WHATSAPP_PHONE` y, si usás Google, las credenciales OAuth.
+5. Agregá también `NEXTAUTH_URL`, `NEXTAUTH_SECRET`, `TRAINER_PIN`, `NEXT_PUBLIC_WHATSAPP_PHONE` y, si usás Google, las credenciales OAuth.
 6. Antes del primer uso, ejecutá una vez `npm run prisma:push` y `npm run db:seed` con la `DATABASE_URL` de producción.
 7. Hacé clic en **Deploy**. ¡En menos de 2 minutos tu web estará activa con un enlace HTTPS público gratuito!

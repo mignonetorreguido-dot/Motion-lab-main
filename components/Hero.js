@@ -69,7 +69,7 @@ export default function Hero() {
             {/* BOTONES DE ACCIÓN (TOUCH-TARGET MÓVIL ÓPTIMO) */}
             <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 sm:gap-4 mb-6 sm:mb-8">
               <Link
-                href="/onboarding"
+                href="/comenzar"
                 className="inline-flex items-center justify-center gap-2.5 px-6 sm:px-8 py-3.5 sm:py-4 text-[15px] sm:text-base font-black text-white bg-gradient-to-r from-blue-700 via-blue-600 to-sky-500 hover:from-blue-600 hover:to-sky-400 rounded-full transition-all shadow-xl shadow-blue-600/30 active:scale-95 touch-target"
               >
                 <span>Comenzar</span>

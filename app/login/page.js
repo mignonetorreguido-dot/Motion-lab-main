@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { signIn, getProviders } from 'next-auth/react';
-import { ArrowRight, LogIn, Loader2 } from 'lucide-react';
+import { ArrowRight, Eye, EyeOff, LogIn, Loader2 } from 'lucide-react';
 import Link from 'next/link';
 import Navbar from '@/components/Navbar';
 import { useTheme } from '@/components/ThemeProvider';
@@ -16,6 +16,7 @@ export default function LoginPage() {
   const { isSunlight } = useTheme();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [mostrarPassword, setMostrarPassword] = useState(false);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const [googleCargando, setGoogleCargando] = useState(false);
@@ -182,7 +183,7 @@ export default function LoginPage() {
               Iniciar Sesión
             </h1>
             <p className={`mt-2 text-sm font-semibold ${isSunlight ? 'text-slate-700' : 'text-slate-300'}`}>
-              Accede a tu cuenta de Motion Lab
+              Accedé a tu cuenta de alumno de Motion Lab
             </p>
 
             {/* INGRESO CON GOOGLE */}
@@ -241,22 +242,8 @@ export default function LoginPage() {
               <div className={`flex-grow h-px ${isSunlight ? 'bg-slate-300' : 'bg-slate-700'}`} />
             </div>
 
-            {/* ACCESOS RÁPIDOS DE PRUEBA */}
+            {/* ACCESO RÁPIDO DE PRUEBA PARA ALUMNOS */}
             <div className="mt-4 flex flex-wrap gap-2 justify-center">
-              <button
-                type="button"
-                onClick={() => {
-                  setEmail('matiasMotionLab');
-                  setPassword('laboratorio123');
-                }}
-                className={`text-[11px] font-bold py-1.5 px-3 rounded-full border transition-all ${
-                  isSunlight
-                    ? 'bg-blue-50 text-blue-800 border-blue-300 hover:bg-blue-100'
-                    : 'bg-blue-500/10 text-sky-300 border-blue-500/30 hover:bg-blue-500/20'
-                }`}
-              >
-                ⚡ Entrenador Matías
-              </button>
               <button
                 type="button"
                 onClick={() => {
@@ -301,18 +288,37 @@ export default function LoginPage() {
               }`}>
                 Contraseña
               </label>
-              <input
-                type="password"
-                required
-                className={`w-full rounded-2xl px-4 py-3.5 text-sm font-semibold transition-colors border touch-target ${
-                  isSunlight
-                    ? 'bg-white border-2 border-slate-300 text-slate-900 focus:border-blue-600 focus:outline-none'
-                    : 'bg-[#05070c] border border-slate-700 text-white focus:outline-none focus:border-sky-500'
-                }`}
-                placeholder="••••••••"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-              />
+              <div className="relative">
+                <input
+                  type={mostrarPassword ? 'text' : 'password'}
+                  required
+                  autoComplete="current-password"
+                  className={`w-full rounded-2xl pl-4 pr-12 py-3.5 text-sm font-semibold transition-colors border touch-target ${
+                    isSunlight
+                      ? 'bg-white border-2 border-slate-300 text-slate-900 focus:border-blue-600 focus:outline-none'
+                      : 'bg-[#05070c] border border-slate-700 text-white focus:outline-none focus:border-sky-500'
+                  }`}
+                  placeholder="••••••••"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                />
+                <button
+                  type="button"
+                  onClick={() => setMostrarPassword((valor) => !valor)}
+                  aria-label={mostrarPassword ? 'Ocultar contraseña' : 'Mostrar contraseña'}
+                  className={`absolute right-3 top-1/2 -translate-y-1/2 p-2 rounded-xl transition-colors ${
+                    isSunlight
+                      ? 'text-slate-600 hover:bg-slate-100'
+                      : 'text-slate-400 hover:bg-slate-800'
+                  }`}
+                >
+                  {mostrarPassword ? (
+                    <EyeOff className="w-5 h-5" />
+                  ) : (
+                    <Eye className="w-5 h-5" />
+                  )}
+                </button>
+              </div>
             </div>
 
             {error && (
@@ -333,9 +339,15 @@ export default function LoginPage() {
 
           <div className={`mt-6 pt-6 border-t text-center ${isSunlight ? 'border-slate-200' : 'border-slate-800'}`}>
             <p className={`text-sm font-semibold ${isSunlight ? 'text-slate-700' : 'text-slate-300'}`}>
-              ¿No tienes una cuenta?{' '}
+              ¿Sos alumno y todavía no tenés cuenta?{' '}
               <Link href="/onboarding" className="text-blue-600 hover:text-blue-800 font-black transition-colors">
-                Regístrate aquí
+                Creá tu cuenta
+              </Link>
+            </p>
+            <p className={`mt-3 text-xs font-semibold ${isSunlight ? 'text-slate-600' : 'text-slate-400'}`}>
+              ¿Sos el entrenador?{' '}
+              <Link href="/comenzar?rol=profesor" className="text-amber-600 hover:text-amber-800 font-black transition-colors">
+                Ingresá con tu PIN
               </Link>
             </p>
           </div>

@@ -21,7 +21,7 @@
 import { useState, useEffect } from 'react';
 import { 
   Users, CheckCircle2, Clock, Dumbbell, ShieldCheck, 
-  Search, Eye, Plus, Trash2, ArrowRight, X, Sparkles, Activity, RotateCcw,
+  Search, Eye, EyeOff, Plus, Trash2, ArrowRight, X, Sparkles, Activity, RotateCcw,
   HeartPulse, ChevronDown, ChevronUp
 } from 'lucide-react';
 import RoutineBuilder from './RoutineBuilder';
@@ -112,6 +112,7 @@ export default function DashboardTrainer() {
   // Novedades: Edición y Creación de usuarios
   const [editandoPerfil, setEditandoPerfil] = useState(false);
   const [esNuevoUsuario, setEsNuevoUsuario] = useState(false);
+  const [mostrarPassword, setMostrarPassword] = useState(false);
   const [formData, setFormData] = useState({
     nombre: '', apellido: '', email: '', password: '', whatsapp: '',
     peso: '', altura: '', lesiones: '', estadoPago: 'PENDIENTE', tipoPlan: 'BASE',
@@ -123,6 +124,7 @@ export default function DashboardTrainer() {
   const abrirModalNuevoUsuario = () => {
     setEsNuevoUsuario(true);
     setEditandoPerfil(true);
+    setMostrarPassword(false);
     setFormData({
       nombre: '', apellido: '', email: '', password: '', whatsapp: '',
       peso: '', altura: '', lesiones: '', estadoPago: 'PENDIENTE', tipoPlan: 'BASE',
@@ -142,6 +144,7 @@ export default function DashboardTrainer() {
   const abrirModalAlumno = async (alumno) => {
     setEsNuevoUsuario(false);
     setEditandoPerfil(false);
+    setMostrarPassword(false);
     
     // Poblar formData por si quiere editar
     setFormData({
@@ -910,11 +913,29 @@ export default function DashboardTrainer() {
                     <label className={`block text-[10px] uppercase font-bold mb-1 ${isSunlight ? 'text-slate-600' : 'text-slate-400'}`}>
                       {esNuevoUsuario ? 'Contraseña' : 'Nueva Contraseña (Opcional)'}
                     </label>
-                    <input type="text" placeholder={esNuevoUsuario ? '' : 'Dejar en blanco para no cambiar'} value={formData.password} onChange={e => setFormData({...formData, password: e.target.value})} className={`w-full rounded-lg px-3 py-2 text-sm outline-none focus:border-sky-500 border ${
-                      isSunlight
-                        ? 'bg-white border-slate-300 text-slate-900'
-                        : 'bg-slate-950 border-slate-800 text-white'
-                    }`} />
+                    <div className="relative">
+                      <input type={mostrarPassword ? 'text' : 'password'} autoComplete="new-password" placeholder={esNuevoUsuario ? '' : 'Dejar en blanco para no cambiar'} value={formData.password} onChange={e => setFormData({...formData, password: e.target.value})} className={`w-full rounded-lg pl-3 pr-10 py-2 text-sm outline-none focus:border-sky-500 border ${
+                        isSunlight
+                          ? 'bg-white border-slate-300 text-slate-900'
+                          : 'bg-slate-950 border-slate-800 text-white'
+                      }`} />
+                      <button
+                        type="button"
+                        onClick={() => setMostrarPassword((valor) => !valor)}
+                        aria-label={mostrarPassword ? 'Ocultar contraseña' : 'Mostrar contraseña'}
+                        className={`absolute right-2 top-1/2 -translate-y-1/2 p-1.5 rounded-md transition-colors ${
+                          isSunlight
+                            ? 'text-slate-600 hover:bg-slate-100'
+                            : 'text-slate-400 hover:bg-slate-800'
+                        }`}
+                      >
+                        {mostrarPassword ? (
+                          <EyeOff className="w-4 h-4" />
+                        ) : (
+                          <Eye className="w-4 h-4" />
+                        )}
+                      </button>
+                    </div>
                   </div>
                   <div>
                     <label className={`block text-[10px] uppercase font-bold mb-1 ${isSunlight ? 'text-slate-600' : 'text-slate-400'}`}>WhatsApp</label>

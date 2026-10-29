@@ -2,7 +2,8 @@
  * ========================================================================
  * CONFIGURACIÓN DE NEXTAUTH (app/api/auth/[...nextauth]/route.js)
  * ========================================================================
- * Maneja la autenticación social (Google OAuth) y tradicional (Email / Password).
+ * Maneja la autenticación social (Google OAuth), tradicional (Email / Password)
+ * para alumnos y el acceso exclusivo del entrenador con PIN.
  * Usa sesiones JWT y persiste/actualiza el usuario de Google manualmente en
  * PostgreSQL desde el callback `jwt`, sin depender del adaptador estándar.
  *
@@ -28,6 +29,7 @@ import {
   codificarTokenGoogleFit,
   googleFitTestActivo,
 } from '@/lib/googleFit';
+import { pinEntrenadorPersonalizado, verificarPinEntrenador } from '@/lib/trainerPin';
 
 const googleEstaConfigurado = Boolean(
   process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET
@@ -53,6 +55,77 @@ const googleProvider = googleEstaConfigurado
     })
   : null;
 
+/**
+ * PROVEEDOR EXCLUSIVO DEL ENTRENADOR (PIN)
+ * ----------------------------------------
+ * El profesor no inicia sesión con email y contraseña: escribe un PIN que
+ * sólo conoce él. El PIN se compara en el servidor contra la variable de
+ * entorno TRAINER_PIN y nunca se envía ni se guarda en el navegador como
+ * parte de la sesión.
+ */
+const trainerPinProvider = CredentialsProvider({
+  id: 'trainer-pin',
+  name: 'Acceso del Entrenador (PIN)',
+  credentials: {
+    pin: { label: 'PIN del profesor', type: 'password' },
+  },
+  async authorize(credentials) {
+    const pin = String(credentials?.pin || '').trim();
+
+    if (!pin) {
+      throw new Error('Ingresá el PIN del profesor.');
+    }
+
+    if (!pinEntrenadorPersonalizado()) {
+      console.warn(
+        '⚠️ TRAINER_PIN no está configurado: se usa el PIN de demostración. Cambialo antes de publicar la web.'
+      );
+    }
+
+    if (!verificarPinEntrenador(pin)) {
+      // Pequeña espera para dificultar los intentos automatizados por fuerza
+      // bruta. El PIN recomendado tiene 6 o más dígitos.
+      await new Promise((resolve) => setTimeout(resolve, 800));
+      throw new Error('El PIN del profesor es incorrecto.');
+    }
+
+    // Aseguramos que la cuenta del entrenador exista en la base de datos.
+    // Si PostgreSQL está en modo demo/offline, el acceso con PIN igualmente
+    // funciona porque la sesión se construye con los datos de abajo.
+    let entrenadorDb = null;
+    try {
+      entrenadorDb = await prisma.usuario.upsert({
+        where: { id: 'matias-coach-id' },
+        update: {},
+        create: {
+          id: 'matias-coach-id',
+          nombre: 'Matías',
+          apellido: 'Entrenador',
+          email: 'matias@motionlab.fit',
+          rol: 'ENTRENADOR',
+          estadoPago: 'ACTIVO',
+          tipoPlan: 'PREMIUM',
+        },
+      });
+    } catch {
+      // Ignorar si PostgreSQL está en modo offline/demo.
+    }
+
+    const nombreEntrenador = entrenadorDb
+      ? `${entrenadorDb.nombre} ${entrenadorDb.apellido || ''}`.trim()
+      : '';
+
+    return {
+      id: entrenadorDb?.id || 'matias-coach-id',
+      name: nombreEntrenador || 'Matías Entrenador',
+      email: entrenadorDb?.email || 'matias@motionlab.fit',
+      rol: 'ENTRENADOR',
+      estadoPago: 'ACTIVO',
+      tipoPlan: 'PREMIUM',
+    };
+  },
+});
+
 export const authOptions = {
   session: {
     // Usamos estrategia JWT para compatibilidad total con Credentials y Google.
@@ -67,7 +140,10 @@ export const authOptions = {
     // 1. PROVEEDOR GOOGLE OAUTH (solo si las credenciales están configuradas)
     ...(googleProvider ? [googleProvider] : []),
 
-    // 2. PROVEEDOR TRADICIONAL (Email y Contraseña)
+    // 2. ACCESO EXCLUSIVO DEL ENTRENADOR CON PIN
+    trainerPinProvider,
+
+    // 3. PROVEEDOR TRADICIONAL (Email y Contraseña para alumnos)
     CredentialsProvider({
       name: 'Credenciales',
       credentials: {
@@ -82,47 +158,21 @@ export const authOptions = {
         const inputUser = credentials.email.toLowerCase().trim();
         const inputPass = credentials.password.trim();
 
-        // 1. Credenciales maestras para el Entrenador Matías (Panel Admin)
-        const esUsuarioEntrenador = [
+        // El entrenador tiene un acceso exclusivo con PIN. Bloqueamos sus
+        // identificadores incluso si la base de datos está en modo demo.
+        const identificadoresEntrenador = [
           'matiasmotionlab',
           'matias@motionlab.fit',
           'matias@motionlab.com',
-          'admin',
-          'entrenador',
-          'matias',
-        ].includes(inputUser);
+        ];
 
-        if (esUsuarioEntrenador && (inputPass === 'laboratorio123' || inputPass === 'admin123')) {
-          // Asegurar que el entrenador exista en la BD si PostgreSQL está conectado
-          try {
-            await prisma.usuario.upsert({
-              where: { id: 'matias-coach-id' },
-              update: {},
-              create: {
-                id: 'matias-coach-id',
-                nombre: 'Matías',
-                apellido: 'Entrenador',
-                email: 'matias@motionlab.fit',
-                rol: 'ENTRENADOR',
-                estadoPago: 'ACTIVO',
-                tipoPlan: 'PREMIUM',
-              },
-            });
-          } catch (e) {
-            // Ignorar si PostgreSQL está en modo offline/demo
-          }
-
-          return {
-            id: 'matias-coach-id',
-            name: 'Matías Entrenador',
-            email: 'matias@motionlab.fit',
-            rol: 'ENTRENADOR',
-            estadoPago: 'ACTIVO',
-            tipoPlan: 'PREMIUM',
-          };
+        if (identificadoresEntrenador.includes(inputUser)) {
+          throw new Error(
+            'El acceso del entrenador es mediante PIN. Entrá desde "Comenzar" > "Soy Profesor".'
+          );
         }
 
-        // 2. Alumnos de prueba / demostración instantánea
+        // 1. Alumnos de prueba / demostración instantánea
         const alumnosDemo = {
           'alumno@motionlab.com': {
             id: 'demo-alumno-1',
@@ -177,7 +227,7 @@ export const authOptions = {
           };
         }
 
-        // 3. Buscar al usuario en la base de datos por email
+        // 2. Buscar al usuario en la base de datos por email
         let usuario = null;
         try {
           usuario = await prisma.usuario.findUnique({
@@ -188,6 +238,12 @@ export const authOptions = {
         }
 
         if (usuario) {
+          // El panel del entrenador es de acceso exclusivo por PIN. Aunque
+          // alguien conozca su email, no puede entrar por este formulario.
+          if (usuario.rol === 'ENTRENADOR') {
+            throw new Error('El acceso del entrenador es mediante PIN.');
+          }
+
           // Si tiene passwordHash encriptado con bcrypt
           if (usuario.passwordHash) {
             const passwordValida = await bcrypt.compare(inputPass, usuario.passwordHash);
@@ -309,6 +365,12 @@ export const authOptions = {
             where: { email },
           });
 
+          // La cuenta del entrenador no se abre con Google: su único acceso
+          // es el PIN del panel. Evita que alguien con su correo entre sin PIN.
+          if (usuarioDb?.rol === 'ENTRENADOR') {
+            throw new Error('El acceso del entrenador es mediante PIN.');
+          }
+
           if (!usuarioDb) {
             const nombreCompleto = (user.name || email.split('@')[0]).trim();
             const [nombre, ...apellidoPartes] = nombreCompleto.split(/\s+/);
@@ -338,6 +400,9 @@ export const authOptions = {
           return token;
         } catch (error) {
           console.error('No se pudo registrar/recuperar el usuario de Google:', error);
+          if (error?.message === 'El acceso del entrenador es mediante PIN.') {
+            throw error;
+          }
           throw new Error(
             'No pudimos crear tu cuenta con Google. Intentá de nuevo.'
           );
