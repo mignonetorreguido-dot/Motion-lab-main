@@ -108,6 +108,9 @@ export default function DashboardTrainer() {
   const [eliminando, setEliminando] = useState(false);
   const [confirmacionModal, setConfirmacionModal] = useState({
     abierto: false,
+    paso: 1,
+    requiereDobleVerificacion: false,
+    nombreAlumno: '',
     titulo: '',
     mensaje: '',
     tipo: '',
@@ -208,18 +211,36 @@ export default function DashboardTrainer() {
   };
 
   const pedirConfirmacionEliminarAlumno = (alumno) => {
+    const nombreCompleto = `${alumno.nombre} ${alumno.apellido || ''}`.trim();
     setConfirmacionModal({
       abierto: true,
-      titulo: `¿Eliminar perfil de ${alumno.nombre} ${alumno.apellido || ''}?`,
-      mensaje: `Se borrará la cuenta de ${alumno.email}, su ficha deportiva, check-ins y todas las rutinas asociadas. Esta acción es permanente.`,
+      paso: 1,
+      requiereDobleVerificacion: true,
+      nombreAlumno: nombreCompleto,
+      titulo: `¿Eliminar al alumno ${nombreCompleto}?`,
+      mensaje: `Primera verificación: Se eliminará la cuenta (${alumno.email}), su ficha deportiva, check-ins y todas las rutinas asociadas.`,
       tipo: 'ALUMNO',
       payload: alumno.id,
     });
   };
 
+  const avanzarSegundaVerificacion = () => {
+    setConfirmacionModal((prev) => ({
+      ...prev,
+      paso: 2,
+      titulo: `⚠️ Segunda Verificación Definitiva`,
+      mensaje: prev.nombreAlumno
+        ? `¿Estás 100% seguro de eliminar definitivamente al alumno "${prev.nombreAlumno}"? Esta acción es irreversible y no se podrá recuperar su cuenta ni su progreso.`
+        : '¿Confirmas de forma definitiva ejecutar esta eliminación? Esta acción es irreversible.',
+    }));
+  };
+
   const pedirConfirmacionEliminarRutinaActiva = (alumno) => {
     setConfirmacionModal({
       abierto: true,
+      paso: 1,
+      requiereDobleVerificacion: false,
+      nombreAlumno: '',
       titulo: `¿Eliminar la rutina activa de ${alumno.nombre}?`,
       mensaje: 'El plan semanal asignado será eliminado. El alumno quedará sin rutina activa para que puedas asignarle una nueva.',
       tipo: 'RUTINA_ACTIVA',
@@ -230,6 +251,9 @@ export default function DashboardTrainer() {
   const pedirConfirmacionEliminarDia = (dia, alumnoId = null) => {
     setConfirmacionModal({
       abierto: true,
+      paso: 1,
+      requiereDobleVerificacion: false,
+      nombreAlumno: '',
       titulo: `¿Eliminar "${dia.nombre}"?`,
       mensaje: 'Esta sesión/día de entrenamiento será eliminada de forma permanente.',
       tipo: 'RUTINA_DIA',
@@ -240,6 +264,9 @@ export default function DashboardTrainer() {
   const pedirConfirmacionEliminarRutinasEnDesuso = (alumno) => {
     setConfirmacionModal({
       abierto: true,
+      paso: 1,
+      requiereDobleVerificacion: false,
+      nombreAlumno: '',
       titulo: `¿Limpiar rutinas en desuso de ${alumno.nombre}?`,
       mensaje: 'Se eliminarán permanentemente todas las rutinas completadas o archivadas que ya no están activas.',
       tipo: 'RUTINAS_DESUSO_ALUMNO',
@@ -1047,14 +1074,15 @@ export default function DashboardTrainer() {
                           </button>
                           <button
                             onClick={() => pedirConfirmacionEliminarAlumno(alumno)}
-                            title="Eliminar perfil del alumno"
-                            className={`p-2 rounded-xl transition-all border ${
+                            title="Eliminar alumno (con doble verificación)"
+                            className={`inline-flex items-center gap-1.5 py-2 px-3 rounded-xl font-bold text-xs transition-all border ${
                               isSunlight
                                 ? 'bg-red-50 hover:bg-red-100 text-red-600 border-red-200'
                                 : 'bg-red-500/10 hover:bg-red-500/20 text-red-400 border-red-500/20'
                             }`}
                           >
-                            <Trash2 className="w-4 h-4" />
+                            <Trash2 className="w-3.5 h-3.5" />
+                            <span>Eliminar</span>
                           </button>
                         </div>
                       </td>
@@ -2046,22 +2074,65 @@ export default function DashboardTrainer() {
         </div>
       )}
 
-      {/* MODAL DE CONFIRMACIÓN DE ELIMINACIÓN */}
+      {/* MODAL DE CONFIRMACIÓN DE ELIMINACIÓN (CON DOBLE VERIFICACIÓN PARA ALUMNOS) */}
       {confirmacionModal.abierto && (
         <div className="fixed inset-0 z-[60] !m-0 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-fadeIn">
           <div className={`border rounded-3xl max-w-md w-full p-6 shadow-2xl relative transition-colors ${
             isSunlight ? 'bg-white border-slate-300 text-slate-900' : 'bg-[#0f172a] border-slate-800 text-white'
           }`}>
-            <div className="w-12 h-12 rounded-2xl bg-red-500/10 border border-red-500/20 text-red-500 flex items-center justify-center mb-4">
-              <Trash2 className="w-6 h-6" />
+            <div className="flex items-center justify-between gap-2 mb-4">
+              <div className={`w-12 h-12 rounded-2xl border flex items-center justify-center ${
+                confirmacionModal.requiereDobleVerificacion && confirmacionModal.paso === 1
+                  ? 'bg-amber-500/10 border-amber-500/20 text-amber-500'
+                  : 'bg-red-500/10 border-red-500/20 text-red-500'
+              }`}>
+                <Trash2 className="w-6 h-6" />
+              </div>
+
+              {confirmacionModal.requiereDobleVerificacion && (
+                <span className={`px-3 py-1 rounded-full text-[11px] font-black uppercase tracking-wider border ${
+                  confirmacionModal.paso === 1
+                    ? isSunlight
+                      ? 'bg-amber-100 text-amber-800 border-amber-300'
+                      : 'bg-amber-500/20 text-amber-300 border-amber-500/40'
+                    : isSunlight
+                      ? 'bg-red-100 text-red-800 border-red-300 animate-pulse'
+                      : 'bg-red-500/20 text-red-300 border-red-500/40 animate-pulse'
+                }`}>
+                  {confirmacionModal.paso === 1 ? 'Verificación 1 de 2' : 'Verificación 2 de 2 • Final'}
+                </span>
+              )}
             </div>
+
             <h3 className="text-lg font-black">{confirmacionModal.titulo}</h3>
             <p className={`text-xs mt-2 leading-relaxed ${isSunlight ? 'text-slate-600' : 'text-slate-400'}`}>
               {confirmacionModal.mensaje}
             </p>
+
+            {confirmacionModal.requiereDobleVerificacion && confirmacionModal.paso === 2 && (
+              <div className={`mt-4 p-3 rounded-xl border text-xs font-semibold ${
+                isSunlight
+                  ? 'bg-red-50 border-red-200 text-red-800'
+                  : 'bg-red-950/40 border-red-500/30 text-red-200'
+              }`}>
+                🚨 Atención: Al confirmar este segundo paso, el alumno y todos sus registros serán eliminados de inmediato de la base de datos.
+              </div>
+            )}
+
             <div className="mt-6 flex items-center justify-end gap-3">
               <button
-                onClick={() => setConfirmacionModal({ abierto: false, titulo: '', mensaje: '', tipo: '', payload: null })}
+                onClick={() =>
+                  setConfirmacionModal({
+                    abierto: false,
+                    paso: 1,
+                    requiereDobleVerificacion: false,
+                    nombreAlumno: '',
+                    titulo: '',
+                    mensaje: '',
+                    tipo: '',
+                    payload: null,
+                  })
+                }
                 disabled={eliminando}
                 className={`px-4 py-2 rounded-xl text-xs font-bold transition-colors ${
                   isSunlight ? 'bg-slate-100 hover:bg-slate-200 text-slate-700' : 'bg-slate-800 hover:bg-slate-700 text-slate-300'
@@ -2069,23 +2140,38 @@ export default function DashboardTrainer() {
               >
                 Cancelar
               </button>
-              <button
-                onClick={ejecutarAccionConfirmada}
-                disabled={eliminando}
-                className="px-4 py-2 rounded-xl text-xs font-black bg-red-600 hover:bg-red-500 text-white flex items-center gap-1.5 transition-all shadow-md shadow-red-600/20 disabled:opacity-50"
-              >
-                {eliminando ? (
-                  <>
-                    <div className="w-3.5 h-3.5 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                    <span>Eliminando...</span>
-                  </>
-                ) : (
-                  <>
-                    <Trash2 className="w-3.5 h-3.5" />
-                    <span>Confirmar Eliminación</span>
-                  </>
-                )}
-              </button>
+
+              {confirmacionModal.requiereDobleVerificacion && confirmacionModal.paso === 1 ? (
+                <button
+                  onClick={avanzarSegundaVerificacion}
+                  className="px-4 py-2 rounded-xl text-xs font-black bg-amber-500 hover:bg-amber-400 text-slate-950 flex items-center gap-1.5 transition-all shadow-md shadow-amber-500/20"
+                >
+                  <span>Continuar a 2da Verificación</span>
+                  <ArrowRight className="w-3.5 h-3.5" />
+                </button>
+              ) : (
+                <button
+                  onClick={ejecutarAccionConfirmada}
+                  disabled={eliminando}
+                  className="px-4 py-2 rounded-xl text-xs font-black bg-red-600 hover:bg-red-500 text-white flex items-center gap-1.5 transition-all shadow-md shadow-red-600/20 disabled:opacity-50"
+                >
+                  {eliminando ? (
+                    <>
+                      <div className="w-3.5 h-3.5 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                      <span>Eliminando...</span>
+                    </>
+                  ) : (
+                    <>
+                      <Trash2 className="w-3.5 h-3.5" />
+                      <span>
+                        {confirmacionModal.requiereDobleVerificacion
+                          ? 'Sí, Eliminar Definitivamente'
+                          : 'Confirmar Eliminación'}
+                      </span>
+                    </>
+                  )}
+                </button>
+              )}
             </div>
           </div>
         </div>
