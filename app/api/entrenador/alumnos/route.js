@@ -16,6 +16,8 @@ import {
   obtenerAlumnoDeStore,
   obtenerAlumnosDeStore,
   obtenerChequeosBienestarDeStore,
+  eliminarAlumnoDeStore,
+  esAlumnoEliminadoEnStore,
 } from '@/lib/fallbackStore';
 import { ALUMNOS_DEMO } from '@/lib/demoAlumnos';
 import { actualizarAlumno } from '@/lib/actualizarAlumno';
@@ -194,9 +196,12 @@ export async function GET() {
       }
     }
 
+    // Filtrar alumnos que hayan sido eliminados en la base de datos o en memoria
+    alumnos = alumnos.filter((alumno) => !esAlumnoEliminadoEnStore(alumno.id));
+
     // Datos de demostración si la base de datos está vacía o sin inicializar
     if (!alumnos || alumnos.length === 0) {
-      alumnos = ALUMNOS_DEMO;
+      alumnos = ALUMNOS_DEMO.filter((alumno) => !esAlumnoEliminadoEnStore(alumno.id));
     }
 
     // Aplicar los cambios guardados en memoria (modo demo) y sumar los
@@ -284,10 +289,12 @@ export async function GET() {
       };
     });
 
+    const alumnosActivos = alumnos.filter((alumno) => !esAlumnoEliminadoEnStore(alumno.id));
+
     return NextResponse.json({
       success: true,
-      total: alumnos.length,
-      alumnos,
+      total: alumnosActivos.length,
+      alumnos: alumnosActivos,
     });
   } catch (error) {
     console.error('❌ Error al obtener alumnos:', error);
@@ -499,6 +506,93 @@ export async function POST(req) {
   } catch (error) {
     console.error('Error al crear alumno:', error);
     return NextResponse.json({ success: false, error: 'Error al crear el alumno' }, { status: 500 });
+  }
+}
+
+export async function DELETE(req) {
+  const auth = await requireTrainer();
+  if (auth.response) return auth.response;
+
+  try {
+    const { searchParams } = new URL(req.url);
+    let id = searchParams.get('id');
+    let enDesuso = searchParams.get('enDesuso') === 'true';
+    let ids = [];
+
+    try {
+      const body = await req.json();
+      if (body.id) id = body.id;
+      if (body.enDesuso !== undefined) enDesuso = Boolean(body.enDesuso);
+      if (Array.isArray(body.ids)) ids = body.ids;
+    } catch {
+      // Si no hay body JSON, se usan los searchParams
+    }
+
+    if (id) {
+      ids.push(id);
+    }
+
+    if (enDesuso) {
+      // Eliminar alumnos en desuso (con pago pendiente y sin sesiones)
+      let alumnosCandidatos = [];
+      if (process.env.DATABASE_URL) {
+        try {
+          const enDB = await prisma.usuario.findMany({
+            where: {
+              rol: 'ALUMNO',
+              estadoPago: 'PENDIENTE',
+              rutinasComoAlumno: { none: {} },
+            },
+            select: { id: true },
+          });
+          alumnosCandidatos = enDB.map((u) => u.id);
+        } catch (dbErr) {
+          console.warn('⚠️ Error al buscar alumnos en desuso en DB:', dbErr.message);
+        }
+      }
+
+      // También chequear en store y demo
+      const enStore = obtenerAlumnosDeStore()
+        .filter((a) => a.estadoPago === 'PENDIENTE' && (!a.sesionesCompletadas || a.sesionesCompletadas === 0))
+        .map((a) => a.id);
+
+      const todosCandidatos = Array.from(new Set([...alumnosCandidatos, ...enStore]));
+      ids = Array.from(new Set([...ids, ...todosCandidatos]));
+    }
+
+    if (ids.length === 0) {
+      return NextResponse.json(
+        { success: false, error: 'No se especificaron alumnos para eliminar' },
+        { status: 400 }
+      );
+    }
+
+    for (const alumnoId of ids) {
+      if (process.env.DATABASE_URL) {
+        try {
+          await prisma.rutinaRealizada.deleteMany({ where: { alumnoId } });
+          await prisma.chequeoBienestar.deleteMany({ where: { alumnoId } });
+          await prisma.usuario.delete({ where: { id: alumnoId } });
+        } catch (dbErr) {
+          console.warn(`⚠️ Error al eliminar alumno ${alumnoId} en DB:`, dbErr.message);
+        }
+      }
+      eliminarAlumnoDeStore(alumnoId);
+    }
+
+    return NextResponse.json({
+      success: true,
+      mensaje: ids.length === 1
+        ? 'Perfil de alumno eliminado exitosamente'
+        : `${ids.length} perfiles eliminados exitosamente`,
+      eliminados: ids,
+    });
+  } catch (error) {
+    console.error('Error al procesar eliminación de alumnos:', error);
+    return NextResponse.json(
+      { success: false, error: 'Error al eliminar alumnos' },
+      { status: 500 }
+    );
   }
 }
 

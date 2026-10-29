@@ -101,9 +101,18 @@ export default function DashboardTrainer() {
   const [notificacion, setNotificacion] = useState('');
   
   const [rutinaActivaAlumno, setRutinaActivaAlumno] = useState(null);
+  const [rutinasEnDesusoAlumno, setRutinasEnDesusoAlumno] = useState([]);
   const [cargandoRutina, setCargandoRutina] = useState(false);
   const [mostrarConstructor, setMostrarConstructor] = useState(false);
   const [diaDetalleAbierto, setDiaDetalleAbierto] = useState(null);
+  const [eliminando, setEliminando] = useState(false);
+  const [confirmacionModal, setConfirmacionModal] = useState({
+    abierto: false,
+    titulo: '',
+    mensaje: '',
+    tipo: '',
+    payload: null,
+  });
   
   const [diasParaConstructor, setDiasParaConstructor] = useState(null);
   const [cargandoImportacion, setCargandoImportacion] = useState(false);
@@ -134,6 +143,7 @@ export default function DashboardTrainer() {
     });
     setAlumnoSeleccionado(null);
     setRutinaActivaAlumno(null);
+    setRutinasEnDesusoAlumno([]);
     setMostrarConstructor(false);
     setDiaDetalleAbierto(null);
     setDiasParaConstructor(null);
@@ -170,6 +180,7 @@ export default function DashboardTrainer() {
 
     setAlumnoSeleccionado(alumno);
     setRutinaActivaAlumno(null);
+    setRutinasEnDesusoAlumno([]);
     setMostrarConstructor(false);
     setDiaDetalleAbierto(null);
     setDiasParaConstructor(null);
@@ -178,18 +189,162 @@ export default function DashboardTrainer() {
     setCargandoRutina(true);
 
     try {
-      const res = await fetch(`/api/rutinas?alumnoId=${alumno.id}`);
+      const res = await fetch(`/api/rutinas?alumnoId=${alumno.id}&incluirCompletadas=true`);
       const data = await res.json();
       if (data.success && data.planSemanal && data.planSemanal.length > 0) {
         setRutinaActivaAlumno(data.planSemanal);
       } else {
         setMostrarConstructor(true);
       }
+      if (data.rutinasEnDesuso && data.rutinasEnDesuso.length > 0) {
+        setRutinasEnDesusoAlumno(data.rutinasEnDesuso);
+      }
     } catch(err) {
       console.error(err);
       setMostrarConstructor(true);
     } finally {
       setCargandoRutina(false);
+    }
+  };
+
+  const pedirConfirmacionEliminarAlumno = (alumno) => {
+    setConfirmacionModal({
+      abierto: true,
+      titulo: `¿Eliminar perfil de ${alumno.nombre} ${alumno.apellido || ''}?`,
+      mensaje: `Se borrará la cuenta de ${alumno.email}, su ficha deportiva, check-ins y todas las rutinas asociadas. Esta acción es permanente.`,
+      tipo: 'ALUMNO',
+      payload: alumno.id,
+    });
+  };
+
+  const pedirConfirmacionEliminarRutinaActiva = (alumno) => {
+    setConfirmacionModal({
+      abierto: true,
+      titulo: `¿Eliminar la rutina activa de ${alumno.nombre}?`,
+      mensaje: 'El plan semanal asignado será eliminado. El alumno quedará sin rutina activa para que puedas asignarle una nueva.',
+      tipo: 'RUTINA_ACTIVA',
+      payload: alumno.id,
+    });
+  };
+
+  const pedirConfirmacionEliminarDia = (dia, alumnoId = null) => {
+    setConfirmacionModal({
+      abierto: true,
+      titulo: `¿Eliminar "${dia.nombre}"?`,
+      mensaje: 'Esta sesión/día de entrenamiento será eliminada de forma permanente.',
+      tipo: 'RUTINA_DIA',
+      payload: { rutinaId: dia.id, alumnoId: alumnoId || alumnoSeleccionado?.id },
+    });
+  };
+
+  const pedirConfirmacionEliminarRutinasEnDesuso = (alumno) => {
+    setConfirmacionModal({
+      abierto: true,
+      titulo: `¿Limpiar rutinas en desuso de ${alumno.nombre}?`,
+      mensaje: 'Se eliminarán permanentemente todas las rutinas completadas o archivadas que ya no están activas.',
+      tipo: 'RUTINAS_DESUSO_ALUMNO',
+      payload: alumno.id,
+    });
+  };
+
+  const ejecutarAccionConfirmada = async () => {
+    if (!confirmacionModal.tipo) return;
+    setEliminando(true);
+
+    try {
+      if (confirmacionModal.tipo === 'ALUMNO') {
+        const alumnoId = confirmacionModal.payload;
+        const res = await fetch(`/api/entrenador/alumnos/${alumnoId}`, {
+          method: 'DELETE',
+        });
+        const data = await res.json();
+        if (data.success) {
+          setAlumnos((prev) => prev.filter((a) => a.id !== alumnoId));
+          if (alumnoSeleccionado?.id === alumnoId) {
+            setModalAbierto(false);
+            setAlumnoSeleccionado(null);
+          }
+          mostrarAviso('Perfil de alumno eliminado con éxito');
+        } else {
+          alert(data.error || 'No se pudo eliminar el alumno');
+        }
+      } else if (confirmacionModal.tipo === 'RUTINA_ACTIVA') {
+        const alumnoId = confirmacionModal.payload;
+        const res = await fetch(`/api/rutinas?alumnoId=${alumnoId}`, {
+          method: 'DELETE',
+        });
+        const data = await res.json();
+        if (data.success) {
+          setRutinaActivaAlumno(null);
+          setMostrarConstructor(true);
+          cargarAlumnos();
+          mostrarAviso('Rutina activa eliminada con éxito');
+        } else {
+          alert(data.error || 'No se pudo eliminar la rutina');
+        }
+      } else if (confirmacionModal.tipo === 'RUTINA_DIA') {
+        const { rutinaId, alumnoId } = confirmacionModal.payload;
+        const res = await fetch(`/api/rutinas?rutinaId=${rutinaId}&alumnoId=${alumnoId}`, {
+          method: 'DELETE',
+        });
+        const data = await res.json();
+        if (data.success) {
+          setRutinaActivaAlumno((prev) => {
+            if (!prev) return null;
+            const filtrada = prev.filter((d) => d.id !== rutinaId);
+            if (filtrada.length === 0) {
+              setMostrarConstructor(true);
+              return null;
+            }
+            return filtrada;
+          });
+          setRutinasEnDesusoAlumno((prev) => prev.filter((r) => r.id !== rutinaId));
+          cargarAlumnos();
+          mostrarAviso('Día de rutina eliminado');
+        } else {
+          alert(data.error || 'No se pudo eliminar el día');
+        }
+      } else if (confirmacionModal.tipo === 'RUTINAS_DESUSO_ALUMNO') {
+        const alumnoId = confirmacionModal.payload;
+        const res = await fetch(`/api/rutinas?alumnoId=${alumnoId}&enDesuso=true`, {
+          method: 'DELETE',
+        });
+        const data = await res.json();
+        if (data.success) {
+          setRutinasEnDesusoAlumno([]);
+          mostrarAviso('Rutinas en desuso del alumno eliminadas');
+        } else {
+          alert(data.error || 'No se pudieron eliminar las rutinas');
+        }
+      } else if (confirmacionModal.tipo === 'PERFILES_DESUSO') {
+        const res = await fetch('/api/entrenador/alumnos?enDesuso=true', {
+          method: 'DELETE',
+        });
+        const data = await res.json();
+        if (data.success) {
+          cargarAlumnos();
+          mostrarAviso(data.mensaje || 'Perfiles en desuso depurados con éxito');
+        } else {
+          alert(data.error || 'No se pudieron depurar los perfiles');
+        }
+      } else if (confirmacionModal.tipo === 'RUTINAS_DESUSO_GLOBAL') {
+        const res = await fetch('/api/rutinas?enDesuso=true', {
+          method: 'DELETE',
+        });
+        const data = await res.json();
+        if (data.success) {
+          setRutinasEnDesusoAlumno([]);
+          mostrarAviso('Todas las rutinas en desuso fueron eliminadas');
+        } else {
+          alert(data.error || 'No se pudieron limpiar las rutinas');
+        }
+      }
+    } catch (err) {
+      console.error('Error en eliminación:', err);
+      alert('Error de conexión al procesar la eliminación');
+    } finally {
+      setEliminando(false);
+      setConfirmacionModal({ abierto: false, titulo: '', mensaje: '', tipo: '', payload: null });
     }
   };
 
@@ -421,8 +576,18 @@ export default function DashboardTrainer() {
     setTimeout(() => setNotificacion(''), 4000);
   };
 
+  // Identifica si un alumno está en desuso (sin actividad física ni pagos activos)
+  const esAlumnoEnDesuso = (a) => {
+    const sinSesiones = !a.sesionesCompletadas || Number(a.sesionesCompletadas) === 0;
+    const pagoPendiente = a.estadoPago === 'PENDIENTE';
+    const sinRutinas = !a.rutinasComoAlumno || a.rutinasComoAlumno.length === 0;
+    return (sinSesiones && pagoPendiente) || (sinSesiones && sinRutinas);
+  };
+
   // El panel muestra sólo alumnos reales: excluimos las cuentas de prueba.
   const alumnosVisibles = alumnos.filter((alumno) => !esAlumnoDemoPanel(alumno));
+
+  const totalEnDesuso = alumnosVisibles.filter(esAlumnoEnDesuso).length;
 
   // Filtrado de alumnos
   const alumnosFiltrados = alumnosVisibles.filter((a) => {
@@ -438,6 +603,8 @@ export default function DashboardTrainer() {
           a.alertaBienestar === 'AMARILLA' ||
           a.alertaMental === 'ROJA' ||
           a.alertaMental === 'AMARILLA'
+        : filtro === 'DESUSO'
+        ? esAlumnoEnDesuso(a)
         : true;
 
     const textoBusqueda = `${a.nombre} ${a.apellido || ''} ${a.email} ${a.perfilDeportivo?.deporte || ''}`.toLowerCase();
@@ -490,6 +657,26 @@ export default function DashboardTrainer() {
           >
             <Plus className="w-5 h-5" />
             <span className="text-xs sm:text-sm">Nuevo Alumno</span>
+          </button>
+          <button
+            onClick={() =>
+              setConfirmacionModal({
+                abierto: true,
+                titulo: '¿Limpiar todas las rutinas en desuso?',
+                mensaje: 'Se eliminarán permanentemente todas las rutinas completadas o archivadas que ya no están activas en ningún alumno.',
+                tipo: 'RUTINAS_DESUSO_GLOBAL',
+                payload: null,
+              })
+            }
+            title="Limpiar todas las rutinas completadas o viejas del sistema"
+            className={`flex items-center gap-1.5 px-3 py-2.5 rounded-2xl border transition-all text-xs font-bold ${
+              isSunlight
+                ? 'bg-white hover:bg-slate-100 text-slate-700 hover:text-slate-950 border-slate-300'
+                : 'bg-slate-900 hover:bg-slate-800 text-slate-300 hover:text-white border-slate-800'
+            }`}
+          >
+            <Trash2 className="w-4 h-4 text-amber-500" />
+            <span className="hidden md:inline">Limpiar Rutinas Viejas</span>
           </button>
           <button
             onClick={cargarAlumnos}
@@ -558,6 +745,7 @@ export default function DashboardTrainer() {
             { id: 'PENDIENTES', label: 'Pendientes de Pago' },
             { id: 'ACTIVOS', label: 'Alumnos Activos' },
             { id: 'ALERTAS', label: '🚨 Alertas de Fatiga y Bienestar' },
+            { id: 'DESUSO', label: `🗑️ En Desuso (${totalEnDesuso})` },
           ].map((tab) => (
             <button
               key={tab.id}
@@ -592,6 +780,35 @@ export default function DashboardTrainer() {
         </div>
 
       </div>
+
+      {/* AVISO / ACCIÓN CUANDO SE FILTRAN PERFILES EN DESUSO */}
+      {filtro === 'DESUSO' && (
+        <div className={`p-4 rounded-2xl border flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 ${
+          isSunlight ? 'bg-amber-50 border-amber-300 text-amber-900' : 'bg-amber-500/10 border-amber-500/30 text-amber-200'
+        }`}>
+          <div className="text-xs">
+            <strong className="block text-sm font-bold mb-0.5">Filtro de Perfiles en Desuso ({totalEnDesuso})</strong>
+            Alumnos sin sesiones completadas ni pagos activos. Puedes eliminarlos individualmente desde la tabla o depurarlos todos juntos.
+          </div>
+          {totalEnDesuso > 0 && (
+            <button
+              onClick={() =>
+                setConfirmacionModal({
+                  abierto: true,
+                  titulo: `¿Depurar todos los perfiles en desuso (${totalEnDesuso})?`,
+                  mensaje: `Se eliminarán permanentemente los ${totalEnDesuso} perfiles sin sesiones ni pagos activos. Esta acción no se puede deshacer.`,
+                  tipo: 'PERFILES_DESUSO',
+                  payload: null,
+                })
+              }
+              className="px-4 py-2 rounded-xl bg-red-600 hover:bg-red-500 text-white font-black text-xs shrink-0 flex items-center gap-1.5 shadow-md shadow-red-600/20 transition-all self-start sm:self-auto"
+            >
+              <Trash2 className="w-4 h-4" />
+              <span>Depurar todos ({totalEnDesuso})</span>
+            </button>
+          )}
+        </div>
+      )}
 
       {/* TABLA DE ALUMNOS */}
       <div className={`border rounded-3xl overflow-hidden shadow-2xl card-glow transition-colors ${
@@ -641,8 +858,19 @@ export default function DashboardTrainer() {
                             {alumno.nombre?.[0] || 'A'}
                           </div>
                           <div>
-                            <div className={`font-bold text-sm ${isSunlight ? 'text-slate-900' : 'text-white'}`}>
-                              {alumno.nombre} {alumno.apellido || ''}
+                            <div className="flex items-center gap-2 flex-wrap">
+                              <span className={`font-bold text-sm ${isSunlight ? 'text-slate-900' : 'text-white'}`}>
+                                {alumno.nombre} {alumno.apellido || ''}
+                              </span>
+                              {esAlumnoEnDesuso(alumno) && (
+                                <span className={`text-[9px] font-bold px-1.5 py-0.5 rounded border ${
+                                  isSunlight
+                                    ? 'bg-amber-100 text-amber-800 border-amber-300'
+                                    : 'bg-amber-500/15 text-amber-400 border-amber-500/30'
+                                }`}>
+                                  En desuso
+                                </span>
+                              )}
                             </div>
                             <div className={`text-[11px] ${isSunlight ? 'text-slate-600' : 'text-slate-400'}`}>{alumno.email}</div>
                             {alumno.whatsapp && (
@@ -809,13 +1037,26 @@ export default function DashboardTrainer() {
 
                       {/* COLUMNA 5: ACCIONES */}
                       <td className="py-4 px-6 text-right">
-                        <button
-                          onClick={() => abrirModalAlumno(alumno)}
-                          className="inline-flex items-center gap-1.5 py-2 px-3.5 rounded-xl bg-sky-500 hover:bg-sky-400 text-slate-950 font-bold text-xs transition-all shadow-md shadow-sky-500/20"
-                        >
-                          <Eye className="w-3.5 h-3.5" />
-                          <span>Ver Ficha / Rutina</span>
-                        </button>
+                        <div className="flex items-center justify-end gap-2">
+                          <button
+                            onClick={() => abrirModalAlumno(alumno)}
+                            className="inline-flex items-center gap-1.5 py-2 px-3.5 rounded-xl bg-sky-500 hover:bg-sky-400 text-slate-950 font-bold text-xs transition-all shadow-md shadow-sky-500/20"
+                          >
+                            <Eye className="w-3.5 h-3.5" />
+                            <span>Ver Ficha / Rutina</span>
+                          </button>
+                          <button
+                            onClick={() => pedirConfirmacionEliminarAlumno(alumno)}
+                            title="Eliminar perfil del alumno"
+                            className={`p-2 rounded-xl transition-all border ${
+                              isSunlight
+                                ? 'bg-red-50 hover:bg-red-100 text-red-600 border-red-200'
+                                : 'bg-red-500/10 hover:bg-red-500/20 text-red-400 border-red-500/20'
+                            }`}
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </button>
+                        </div>
                       </td>
 
                     </tr>
@@ -862,20 +1103,34 @@ export default function DashboardTrainer() {
                 )}
               </div>
               {!esNuevoUsuario && (
-                <button
-                  onClick={() => setEditandoPerfil(!editandoPerfil)}
-                  className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-colors ${
-                    editandoPerfil 
-                      ? isSunlight
-                        ? 'bg-amber-100 text-amber-800 border border-amber-300'
-                        : 'bg-amber-500/20 text-amber-400 border border-amber-500/30' 
-                      : isSunlight
-                        ? 'bg-slate-200 text-slate-700 hover:text-slate-950'
-                        : 'bg-slate-800 text-slate-300 hover:text-white'
-                  }`}
-                >
-                  {editandoPerfil ? 'Cancelar Edición' : 'Editar Ficha'}
-                </button>
+                <div className="flex items-center gap-2 flex-wrap">
+                  <button
+                    onClick={() => setEditandoPerfil(!editandoPerfil)}
+                    className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-colors ${
+                      editandoPerfil 
+                        ? isSunlight
+                          ? 'bg-amber-100 text-amber-800 border border-amber-300'
+                          : 'bg-amber-500/20 text-amber-400 border border-amber-500/30' 
+                        : isSunlight
+                          ? 'bg-slate-200 text-slate-700 hover:text-slate-950'
+                          : 'bg-slate-800 text-slate-300 hover:text-white'
+                    }`}
+                  >
+                    {editandoPerfil ? 'Cancelar Edición' : 'Editar Ficha'}
+                  </button>
+                  <button
+                    onClick={() => pedirConfirmacionEliminarAlumno(alumnoSeleccionado)}
+                    className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-colors border flex items-center gap-1.5 ${
+                      isSunlight
+                        ? 'bg-red-50 hover:bg-red-100 text-red-700 border-red-300'
+                        : 'bg-red-500/10 hover:bg-red-500/20 text-red-400 border-red-500/30'
+                    }`}
+                    title="Eliminar este perfil de forma permanente"
+                  >
+                    <Trash2 className="w-3.5 h-3.5" />
+                    <span>Eliminar Perfil</span>
+                  </button>
+                </div>
               )}
             </div>
 
@@ -1381,16 +1636,30 @@ export default function DashboardTrainer() {
                         </h3>
                         <p className={`text-xs mt-1 ${isSunlight ? 'text-slate-600' : 'text-slate-400'}`}>Este alumno ya tiene un plan en curso.</p>
                       </div>
-                      <button
-                        onClick={() => setMostrarConstructor(true)}
-                        className={`px-4 py-2 rounded-xl text-xs font-bold transition-colors border ${
-                          isSunlight
-                            ? 'bg-sky-100 text-sky-800 hover:bg-sky-200 border-sky-300'
-                            : 'bg-sky-500/10 text-sky-400 hover:bg-sky-500/20 border-sky-500/20'
-                        }`}
-                      >
-                        Reemplazar / Asignar Nueva
-                      </button>
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <button
+                          onClick={() => setMostrarConstructor(true)}
+                          className={`px-3.5 py-2 rounded-xl text-xs font-bold transition-colors border ${
+                            isSunlight
+                              ? 'bg-sky-100 text-sky-800 hover:bg-sky-200 border-sky-300'
+                              : 'bg-sky-500/10 text-sky-400 hover:bg-sky-500/20 border-sky-500/20'
+                          }`}
+                        >
+                          Reemplazar / Asignar Nueva
+                        </button>
+                        <button
+                          onClick={() => pedirConfirmacionEliminarRutinaActiva(alumnoSeleccionado)}
+                          className={`px-3 py-2 rounded-xl text-xs font-bold transition-colors border flex items-center gap-1.5 ${
+                            isSunlight
+                              ? 'bg-red-50 hover:bg-red-100 text-red-700 border-red-300'
+                              : 'bg-red-500/10 hover:bg-red-500/20 text-red-400 border-red-500/30'
+                          }`}
+                          title="Eliminar rutina activa"
+                        >
+                          <Trash2 className="w-3.5 h-3.5" />
+                          <span>Eliminar Rutina</span>
+                        </button>
+                      </div>
                     </div>
                     
                     <div className="grid gap-3 sm:grid-cols-2">
@@ -1424,17 +1693,31 @@ export default function DashboardTrainer() {
                                   {dia.enfoque || 'Sin descripción'}
                                 </div>
                               </div>
-                              <span className={`shrink-0 rounded-full border px-2 py-0.5 text-[10px] font-black uppercase tracking-wide ${
-                                seriesDia > 0
-                                  ? isSunlight
-                                    ? 'bg-sky-50 text-sky-800 border-sky-300'
-                                    : 'bg-sky-500/10 text-sky-300 border-sky-500/30'
-                                  : isSunlight
-                                    ? 'bg-slate-100 text-slate-600 border-slate-300'
-                                    : 'bg-slate-900 text-slate-400 border-slate-700'
-                              }`}>
-                                {seriesDia} {seriesDia === 1 ? 'serie' : 'series'}
-                              </span>
+                              <div className="flex items-center gap-1.5 shrink-0">
+                                <span className={`rounded-full border px-2 py-0.5 text-[10px] font-black uppercase tracking-wide ${
+                                  seriesDia > 0
+                                    ? isSunlight
+                                      ? 'bg-sky-50 text-sky-800 border-sky-300'
+                                      : 'bg-sky-500/10 text-sky-300 border-sky-500/30'
+                                    : isSunlight
+                                      ? 'bg-slate-100 text-slate-600 border-slate-300'
+                                      : 'bg-slate-900 text-slate-400 border-slate-700'
+                                }`}>
+                                  {seriesDia} {seriesDia === 1 ? 'serie' : 'series'}
+                                </span>
+                                <button
+                                  type="button"
+                                  onClick={() => pedirConfirmacionEliminarDia(dia, alumnoSeleccionado?.id)}
+                                  title="Eliminar este día de rutina"
+                                  className={`p-1 rounded-lg transition-colors ${
+                                    isSunlight
+                                      ? 'text-slate-400 hover:text-red-600 hover:bg-red-50'
+                                      : 'text-slate-500 hover:text-red-400 hover:bg-red-500/10'
+                                  }`}
+                                >
+                                  <Trash2 className="w-3.5 h-3.5" />
+                                </button>
+                              </div>
                             </div>
 
                             <div className={`text-[10px] font-bold mt-2 uppercase ${isSunlight ? 'text-sky-700' : 'text-sky-400'}`}>
@@ -1696,9 +1979,114 @@ export default function DashboardTrainer() {
                     />
                   </>
                 )}
+
+                {/* SECCIÓN DE RUTINAS EN DESUSO / COMPLETADAS DEL ALUMNO */}
+                {!cargandoRutina && rutinasEnDesusoAlumno.length > 0 && (
+                  <div className={`mt-5 p-4 rounded-2xl border ${
+                    isSunlight ? 'bg-slate-100 border-slate-300' : 'bg-slate-950/60 border-slate-800'
+                  }`}>
+                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-3">
+                      <div>
+                        <span className={`text-xs font-black uppercase tracking-wider flex items-center gap-1.5 ${
+                          isSunlight ? 'text-amber-800' : 'text-amber-400'
+                        }`}>
+                          <Trash2 className="w-3.5 h-3.5" />
+                          <span>Rutinas en Desuso / Anteriores ({rutinasEnDesusoAlumno.length})</span>
+                        </span>
+                        <p className={`text-[11px] mt-0.5 ${isSunlight ? 'text-slate-600' : 'text-slate-400'}`}>
+                          Planes anteriores reemplazados o completados que ya no están activos.
+                        </p>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => pedirConfirmacionEliminarRutinasEnDesuso(alumnoSeleccionado)}
+                        className={`px-3 py-1.5 rounded-xl text-xs font-bold border flex items-center gap-1.5 transition-all self-start sm:self-auto ${
+                          isSunlight
+                            ? 'bg-red-50 hover:bg-red-100 text-red-700 border-red-300'
+                            : 'bg-red-500/10 hover:bg-red-500/20 text-red-400 border-red-500/30'
+                        }`}
+                      >
+                        <Trash2 className="w-3.5 h-3.5" />
+                        <span>Limpiar rutinas en desuso</span>
+                      </button>
+                    </div>
+                    <div className="space-y-1.5">
+                      {rutinasEnDesusoAlumno.map((r) => (
+                        <div
+                          key={r.id}
+                          className={`flex items-center justify-between text-xs py-2 px-3 rounded-xl border ${
+                            isSunlight ? 'bg-white border-slate-200 text-slate-800' : 'bg-slate-900 border-slate-800/80 text-slate-200'
+                          }`}
+                        >
+                          <div className="min-w-0 pr-2">
+                            <span className="font-bold">{r.nombre}</span>
+                            {r.descripcion && (
+                              <span className={`text-[11px] ml-2 block sm:inline ${isSunlight ? 'text-slate-500' : 'text-slate-400'}`}>
+                                {r.descripcion}
+                              </span>
+                            )}
+                          </div>
+                          <button
+                            type="button"
+                            onClick={() => pedirConfirmacionEliminarDia(r, alumnoSeleccionado?.id)}
+                            title="Eliminar esta rutina en desuso"
+                            className="p-1.5 rounded-lg text-slate-400 hover:text-red-500 hover:bg-red-500/10 transition-colors shrink-0"
+                          >
+                            <Trash2 className="w-3.5 h-3.5" />
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
               </div>
             )}
 
+          </div>
+        </div>
+      )}
+
+      {/* MODAL DE CONFIRMACIÓN DE ELIMINACIÓN */}
+      {confirmacionModal.abierto && (
+        <div className="fixed inset-0 z-[60] !m-0 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-fadeIn">
+          <div className={`border rounded-3xl max-w-md w-full p-6 shadow-2xl relative transition-colors ${
+            isSunlight ? 'bg-white border-slate-300 text-slate-900' : 'bg-[#0f172a] border-slate-800 text-white'
+          }`}>
+            <div className="w-12 h-12 rounded-2xl bg-red-500/10 border border-red-500/20 text-red-500 flex items-center justify-center mb-4">
+              <Trash2 className="w-6 h-6" />
+            </div>
+            <h3 className="text-lg font-black">{confirmacionModal.titulo}</h3>
+            <p className={`text-xs mt-2 leading-relaxed ${isSunlight ? 'text-slate-600' : 'text-slate-400'}`}>
+              {confirmacionModal.mensaje}
+            </p>
+            <div className="mt-6 flex items-center justify-end gap-3">
+              <button
+                onClick={() => setConfirmacionModal({ abierto: false, titulo: '', mensaje: '', tipo: '', payload: null })}
+                disabled={eliminando}
+                className={`px-4 py-2 rounded-xl text-xs font-bold transition-colors ${
+                  isSunlight ? 'bg-slate-100 hover:bg-slate-200 text-slate-700' : 'bg-slate-800 hover:bg-slate-700 text-slate-300'
+                }`}
+              >
+                Cancelar
+              </button>
+              <button
+                onClick={ejecutarAccionConfirmada}
+                disabled={eliminando}
+                className="px-4 py-2 rounded-xl text-xs font-black bg-red-600 hover:bg-red-500 text-white flex items-center gap-1.5 transition-all shadow-md shadow-red-600/20 disabled:opacity-50"
+              >
+                {eliminando ? (
+                  <>
+                    <div className="w-3.5 h-3.5 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                    <span>Eliminando...</span>
+                  </>
+                ) : (
+                  <>
+                    <Trash2 className="w-3.5 h-3.5" />
+                    <span>Confirmar Eliminación</span>
+                  </>
+                )}
+              </button>
+            </div>
           </div>
         </div>
       )}

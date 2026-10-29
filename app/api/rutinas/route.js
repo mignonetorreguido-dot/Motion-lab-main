@@ -10,7 +10,13 @@
 
 import { NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
-import { guardarRutinasEnStore, obtenerRutinasDeStore } from '@/lib/fallbackStore';
+import {
+  guardarRutinasEnStore,
+  obtenerRutinasDeStore,
+  eliminarRutinaDeStore,
+  eliminarRutinasEnDesusoDeStore,
+  obtenerRutinasEnDesusoDeStore,
+} from '@/lib/fallbackStore';
 import { requireTrainer } from '@/lib/requireTrainer';
 
 // ------------------------------------------------------------------------
@@ -63,7 +69,42 @@ export async function GET(request) {
       }
     }
 
-    // 3. Armar la respuesta estructurada del plan semanal
+    // 3. Consultar rutinas en desuso (completadas o archivadas)
+    let rutinasEnDesuso = [];
+    if (process.env.DATABASE_URL) {
+      try {
+        rutinasEnDesuso = await prisma.rutina.findMany({
+          where: {
+            alumnoId: alumnoId,
+            estado: 'COMPLETADA',
+          },
+          orderBy: { createdAt: 'desc' },
+          select: {
+            id: true,
+            nombre: true,
+            descripcion: true,
+            fechaAsignada: true,
+            fechaCompletada: true,
+            createdAt: true,
+          },
+        });
+      } catch (dbErr) {
+        console.warn('⚠️ No se pudo consultar rutinas completadas en PostgreSQL:', dbErr.message);
+      }
+    }
+
+    if (!rutinasEnDesuso || rutinasEnDesuso.length === 0) {
+      rutinasEnDesuso = obtenerRutinasEnDesusoDeStore(alumnoId).map((r) => ({
+        id: r.id,
+        nombre: r.nombre,
+        descripcion: r.descripcion,
+        fechaAsignada: r.fechaAsignada || r.createdAt,
+        fechaCompletada: r.fechaCompletada,
+        createdAt: r.createdAt,
+      }));
+    }
+
+    // 4. Armar la respuesta estructurada del plan semanal
     if (rutinasActivas.length > 0) {
       let rutinaSeleccionada = rutinasActivas[0];
       if (diaId) {
@@ -98,6 +139,8 @@ export async function GET(request) {
         rutina: rutinaSeleccionada,
         planSemanal,
         diaHoyId: rutinasActivas[0].id,
+        rutinasEnDesuso,
+        totalEnDesuso: rutinasEnDesuso.length,
       });
     }
 
@@ -107,6 +150,8 @@ export async function GET(request) {
       rutina: null,
       planSemanal: [],
       diaHoyId: null,
+      rutinasEnDesuso,
+      totalEnDesuso: rutinasEnDesuso.length,
     });
   } catch (error) {
     console.error('❌ Error al obtener la rutina:', error);
@@ -231,6 +276,101 @@ export async function POST(request) {
     console.error('❌ Error al crear la rutina:', error);
     return NextResponse.json(
       { success: false, error: 'Error interno al procesar el plan' },
+      { status: 500 }
+    );
+  }
+}
+
+// ------------------------------------------------------------------------
+// DELETE: Eliminar rutinas activas, días específicos o rutinas en desuso
+// ------------------------------------------------------------------------
+export async function DELETE(request) {
+  const auth = await requireTrainer();
+  if (auth.response) return auth.response;
+
+  try {
+    const { searchParams } = new URL(request.url);
+    let rutinaId = searchParams.get('rutinaId');
+    let alumnoId = searchParams.get('alumnoId');
+    let enDesuso = searchParams.get('enDesuso') === 'true';
+
+    try {
+      const body = await request.json();
+      if (body.rutinaId) rutinaId = body.rutinaId;
+      if (body.alumnoId) alumnoId = body.alumnoId;
+      if (body.enDesuso !== undefined) enDesuso = Boolean(body.enDesuso);
+    } catch {
+      // Body vacío o formato no-JSON
+    }
+
+    if (!rutinaId && !alumnoId && !enDesuso) {
+      return NextResponse.json(
+        { success: false, error: 'Se requiere rutinaId, alumnoId o el parámetro enDesuso' },
+        { status: 400 }
+      );
+    }
+
+    // 1. Caso: Eliminar una rutina o día puntual por su ID
+    if (rutinaId) {
+      if (process.env.DATABASE_URL) {
+        try {
+          await prisma.rutina.delete({
+            where: { id: rutinaId },
+          });
+        } catch (dbErr) {
+          console.warn('⚠️ No se pudo eliminar rutina en DB:', dbErr.message);
+        }
+      }
+      eliminarRutinaDeStore(alumnoId, rutinaId);
+      return NextResponse.json({
+        success: true,
+        mensaje: 'Rutina eliminada exitosamente',
+      });
+    }
+
+    // 2. Caso: Eliminar rutinas en desuso (completadas) de un alumno o globales
+    if (enDesuso) {
+      if (process.env.DATABASE_URL) {
+        try {
+          const whereClause = { estado: 'COMPLETADA' };
+          if (alumnoId) whereClause.alumnoId = alumnoId;
+          await prisma.rutina.deleteMany({
+            where: whereClause,
+          });
+        } catch (dbErr) {
+          console.warn('⚠️ No se pudieron eliminar rutinas en desuso en DB:', dbErr.message);
+        }
+      }
+      eliminarRutinasEnDesusoDeStore(alumnoId || null);
+      return NextResponse.json({
+        success: true,
+        mensaje: alumnoId
+          ? 'Rutinas en desuso del alumno eliminadas exitosamente'
+          : 'Todas las rutinas en desuso han sido eliminadas exitosamente',
+      });
+    }
+
+    // 3. Caso: Eliminar toda la rutina activa del alumno
+    if (alumnoId) {
+      if (process.env.DATABASE_URL) {
+        try {
+          await prisma.rutina.deleteMany({
+            where: { alumnoId: alumnoId },
+          });
+        } catch (dbErr) {
+          console.warn('⚠️ No se pudieron eliminar las rutinas del alumno en DB:', dbErr.message);
+        }
+      }
+      eliminarRutinaDeStore(alumnoId);
+      return NextResponse.json({
+        success: true,
+        mensaje: 'Rutinas del alumno eliminadas exitosamente',
+      });
+    }
+  } catch (error) {
+    console.error('❌ Error al eliminar rutina:', error);
+    return NextResponse.json(
+      { success: false, error: 'Error interno al procesar la eliminación' },
       { status: 500 }
     );
   }
