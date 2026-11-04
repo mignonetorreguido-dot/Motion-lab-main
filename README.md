@@ -2,6 +2,8 @@
 
 ¡Bienvenido/a al proyecto! Esta es una aplicación web moderna, atlética y completa creada especialmente para un **Entrenador Personal (Personal Trainer)**. Permite a los futuros alumnos responder un **cuestionario inicial de evaluación física** para diagnosticar su nivel y necesidades, y presenta una comparativa clara entre el **Plan Base** y el **Plan Performance**.
 
+**URL pública:** https://motion-lab-preparacion-fisica-y-rendimiento.vercel.app
+
 El proyecto está construido con:
 - **Next.js 14** (Framework moderno de React para aplicaciones web rápidas y optimizadas para Google)
 - **React 18** (Biblioteca para crear interfaces interactivas mediante componentes)
@@ -168,9 +170,11 @@ El botón **Continuar con Google** ya está integrado en el login y en el paso f
 4. Andá a **Credentials → Create Credentials → OAuth client ID**:
    - Tipo: **Web application**.
    - **Authorized JavaScript origins:**
+     - `https://motion-lab-preparacion-fisica-y-rendimiento.vercel.app`
      - `https://motion-lab-high-performance.vercel.app`
      - `http://localhost:3000`
    - **Authorized redirect URIs:**
+     - `https://motion-lab-preparacion-fisica-y-rendimiento.vercel.app/api/auth/callback/google`
      - `https://motion-lab-high-performance.vercel.app/api/auth/callback/google`
      - `http://localhost:3000/api/auth/callback/google`
 5. Copiá el **Client ID** y el **Client Secret**.
@@ -186,6 +190,8 @@ El botón **Continuar con Google** ya está integrado en el login y en el paso f
 8. Volvé a desplegar. Cuando las credenciales estén presentes, el botón de Google deja de mostrar el aviso de configuración y abre la pantalla real de Google.
 
 > Si la app queda en modo **Testing**, sólo los correos agregados como test users pueden ingresar. Para abrir el acceso a cualquier alumno, publicá la pantalla de consentimiento (los permisos básicos de perfil y email no requieren revisión sensible).
+
+> La URL pública nueva es `https://motion-lab-preparacion-fisica-y-rendimiento.vercel.app`. El dominio viejo se mantiene en la configuración de Google OAuth porque `NEXTAUTH_URL` todavía apunta ahí; así el login sigue funcionando mientras se termina la migración.
 
 ---
 
