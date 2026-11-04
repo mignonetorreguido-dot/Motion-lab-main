@@ -93,7 +93,7 @@ export default function AboutTrainer() {
             <p className={`text-[15px] sm:text-base font-medium leading-relaxed ${
               isSunlight ? 'text-slate-800' : 'text-slate-200'
             }`}>
-              En el mundo del entrenamiento tradicional se copia la rutina del mes sin tener en cuenta las palancas anatómicas, el historial de lesiones ni la capacidad de recuperación del alumno. En <strong className={isSunlight ? 'text-black font-extrabold' : 'text-white'}>MOTION LAB</strong> tratamos tu proceso con rigor científico.
+              Desarrollamos las <strong className={isSunlight ? 'text-black font-extrabold' : 'text-white'}>CAPACIDADES</strong> que realmente necesitas para <strong className={isSunlight ? 'text-black font-extrabold' : 'text-white'}>RENDIR</strong>.
             </p>
 
             <div className="space-y-4 pt-2">
