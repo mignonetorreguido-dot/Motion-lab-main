@@ -63,7 +63,10 @@ export default function Hero() {
               }`}>
                 Ciencia aplicada a tu entrenamiento
               </span>
-              En <strong className={isSunlight ? 'text-black font-extrabold' : 'text-white font-bold'}>MOTION LAB</strong> planificamos cada serie, repetición y descanso según tus métricas reales. Sin improvisación: optimizamos tu fuerza, composición corporal y rendimiento atlético.
+              <strong className={isSunlight ? 'text-black font-extrabold' : 'text-white font-bold'}>MOTION LAB</strong> es un enfoque donde la ciencia, la experiencia y el entrenamiento se encuentran para construir <strong className={isSunlight ? 'text-black font-extrabold' : 'text-white font-bold'}>RENDIMIENTO</strong>.
+              <span className="block mt-2">
+                Cada persona tiene un <strong className={isSunlight ? 'text-black font-extrabold' : 'text-white font-bold'}>OBJETIVO</strong>, cada proceso necesita un <strong className={isSunlight ? 'text-black font-extrabold' : 'text-white font-bold'}>MÉTODO</strong>.
+              </span>
             </p>
 
             {/* BOTONES DE ACCIÓN (TOUCH-TARGET MÓVIL ÓPTIMO) */}
