@@ -8,7 +8,7 @@
  * Diseñado con alto contraste y legibilidad óptima para celulares al aire libre.
  */
 
-import { CheckCircle2, Award, Zap, Activity } from 'lucide-react';
+import { Activity, ClipboardList, TrendingUp, Dumbbell } from 'lucide-react';
 import { useTheme } from './ThemeProvider';
 
 export default function AboutTrainer() {
@@ -105,14 +105,15 @@ export default function AboutTrainer() {
                 <div className={`w-8 h-8 sm:w-9 sm:h-9 rounded-xl flex items-center justify-center shrink-0 mt-0.5 ${
                   isSunlight ? 'bg-blue-100 text-blue-700' : 'bg-blue-500/10 text-sky-400'
                 }`}>
-                  <CheckCircle2 className="w-5 h-5" />
+                  <ClipboardList className="w-5 h-5" />
                 </div>
                 <div>
-                  <h4 className={`font-black text-sm sm:text-base ${isSunlight ? 'text-slate-900' : 'text-white'}`}>
-                    Análisis Biomecánico y Rango de Movimiento
+                  <h4 className={`font-black text-sm sm:text-base tracking-wide ${isSunlight ? 'text-slate-900' : 'text-white'}`}>
+                    EVALUAR
                   </h4>
                   <p className={`text-xs sm:text-sm font-medium mt-1 ${isSunlight ? 'text-slate-700' : 'text-slate-300'}`}>
-                    Evaluamos cómo se mueve tu estructura articular para elegir ejercicios que estimulen el músculo sin comprometer ligamentos ni articulaciones.
+                    <strong className={isSunlight ? 'text-slate-900' : 'text-white'}>CONOCER ANTES DE INTERVENIR.</strong>{' '}
+                    Conocemos tu punto de partida.
                   </p>
                 </div>
               </div>
@@ -125,14 +126,15 @@ export default function AboutTrainer() {
                 <div className={`w-8 h-8 sm:w-9 sm:h-9 rounded-xl flex items-center justify-center shrink-0 mt-0.5 ${
                   isSunlight ? 'bg-blue-100 text-blue-700' : 'bg-blue-500/10 text-sky-400'
                 }`}>
-                  <Zap className="w-5 h-5" />
+                  <TrendingUp className="w-5 h-5" />
                 </div>
                 <div>
-                  <h4 className={`font-black text-sm sm:text-base ${isSunlight ? 'text-slate-900' : 'text-white'}`}>
-                    Control de Volumen e Intensidad (RPE / RIR)
+                  <h4 className={`font-black text-sm sm:text-base tracking-wide ${isSunlight ? 'text-slate-900' : 'text-white'}`}>
+                    PLANIFICAR
                   </h4>
                   <p className={`text-xs sm:text-sm font-medium mt-1 ${isSunlight ? 'text-slate-700' : 'text-slate-300'}`}>
-                    Medimos el esfuerzo real de cada serie para garantizar que estés cerca del fallo muscular óptimo sin acumular fatiga innecesaria.
+                    <strong className={isSunlight ? 'text-slate-900' : 'text-white'}>CONVERTIR OBJETIVOS EN DIRECCIÓN.</strong>{' '}
+                    Diseñamos el camino.
                   </p>
                 </div>
               </div>
@@ -145,14 +147,19 @@ export default function AboutTrainer() {
                 <div className={`w-8 h-8 sm:w-9 sm:h-9 rounded-xl flex items-center justify-center shrink-0 mt-0.5 ${
                   isSunlight ? 'bg-blue-100 text-blue-700' : 'bg-blue-500/10 text-sky-400'
                 }`}>
-                  <Award className="w-5 h-5" />
+                  <Dumbbell className="w-5 h-5" />
                 </div>
-                <div>
-                  <h4 className={`font-black text-sm sm:text-base ${isSunlight ? 'text-slate-900' : 'text-white'}`}>
-                    Acompañamiento Técnico por Video
+                <div className="space-y-1.5">
+                  <h4 className={`font-black text-sm sm:text-base tracking-wide ${isSunlight ? 'text-slate-900' : 'text-white'}`}>
+                    ENTRENAR Y AJUSTAR
                   </h4>
-                  <p className={`text-xs sm:text-sm font-medium mt-1 ${isSunlight ? 'text-slate-700' : 'text-slate-300'}`}>
-                    Nos envías grabaciones de tus levantamientos clave y recibes correcciones en video con indicaciones precisas de postura y trayectoria de la barra.
+                  <p className={`text-xs sm:text-sm font-medium ${isSunlight ? 'text-slate-700' : 'text-slate-300'}`}>
+                    <strong className={isSunlight ? 'text-slate-900' : 'text-white'}>CONVERTIR EL PLAN EN ACCIÓN.</strong>{' '}
+                    Entrenamos con intención.
+                  </p>
+                  <p className={`text-xs sm:text-sm font-medium ${isSunlight ? 'text-slate-700' : 'text-slate-300'}`}>
+                    <strong className={isSunlight ? 'text-slate-900' : 'text-white'}>ADAPTAR PARA SEGUIR AVANZANDO.</strong>{' '}
+                    Ajustamos según tu evolución.
                   </p>
                 </div>
               </div>
