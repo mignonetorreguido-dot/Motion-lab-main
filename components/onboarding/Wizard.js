@@ -475,7 +475,7 @@ export default function Wizard() {
               <div className={`flex justify-between border-b pb-2 ${tema.bordeSuave}`}>
                 <span className={tema.parrafo}>Plan Seleccionado:</span>
                 <span className={`font-bold ${tema.titulo}`}>
-                  {formData.tipoPlan === 'PREMIUM' ? 'Plan Premium Personalizado' : 'Plan Base'}
+                  {formData.tipoPlan === 'PREMIUM' ? 'Plan Performance' : 'Plan Base'}
                 </span>
               </div>
               <div className={`flex justify-between border-b pb-2 ${tema.bordeSuave}`}>
@@ -556,12 +556,29 @@ export default function Wizard() {
                         <Zap className={`w-5 h-5 ${isSunlight ? 'text-sky-600' : 'text-sky-400'}`} />
                       </div>
                       <div className={`font-extrabold text-lg ${tema.titulo}`}>Plan Base</div>
-                      <p className={`text-xs mt-1 leading-relaxed ${tema.parrafo}`}>
-                        Vos llevás el mando: Matías te deja los ejercicios y la planificación; entrenás por tu cuenta con disciplina.
+                      <span className={`text-[10px] font-black uppercase tracking-wide block mt-1 ${isSunlight ? 'text-sky-700' : 'text-sky-400'}`}>
+                        Autonomía + planificación + seguimiento.
+                      </span>
+                      <p className={`text-xs mt-1.5 leading-relaxed ${tema.parrafo}`}>
+                        Entrená por tu cuenta con una planificación personalizada, objetivos claros y seguimiento profesional para acompañar tu evolución.
                       </p>
+                      <ul className="mt-3 space-y-1.5">
+                        {[
+                          'Evaluación inicial',
+                          'Planificación individualizada',
+                          '3 a 5 sesiones semanales',
+                          'Control de cargas y evolución',
+                          'Correcciones y ajustes de manera asincrónica',
+                        ].map((item) => (
+                          <li key={item} className="flex items-start gap-1.5">
+                            <Check className={`w-3 h-3 shrink-0 mt-0.5 ${isSunlight ? 'text-sky-600' : 'text-sky-400'}`} />
+                            <span className={`text-[11px] leading-snug ${tema.parrafo}`}>{item}</span>
+                          </li>
+                        ))}
+                      </ul>
                     </div>
                     <div className={`mt-4 pt-4 border-t flex items-center justify-between ${tema.bordeSuave}`}>
-                      <span className={`text-lg font-black ${tema.titulo}`}>$29.99/mes</span>
+                      <span className={`text-lg font-black ${tema.titulo}`}>$75.000/mes</span>
                       <span className={`w-6 h-6 rounded-full flex items-center justify-center border ${
                         formData.tipoPlan === 'BASE' ? 'bg-sky-400 border-sky-400 text-slate-950' : isSunlight ? 'border-slate-400' : 'border-slate-700'
                       }`}>
@@ -570,7 +587,7 @@ export default function Wizard() {
                     </div>
                   </button>
 
-                  {/* TARJETA 2: PLAN PREMIUM (DESTACADO) */}
+                  {/* TARJETA 2: PLAN PERFORMANCE (DESTACADO) */}
                   <button
                     type="button"
                     onClick={() => actualizarCampo('tipoPlan', 'PREMIUM')}
@@ -589,13 +606,30 @@ export default function Wizard() {
                       <div className={`w-10 h-10 rounded-xl bg-amber-500/15 flex items-center justify-center mb-3 ${isSunlight ? 'text-amber-600' : 'text-amber-400'}`}>
                         <Crown className="w-5 h-5" />
                       </div>
-                      <div className={`font-extrabold text-lg ${tema.titulo}`}>Plan Premium</div>
-                      <p className={`text-xs mt-1 leading-relaxed ${isSunlight ? 'text-slate-700' : 'text-slate-300'}`}>
-                        1 a 1 presencial en la zona o videollamada y seguimiento a distancia. Matías se adapta a tus horarios y deporte, con correcciones inmediatas.
+                      <div className={`font-extrabold text-lg ${tema.titulo}`}>Plan Performance</div>
+                      <span className={`text-[10px] font-black uppercase tracking-wide block mt-1 ${isSunlight ? 'text-amber-700' : 'text-amber-400'}`}>
+                        Preparación física + especificidad + seguimiento.
+                      </span>
+                      <p className={`text-xs mt-1.5 leading-relaxed ${isSunlight ? 'text-slate-700' : 'text-slate-300'}`}>
+                        Un proceso integral que combina gimnasio y campo, adaptado a tus objetivos, necesidades y deporte.
                       </p>
+                      <ul className="mt-3 space-y-1.5">
+                        {[
+                          'Evaluación y planificación individualizada',
+                          '2 a 3 sesiones de gimnasio',
+                          '2 a 3 sesiones de campo',
+                          'Fuerza, velocidad y potencia',
+                          'Control de cargas y seguimiento',
+                        ].map((item) => (
+                          <li key={item} className="flex items-start gap-1.5">
+                            <Check className={`w-3 h-3 shrink-0 mt-0.5 ${isSunlight ? 'text-amber-600' : 'text-amber-400'}`} />
+                            <span className={`text-[11px] leading-snug ${isSunlight ? 'text-slate-700' : 'text-slate-300'}`}>{item}</span>
+                          </li>
+                        ))}
+                      </ul>
                     </div>
                     <div className={`mt-4 pt-4 border-t flex items-center justify-between ${tema.bordeSuave}`}>
-                      <span className="text-lg font-black text-amber-500">$69.99/mes</span>
+                      <span className="text-lg font-black text-amber-500">$180.000/mes</span>
                       <span className={`w-6 h-6 rounded-full flex items-center justify-center border ${
                         formData.tipoPlan === 'PREMIUM' ? 'bg-amber-400 border-amber-400 text-slate-950' : isSunlight ? 'border-slate-400' : 'border-slate-700'
                       }`}>

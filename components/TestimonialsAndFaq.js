@@ -33,11 +33,11 @@ export default function TestimonialsAndFaq() {
     },
     {
       pregunta: '¿Cómo recibo mi rutina y plan de comidas?',
-      respuesta: 'Recibirás un documento digital interactivo con videos demostrativos de cada ejercicio, cantidad exacta de series, repeticiones y descansos con cronómetro. En el Plan Premium, todo se sincroniza además mediante WhatsApp directo.',
+      respuesta: 'Recibirás un documento digital interactivo con videos demostrativos de cada ejercicio, cantidad exacta de series, repeticiones y descansos con cronómetro. En el Plan Performance, el seguimiento se coordina además de forma presencial o virtual según la modalidad de trabajo.',
     },
     {
-      pregunta: '¿Cuál es la diferencia principal entre el Plan Base y el Plan Premium?',
-      respuesta: 'El Plan Base te brinda la rutina mensual estructurada para que entrenes por tu cuenta. El Plan Premium incluye acompañamiento individual diario por WhatsApp, corrección técnica de tus videos y ajustes semanales según tu recuperación.',
+      pregunta: '¿Cuál es la diferencia principal entre el Plan Base y el Plan Performance?',
+      respuesta: 'El Plan Base te brinda una planificación individualizada con seguimiento profesional asincrónico para que entrenes por tu cuenta. El Plan Performance combina gimnasio y campo, con evaluación, planificación individualizada y control de cargas y seguimiento.',
     },
     {
       pregunta: '¿Cómo se realizan los pagos?',
@@ -48,7 +48,7 @@ export default function TestimonialsAndFaq() {
   const testimonios = [
     {
       nombre: 'Martín Gómez',
-      rol: 'Alumno Plan Premium (6 meses)',
+      rol: 'Alumno Plan Performance (6 meses)',
       resultado: '-12 kg y recuperación de dolor lumbar',
       texto: 'Trabajo 8 horas sentado y sufría molestias constantes. En MOTION LAB adaptaron el entrenamiento para reforzar mi cadena posterior. Hoy entreno con pesos serios sin ningún dolor.',
     },
@@ -60,7 +60,7 @@ export default function TestimonialsAndFaq() {
     },
     {
       nombre: 'Diego Fernández',
-      rol: 'Alumno Plan Premium (8 meses)',
+      rol: 'Alumno Plan Performance (8 meses)',
       resultado: '+8 kg de masa magra y técnica limpia',
       texto: 'Las correcciones por video en WhatsApp son oro puro. Te marcan el segundo exacto y la postura para ejecutar perfecto. La dedicación del equipo es increíble.',
     },

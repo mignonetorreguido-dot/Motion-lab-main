@@ -10,7 +10,7 @@ const secciones = [
   {
     titulo: 'Servicio',
     parrafos: [
-      'MOTION LAB ofrece planificación de entrenamiento, seguimiento del rendimiento y acompañamiento de un entrenador. El Plan Base incluye una rutina estructurada para que el alumno se entrene de forma autónoma. El Plan Premium incluye seguimiento 1 a 1 presencial y remoto por video, con ajustes según horarios, deporte y respuestas individuales.',
+      'MOTION LAB ofrece planificación de entrenamiento, seguimiento del rendimiento y acompañamiento de un entrenador. El Plan Base incluye una planificación individualizada con seguimiento profesional asincrónico para que el alumno se entrene de forma autónoma. El Plan Performance combina gimnasio y campo, con seguimiento presencial o virtual según la modalidad de trabajo.',
     ],
   },
   {

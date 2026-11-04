@@ -23,7 +23,7 @@ module.exports = {
           blue: '#0066ff',      // Azul Eléctrico de marca MOTION LAB
           cyan: '#00d4ff',      // Cyan Neón para brillos y acentos
           sky: '#38bdf8',       // Celeste atlético para textos destacados
-          amber: '#f59e0b',     // Dorado/Ámbar para el Plan Premium
+          amber: '#f59e0b',     // Dorado/Ámbar para el Plan Performance
         }
       }
     },

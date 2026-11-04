@@ -20,8 +20,8 @@ async function createPlanes() {
   if (total === 0) {
     await prisma.$executeRawUnsafe(`
       INSERT INTO planes (nombre, precio_mensual, descripcion, es_destacado) VALUES
-      ('Plan Base', 29.99, 'Ideal para personas que tienen disciplina básica y solo necesitan una rutina estructurada y clara para progresar por su cuenta.', FALSE),
-      ('Plan Premium Personalizado', 69.99, 'La experiencia completa 1 a 1. Rutina y alimentación diseñadas 100% a medida para ti, con acompañamiento diario y máxima precisión.', TRUE)
+      ('Plan Base', 75000, 'Entrená por tu cuenta con una planificación personalizada, objetivos claros y seguimiento profesional para acompañar tu evolución.', FALSE),
+      ('Plan Performance', 180000, 'Un proceso integral que combina gimnasio y campo, adaptado a tus objetivos, necesidades y deporte.', TRUE)
     `);
     console.log('✅ Tabla planes creada y datos insertados en Railway.');
   } else {

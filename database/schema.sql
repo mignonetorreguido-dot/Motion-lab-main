@@ -29,7 +29,7 @@ CREATE TABLE IF NOT EXISTS planes (
   -- AUTO_INCREMENT hace que MySQL aumente el número automáticamente.
   id INT AUTO_INCREMENT PRIMARY KEY,
   
-  -- 'nombre': Nombre comercial del plan (ej. "Plan Base", "Plan Premium Personalizado")
+  -- 'nombre': Nombre comercial del plan (ej. "Plan Base", "Plan Performance")
   nombre VARCHAR(100) NOT NULL,
   
   -- 'precio_mensual': Precio en moneda local o dólares (DECIMAL permite centavos exactos)
@@ -133,7 +133,7 @@ CREATE TABLE IF NOT EXISTS rutinas_realizadas (
 -- Insertamos los 2 planes principales para que la base de datos ya tenga datos.
 -- ========================================================================
 INSERT INTO planes (nombre, precio_mensual, descripcion, es_destacado) VALUES
-('Plan Base', 29.99, 'Rutina general estructurada por fases, guía de nutrición en PDF y acceso a la comunidad privada de entrenamiento.', FALSE),
-('Plan Premium Personalizado', 69.99, 'Planificación 100% personalizada según tu cuestionario, ajustes semanales, revisión de técnica en video y WhatsApp directo 24/7 con el entrenador.', TRUE)
+('Plan Base', 75000, 'Entrená por tu cuenta con una planificación personalizada, objetivos claros y seguimiento profesional para acompañar tu evolución.', FALSE),
+('Plan Performance', 180000, 'Un proceso integral que combina gimnasio y campo, adaptado a tus objetivos, necesidades y deporte.', TRUE)
 ON DUPLICATE KEY UPDATE nombre = VALUES(nombre);
 

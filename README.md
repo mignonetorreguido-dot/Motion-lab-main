@@ -1,6 +1,6 @@
 # 🏋️‍♂️ Plataforma Web para Personal Trainer
 
-¡Bienvenido/a al proyecto! Esta es una aplicación web moderna, atlética y completa creada especialmente para un **Entrenador Personal (Personal Trainer)**. Permite a los futuros alumnos responder un **cuestionario inicial de evaluación física** para diagnosticar su nivel y necesidades, y presenta una comparativa clara entre el **Plan Base** y el **Plan Premium Personalizado**.
+¡Bienvenido/a al proyecto! Esta es una aplicación web moderna, atlética y completa creada especialmente para un **Entrenador Personal (Personal Trainer)**. Permite a los futuros alumnos responder un **cuestionario inicial de evaluación física** para diagnosticar su nivel y necesidades, y presenta una comparativa clara entre el **Plan Base** y el **Plan Performance**.
 
 El proyecto está construido con:
 - **Next.js 14** (Framework moderno de React para aplicaciones web rápidas y optimizadas para Google)
@@ -29,7 +29,7 @@ El proyecto está construido con:
 │   ├── Hero.js               -> Portada impactante con llamadas a la acción
 │   ├── AboutTrainer.js       -> Presentación del entrenador, certificaciones y método
 │   ├── FitnessQuiz.js        -> Cuestionario interactivo paso a paso con diagnóstico
-│   ├── PricingSection.js     -> Comparación de Plan Base vs Plan Premium Personalizado
+│   ├── PricingSection.js     -> Comparación de Plan Base vs Plan Performance
 │   ├── TestimonialsAndFaq.js -> Casos de éxito y acordeón de preguntas frecuentes
 │   ├── Footer.js             -> Pie de página con redes sociales y aviso de salud
 │   └── WhatsAppButton.js     -> Botón flotante siempre visible para chatear
@@ -131,7 +131,7 @@ Cuando el alumno presiona "Ver mi Diagnóstico":
 2. **Nombre del Entrenador:**
    - Coach Matías (Motion Lab). Puedes personalizar su biografía y certificaciones en `components/AboutTrainer.js`.
 3. **Precios de los Planes:**
-   - Abre `components/PricingSection.js` y cambia `$29.99` o `$69.99` por la moneda y valor que prefieras.
+   - Abre `components/PricingSection.js` y cambia `$75.000` o `$180.000` por la moneda y valor que prefieras.
 
 ---
 

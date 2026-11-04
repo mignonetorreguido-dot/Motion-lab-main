@@ -5,8 +5,8 @@
  * COMPONENTE: Planes de Entrenamiento MOTION LAB (PricingSection.js)
  * ========================================================================
  * Presentación de las opciones de planificación:
- * 1. Plan Base: Planificación estructurada periódica para alumnos autónomos.
- * 2. Plan Premium Personalizado: Acompañamiento 1 a 1 continuo.
+ * 1. Plan Base: Autonomía, planificación y seguimiento.
+ * 2. Plan Performance: Preparación física, especificidad y seguimiento.
  * Optimizado para alto contraste exterior y legibilidad en pantallas móviles al sol.
  */
 
@@ -20,6 +20,40 @@ export default function PricingSection() {
   const getLinkPlan = (planNombre) => {
     const texto = `¡Hola Equipo de MOTION LAB! Me gustaría consultar por el *${planNombre}*. ¿Cuáles son los métodos de pago y pasos para comenzar?`;
     return `https://wa.me/${whatsappTrainer}?text=${encodeURIComponent(texto)}`;
+  };
+
+  const planBase = {
+    nombre: 'Plan Base',
+    etiqueta: 'Autónomo',
+    claim: 'Autonomía + planificación + seguimiento.',
+    descripcion:
+      'Entrená por tu cuenta con una planificación personalizada, objetivos claros y seguimiento profesional para acompañar tu evolución.',
+    precio: '$75.000',
+    incluye: [
+      'Evaluación inicial',
+      'Planificación individualizada',
+      '3 a 5 sesiones semanales',
+      'Control de cargas y evolución',
+      'Correcciones y ajustes de manera asincrónica',
+    ],
+    nota: 'Entrenamiento independiente con seguimiento profesional.',
+  };
+
+  const planPerformance = {
+    nombre: 'Plan Performance',
+    etiqueta: 'Recomendado',
+    claim: 'Preparación física + especificidad + seguimiento.',
+    descripcion:
+      'Un proceso integral que combina gimnasio y campo, adaptado a tus objetivos, necesidades y deporte.',
+    precio: '$180.000',
+    incluye: [
+      'Evaluación y planificación individualizada',
+      '2 a 3 sesiones de gimnasio',
+      '2 a 3 sesiones de campo',
+      'Fuerza, velocidad y potencia',
+      'Control de cargas y seguimiento',
+    ],
+    nota: 'Acompañamiento presencial o virtual según modalidad de trabajo.',
   };
 
   return (
@@ -73,47 +107,56 @@ export default function PricingSection() {
                 <span className={`text-xs font-black uppercase tracking-widest px-3 py-1 rounded-full border ${
                   isSunlight ? 'bg-slate-200 text-slate-800 border-slate-300' : 'bg-slate-900 text-slate-300 border-slate-800'
                 }`}>
-                  Autónomo
+                  {planBase.etiqueta}
                 </span>
               </div>
 
               <h3 className={`text-2xl sm:text-3xl font-black ${isSunlight ? 'text-slate-900' : 'text-white'}`}>
-                Plan Base
+                {planBase.nombre}
               </h3>
-              <p className={`text-xs sm:text-sm mt-2 leading-relaxed font-medium ${
+              <span className={`text-xs sm:text-sm font-black uppercase tracking-wide block mt-2 ${
+                isSunlight ? 'text-blue-700' : 'text-sky-400'
+              }`}>
+                {planBase.claim}
+              </span>
+              <p className={`text-xs sm:text-sm mt-3 leading-relaxed font-medium ${
                 isSunlight ? 'text-slate-700' : 'text-slate-300'
               }`}>
-                Para alumnos que ya entrenan y quieren llevar el mando. Matías te deja los ejercicios y la planificación; vos dirigís tus sesiones y tu progreso.
+                {planBase.descripcion}
               </p>
 
-              {/* Información */}
-              <div className={`mt-6 mb-8 pb-6 border-b ${
-                isSunlight ? 'border-slate-300 text-slate-800' : 'border-slate-800 text-slate-300'
+              {/* PRECIO */}
+              <div className={`mt-6 pb-6 border-b ${
+                isSunlight ? 'border-slate-300' : 'border-slate-800'
               }`}>
-                <p className="text-sm font-semibold">
-                  Los valores y métodos de pago se coordinan de forma personalizada según tu país y necesidades.
+                <div className="flex items-end gap-1.5">
+                  <span className={`text-3xl sm:text-4xl font-black tracking-tight ${
+                    isSunlight ? 'text-slate-950' : 'text-white'
+                  }`}>
+                    {planBase.precio}
+                  </span>
+                  <span className={`text-sm font-bold mb-1 ${
+                    isSunlight ? 'text-slate-600' : 'text-slate-400'
+                  }`}>
+                    /mes
+                  </span>
+                </div>
+                <p className={`text-[11px] sm:text-xs mt-2 font-medium ${
+                  isSunlight ? 'text-slate-600' : 'text-slate-400'
+                }`}>
+                  Los métodos de pago se coordinan por WhatsApp.
                 </p>
-                <span className={`text-xs font-black uppercase tracking-wide block mt-2 ${isSunlight ? 'text-blue-700' : 'text-sky-400'}`}>
-                  El entrenador te deja los ejercicios; vos llevás el mando
-                </span>
               </div>
 
-              {/* Beneficios */}
-              <div className="space-y-3.5 mb-8">
+              {/* BENEFICIOS */}
+              <div className="space-y-3.5 mb-8 mt-6">
                 <span className={`text-xs font-black uppercase tracking-wider block ${
                   isSunlight ? 'text-slate-900' : 'text-slate-400'
                 }`}>
-                  Qué incluye:
+                  Incluye:
                 </span>
 
-                {[
-                  'El entrenador te deja los ejercicios y la planificación',
-                  'Vos llevás el mando de tus sesiones y tu progreso',
-                  'Periodización de cargas, series y repeticiones',
-                  'Guía nutricional general y cálculo de mantenimiento calórico',
-                  'Actualización de la planificación cada 4 semanas',
-                  'Soporte por correo electrónico para consultas',
-                ].map((item, index) => (
+                {planBase.incluye.map((item, index) => (
                   <div key={index} className="flex items-start gap-3">
                     <div className={`w-5 h-5 rounded-full flex items-center justify-center shrink-0 mt-0.5 ${
                       isSunlight ? 'bg-blue-600 text-white' : 'bg-blue-500/20 text-sky-400'
@@ -128,22 +171,29 @@ export default function PricingSection() {
               </div>
             </div>
 
-            <a
-              href={getLinkPlan('Plan Base')}
-              target="_blank"
-              rel="noopener noreferrer"
-              className={`w-full py-4 rounded-full font-black text-sm text-center transition-all block touch-target shadow-md active:scale-95 ${
-                isSunlight
-                  ? 'bg-blue-700 hover:bg-blue-800 text-white shadow-blue-900/20'
-                  : 'bg-slate-900 hover:bg-slate-800 text-white border border-slate-700'
-              }`}
-            >
-              Consultar por WhatsApp
-            </a>
+            <div>
+              <p className={`text-[11px] sm:text-xs font-semibold leading-snug mb-4 ${
+                isSunlight ? 'text-slate-600' : 'text-slate-400'
+              }`}>
+                {planBase.nota}
+              </p>
+              <a
+                href={getLinkPlan(planBase.nombre)}
+                target="_blank"
+                rel="noopener noreferrer"
+                className={`w-full py-4 rounded-full font-black text-sm text-center transition-all block touch-target shadow-md active:scale-95 ${
+                  isSunlight
+                    ? 'bg-blue-700 hover:bg-blue-800 text-white shadow-blue-900/20'
+                    : 'bg-slate-900 hover:bg-slate-800 text-white border border-slate-700'
+                }`}
+              >
+                Consultar por WhatsApp
+              </a>
+            </div>
           </div>
 
           {/* ================================================================
-              TARJETA 2: PLAN PREMIUM PERSONALIZADO (DESTACADO)
+              TARJETA 2: PLAN PERFORMANCE (DESTACADO)
              ================================================================ */}
           <div className={`rounded-3xl p-6 sm:p-10 flex flex-col justify-between relative transition-all ${
             isSunlight
@@ -164,49 +214,56 @@ export default function PricingSection() {
                   <Crown className="w-6 h-6" />
                 </div>
                 <span className="text-xs font-black text-amber-900 bg-amber-400/90 px-3 py-1 rounded-full uppercase tracking-wider">
-                  Asesoría 1 a 1
+                  {planPerformance.etiqueta}
                 </span>
               </div>
 
               <h3 className={`text-2xl sm:text-3xl font-black ${isSunlight ? 'text-slate-950' : 'text-white'}`}>
-                Plan Premium
+                {planPerformance.nombre}
               </h3>
-              <p className={`text-xs sm:text-sm mt-2 leading-relaxed font-medium ${
+              <span className={`text-xs sm:text-sm font-black uppercase tracking-wide block mt-2 ${
+                isSunlight ? 'text-amber-800' : 'text-amber-400'
+              }`}>
+                {planPerformance.claim}
+              </span>
+              <p className={`text-xs sm:text-sm mt-3 leading-relaxed font-medium ${
                 isSunlight ? 'text-slate-800' : 'text-slate-200'
               }`}>
-                Si vivís en la zona, entrenás 1 a 1 presencial con Matías. Si estás lejos, la asistencia es por videollamada y seguimiento. El entrenador se adapta a tus horarios y a tu deporte, con correcciones inmediatas para guiarte.
+                {planPerformance.descripcion}
               </p>
 
-              {/* Información */}
-              <div className={`mt-6 mb-8 pb-6 border-b ${
-                isSunlight ? 'border-amber-300 text-slate-800' : 'border-slate-800 text-slate-300'
+              {/* PRECIO */}
+              <div className={`mt-6 pb-6 border-b ${
+                isSunlight ? 'border-amber-300' : 'border-slate-800'
               }`}>
-                <p className="text-sm font-semibold">
-                  Los valores y métodos de pago se coordinan de forma personalizada según tu país y objetivos.
+                <div className="flex items-end gap-1.5">
+                  <span className={`text-3xl sm:text-4xl font-black tracking-tight ${
+                    isSunlight ? 'text-slate-950' : 'text-white'
+                  }`}>
+                    {planPerformance.precio}
+                  </span>
+                  <span className={`text-sm font-bold mb-1 ${
+                    isSunlight ? 'text-amber-800' : 'text-amber-400'
+                  }`}>
+                    /mes
+                  </span>
+                </div>
+                <p className={`text-[11px] sm:text-xs mt-2 font-medium ${
+                  isSunlight ? 'text-slate-700' : 'text-slate-300'
+                }`}>
+                  Los métodos de pago se coordinan por WhatsApp.
                 </p>
-                <span className={`text-xs font-bold block mt-2 ${isSunlight ? 'text-amber-800' : 'text-amber-400'}`}>
-                  Cupos limitados para garantizar máxima precisión
-                </span>
               </div>
 
-              {/* Beneficios */}
-              <div className="space-y-3.5 mb-8">
+              {/* BENEFICIOS */}
+              <div className="space-y-3.5 mb-8 mt-6">
                 <span className={`text-xs font-black uppercase tracking-wider block ${
                   isSunlight ? 'text-slate-900' : 'text-amber-400'
                 }`}>
-                  Todo lo del Plan Base, MÁS:
+                  Incluye:
                 </span>
 
-                {[
-                  'Entrenamiento 1 a 1 presencial si vivís en la zona',
-                  'Videollamada y seguimiento continuo si entrenás a distancia',
-                  'Matías se adapta a tus horarios y a tu deporte (ej. básquet por la mañana)',
-                  'Correcciones inmediatas en cada ejercicio para guiarte',
-                  'Planificación 100% individualizada a tu nivel y equipo',
-                  'Adaptación estricta para cuidar lesiones o molestias articulares',
-                  'Ajustes semanales basados en tu fatiga, fuerza y peso',
-                  'Cálculo de macros y calorías exactas según gasto energético',
-                ].map((item, index) => (
+                {planPerformance.incluye.map((item, index) => (
                   <div key={index} className="flex items-start gap-3">
                     <div className={`w-5 h-5 rounded-full flex items-center justify-center shrink-0 mt-0.5 ${
                       isSunlight ? 'bg-amber-500 text-slate-950 font-bold' : 'bg-amber-500/20 text-amber-400'
@@ -221,15 +278,22 @@ export default function PricingSection() {
               </div>
             </div>
 
-            <a
-              href={getLinkPlan('Plan Premium')}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="w-full py-4 rounded-full bg-gradient-to-r from-amber-500 via-yellow-400 to-amber-500 hover:from-yellow-300 hover:to-amber-400 text-slate-950 font-black text-sm text-center shadow-xl shadow-amber-500/30 transition-all flex items-center justify-center gap-2 touch-target active:scale-95"
-            >
-              <span>Consultar por WhatsApp</span>
-              <ArrowRight className="w-4 h-4 stroke-[3]" />
-            </a>
+            <div>
+              <p className={`text-[11px] sm:text-xs font-semibold leading-snug mb-4 ${
+                isSunlight ? 'text-slate-700' : 'text-slate-300'
+              }`}>
+                {planPerformance.nota}
+              </p>
+              <a
+                href={getLinkPlan(planPerformance.nombre)}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="w-full py-4 rounded-full bg-gradient-to-r from-amber-500 via-yellow-400 to-amber-500 hover:from-yellow-300 hover:to-amber-400 text-slate-950 font-black text-sm text-center shadow-xl shadow-amber-500/30 transition-all flex items-center justify-center gap-2 touch-target active:scale-95"
+              >
+                <span>Consultar por WhatsApp</span>
+                <ArrowRight className="w-4 h-4 stroke-[3]" />
+              </a>
+            </div>
           </div>
 
         </div>

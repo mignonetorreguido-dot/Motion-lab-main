@@ -919,7 +919,7 @@ export default function DashboardTrainer() {
                                 ? 'bg-blue-100 text-blue-800 border border-blue-300'
                                 : 'bg-blue-500/20 text-sky-400 border border-blue-500/30'
                           }`}>
-                            {alumno.tipoPlan === 'PREMIUM' ? 'Plan Premium 1 a 1' : 'Plan Base'}
+                            {alumno.tipoPlan === 'PREMIUM' ? 'Plan Performance' : 'Plan Base'}
                           </span>
                           <div className={`font-medium ${isSunlight ? 'text-slate-900' : 'text-white'}`}>
                             {perfil?.deporte || 'Fitness General'}
