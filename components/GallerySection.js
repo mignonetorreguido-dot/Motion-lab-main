@@ -18,24 +18,21 @@ const FOTOS = [
   {
     src: '/images/results-runner.jpg',
     alt: 'Atleta corriendo en una pista de atletismo iluminada de azul - MOTION LAB',
-    etiqueta: 'Velocidad & Pista',
-    titulo: 'Control de Cronómetro',
+    etiqueta: 'Velocidad',
     colorEtiqueta: 'bg-blue-700',
     gradiente: 'from-blue-600 to-cyan-500',
   },
   {
     src: '/images/results-deadlift.jpg',
     alt: 'Atleta preparando un peso muerto en un gimnasio - MOTION LAB',
-    etiqueta: 'Fuerza Máxima',
-    titulo: 'Peso Muerto & Potencia',
+    etiqueta: 'Fuerza',
     colorEtiqueta: 'bg-sky-700',
     gradiente: 'from-sky-500 to-blue-600',
   },
   {
     src: '/images/results-soccer.jpg',
     alt: 'Futbolista conduciendo el balón en una cancha nocturna - MOTION LAB',
-    etiqueta: 'Rendimiento Deportivo',
-    titulo: 'Fuerza Aplicada al Deporte',
+    etiqueta: 'Resistencia',
     colorEtiqueta: 'bg-cyan-700',
     gradiente: 'from-cyan-500 to-blue-600',
   },
@@ -108,7 +105,7 @@ export default function GallerySection() {
                 key={foto.src}
                 role="button"
                 tabIndex={0}
-                aria-label={`Ampliar foto: ${foto.titulo}`}
+                aria-label={`Ampliar foto: ${foto.etiqueta}`}
                 aria-haspopup="dialog"
                 onClick={() => setFotoAmpliada(foto)}
                 onKeyDown={(evento) => {
@@ -144,7 +141,6 @@ export default function GallerySection() {
                     <span className={`text-[9px] sm:text-[10px] font-black uppercase tracking-wider px-2.5 py-1 rounded text-white ${foto.colorEtiqueta}`}>
                       {foto.etiqueta}
                     </span>
-                    <h4 className="text-white font-black text-xs sm:text-sm mt-1.5 drop-shadow">{foto.titulo}</h4>
                   </div>
                 </div>
               </div>
@@ -167,7 +163,7 @@ export default function GallerySection() {
         <div
           role="dialog"
           aria-modal="true"
-          aria-label={`Foto ampliada: ${fotoAmpliada.titulo}`}
+          aria-label={`Foto ampliada: ${fotoAmpliada.etiqueta}`}
           onClick={() => setFotoAmpliada(null)}
           className="fixed inset-0 z-[120] flex items-center justify-center bg-black/90 backdrop-blur-sm p-4 sm:p-8"
         >
@@ -192,11 +188,8 @@ export default function GallerySection() {
               className="max-w-full max-h-[82vh] w-auto h-auto object-contain rounded-2xl shadow-2xl"
             />
             <div className="text-center mt-4 px-4">
-              <p className="text-[10px] font-black uppercase tracking-[0.18em] text-sky-300">
+              <p className="text-sm font-black uppercase tracking-[0.18em] text-sky-300">
                 {fotoAmpliada.etiqueta}
-              </p>
-              <p className="text-white font-black text-base sm:text-lg mt-1">
-                {fotoAmpliada.titulo}
               </p>
               <p className="text-white/50 text-xs mt-1">
                 Tocá fuera de la foto para cerrar
