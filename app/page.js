@@ -60,7 +60,11 @@ const websiteJsonLd = {
   '@context': 'https://schema.org',
   '@type': 'WebSite',
   name: SITE_NAME,
-  alternateName: ['Motion Lab', 'MOTION LAB High Performance'],
+  alternateName: [
+    'Motion Lab',
+    'MOTION LAB High Performance',
+    'MOTION LAB Preparación Física y Rendimiento',
+  ],
   url: `${SITE_URL}/`,
   description: SITE_DESCRIPTION,
   inLanguage: 'es-AR',

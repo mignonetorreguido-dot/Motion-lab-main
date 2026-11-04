@@ -37,14 +37,14 @@ export default function Hero() {
                 : 'bg-slate-900 border border-sky-500/30 text-sky-300 shadow-inner'
             }`}>
               <Sparkles className={`w-3.5 h-3.5 sm:w-4 sm:h-4 shrink-0 ${isSunlight ? 'text-blue-700' : 'text-cyan-400'}`} />
-              <span>Entrenamiento & Alto Rendimiento</span>
+              <span>Preparación Física & Rendimiento</span>
             </div>
 
             {/* TÍTULO PRINCIPAL CON MÁXIMO CONTRASTE PARA EXTERIORES */}
             <h1 className={`text-[1.9rem] min-[360px]:text-4xl sm:text-6xl lg:text-7xl font-black tracking-tight leading-[1.06] mb-4 sm:mb-5 transition-colors ${
               isSunlight ? 'text-[#020617]' : 'text-white'
             }`}>
-              <span className="sr-only">MOTION LAB – </span>
+              <span className="sr-only">MOTION LAB – Preparación Física y Rendimiento: </span>
               ENTRENA CON <br />
               <span className={isSunlight 
                 ? 'text-blue-700' 
