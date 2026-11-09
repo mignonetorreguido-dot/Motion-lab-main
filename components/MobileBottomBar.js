@@ -13,7 +13,8 @@
  */
 
 import Link from 'next/link';
-import { Sun, Moon, Dumbbell, UserPlus, MessageCircle } from 'lucide-react';
+import { Sun, Moon, Dumbbell, UserPlus } from 'lucide-react';
+import WhatsAppIcon from './WhatsAppIcon';
 import { useTheme } from './ThemeProvider';
 
 export default function MobileBottomBar() {
@@ -96,7 +97,7 @@ export default function MobileBottomBar() {
           className="flex flex-col items-center justify-center h-full rounded-xl transition-all active:scale-95 touch-target text-emerald-600"
         >
           <div className="w-8 h-8 rounded-full bg-emerald-500 flex items-center justify-center text-slate-950 shadow-md shadow-emerald-500/30">
-            <MessageCircle className="w-4 h-4 fill-current" />
+            <WhatsAppIcon className="w-4 h-4" />
           </div>
           <span className={`text-[10px] mt-0.5 font-black uppercase tracking-tight ${
             isSunlight ? 'text-emerald-800' : 'text-emerald-400'

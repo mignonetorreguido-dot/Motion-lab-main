@@ -10,7 +10,6 @@
  * 3. AboutTrainer: Metodología de entrenamiento, biomecánica y método
  * 4. GallerySection: Resultados y entornos donde se aplica la ciencia
  * 5. Footer: Pie de página y canales de contacto oficial
- * 6. WhatsAppButton: Botón flotante para escritorio
  */
 
 import Navbar from '@/components/Navbar';
@@ -18,7 +17,6 @@ import Hero from '@/components/Hero';
 import AboutTrainer from '@/components/AboutTrainer';
 import GallerySection from '@/components/GallerySection';
 import Footer from '@/components/Footer';
-import WhatsAppButton from '@/components/WhatsAppButton';
 import {
   SITE_DESCRIPTION,
   SITE_NAME,
@@ -111,9 +109,6 @@ export default function Home() {
 
       {/* 3. Pie de página con información y redes */}
       <Footer />
-
-      {/* 4. Botón flotante para escritorio */}
-      <WhatsAppButton />
     </div>
   );
 }

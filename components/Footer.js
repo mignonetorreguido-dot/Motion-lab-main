@@ -9,8 +9,9 @@
  * Optimizado para alto contraste en modo soleado y móvil.
  */
 
-import { Instagram, Mail, MessageCircle } from 'lucide-react';
+import { Instagram, Mail } from 'lucide-react';
 import MotionLabLogo from './MotionLabLogo';
+import WhatsAppIcon from './WhatsAppIcon';
 import { useTheme } from './ThemeProvider';
 
 export default function Footer() {
@@ -30,7 +31,7 @@ export default function Footer() {
           {/* COLUMNA 1: Marca y Misión */}
           <div className="md:col-span-2 space-y-4">
             <MotionLabLogo />
-            <p className={`text-xs sm:text-sm max-w-md leading-relaxed font-medium ${
+            <p className={`text-sm sm:text-base max-w-md leading-relaxed font-semibold ${
               isSunlight ? 'text-slate-800' : 'text-slate-300'
             }`}>
               Entrenamiento de fuerza y rendimiento atlético. Planes personalizados 1 a 1, seguimiento semanal y datos de tu reloj. Online, con base en Chaco, Argentina.
@@ -39,12 +40,12 @@ export default function Footer() {
 
           {/* COLUMNA 2: Enlaces Rápidos */}
           <div>
-            <h4 className={`text-xs font-black uppercase tracking-wider mb-4 ${
+            <h4 className={`text-sm font-black uppercase tracking-wider mb-4 ${
               isSunlight ? 'text-slate-950' : 'text-white'
             }`}>
               Navegación
             </h4>
-            <ul className="space-y-3 text-xs sm:text-sm font-semibold">
+            <ul className="space-y-3 text-sm sm:text-base font-bold">
               <li>
                 <a href="/#sobre-mi" className={`transition-colors ${isSunlight ? 'hover:text-blue-700' : 'hover:text-sky-400'}`}>
                   Metodología MOTION LAB
@@ -66,14 +67,14 @@ export default function Footer() {
 
           {/* COLUMNA 3: Canales de Contacto */}
           <div>
-            <h4 className={`text-xs font-black uppercase tracking-wider mb-4 ${
+            <h4 className={`text-sm font-black uppercase tracking-wider mb-4 ${
               isSunlight ? 'text-slate-950' : 'text-white'
             }`}>
               Canales Oficiales
             </h4>
-            <ul className="space-y-3 text-xs sm:text-sm font-semibold">
+            <ul className="space-y-3 text-sm sm:text-base font-bold">
               <li className="flex items-center gap-2">
-                <MessageCircle className={`w-4 h-4 ${isSunlight ? 'text-emerald-700' : 'text-emerald-400'}`} />
+                <WhatsAppIcon className={`w-4 h-4 ${isSunlight ? 'text-emerald-700' : 'text-emerald-400'}`} />
                 <a 
                   href="https://wa.me/5493624098320" 
                   target="_blank" 
@@ -109,7 +110,7 @@ export default function Footer() {
         </div>
 
         {/* LÍNEA FINAL */}
-        <div className={`pt-8 border-t flex flex-col sm:flex-row items-center justify-between gap-4 text-xs font-medium ${
+        <div className={`pt-8 border-t flex flex-col sm:flex-row items-center justify-between gap-4 text-sm font-semibold ${
           isSunlight ? 'border-slate-300 text-slate-600' : 'border-slate-800/80 text-slate-400'
         }`}>
           <div className="flex flex-wrap items-center justify-center gap-x-2 gap-y-1">
@@ -133,7 +134,7 @@ export default function Footer() {
               Términos
             </a>
           </div>
-          <p className="text-[11px] max-w-sm text-center sm:text-right font-medium">
+          <p className="text-xs max-w-sm text-center sm:text-right font-medium">
             Aviso médico: Consulta con un profesional de la salud antes de iniciar planes de entrenamiento de alta exigencia.
           </p>
         </div>

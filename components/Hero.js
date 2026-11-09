@@ -8,9 +8,10 @@
  * Optimizado para máxima visibilidad en pantallas de teléfonos bajo sol directo.
  */
 
-import { ArrowRight, Sparkles, Timer, MessageCircle } from 'lucide-react';
+import { ArrowRight, Sparkles, Timer } from 'lucide-react';
 import Link from 'next/link';
 import { useTheme } from './ThemeProvider';
+import WhatsAppIcon from './WhatsAppIcon';
 
 export default function Hero() {
   const { isSunlight } = useTheme();
@@ -82,13 +83,13 @@ export default function Hero() {
                 href="https://wa.me/5493624098320?text=¡Hola%20Coach%20Matías!%20Quisiera%20consultar%20por%20la%20planificación%20de%20Motion%20Lab."
                 target="_blank"
                 rel="noopener noreferrer"
-                className={`inline-flex items-center justify-center gap-2 px-4 sm:px-6 py-3.5 sm:py-4 text-[15px] sm:text-base font-bold rounded-full transition-all border touch-target ${
+                className={`inline-flex items-center justify-center gap-2 px-4 sm:px-6 py-3.5 sm:py-4 text-base sm:text-lg font-black rounded-full transition-all border touch-target ${
                   isSunlight
                     ? 'bg-slate-100 hover:bg-slate-200 text-slate-900 border-slate-300'
                     : 'bg-slate-900 hover:bg-slate-800 text-white border-slate-700'
                 }`}
               >
-                <MessageCircle className="w-5 h-5 text-emerald-500 shrink-0" />
+                <WhatsAppIcon className="w-5 h-5 sm:w-6 sm:h-6 text-emerald-500 shrink-0" />
                 <span>Consultar por WhatsApp</span>
               </a>
             </div>
