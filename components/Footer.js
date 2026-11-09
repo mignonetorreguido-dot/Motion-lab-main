@@ -75,12 +75,12 @@ export default function Footer() {
               <li className="flex items-center gap-2">
                 <MessageCircle className={`w-4 h-4 ${isSunlight ? 'text-emerald-700' : 'text-emerald-400'}`} />
                 <a 
-                  href="https://wa.me/5493624654911" 
+                  href="https://wa.me/5493624098320" 
                   target="_blank" 
                   rel="noopener noreferrer"
                   className={`transition-colors ${isSunlight ? 'hover:text-blue-700 text-slate-800' : 'hover:text-white'}`}
                 >
-                  WhatsApp: +54 9 362 465-4911
+                  WhatsApp: +54 9 362 409-8320
                 </a>
               </li>
               <li className="flex items-center gap-2">

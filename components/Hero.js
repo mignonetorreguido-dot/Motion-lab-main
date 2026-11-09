@@ -79,7 +79,7 @@ export default function Hero() {
                 <ArrowRight className="w-5 h-5" />
               </Link>
               <a
-                href="https://wa.me/5493624654911?text=¡Hola%20Coach%20Matías!%20Quisiera%20consultar%20por%20la%20planificación%20de%20Motion%20Lab."
+                href="https://wa.me/5493624098320?text=¡Hola%20Coach%20Matías!%20Quisiera%20consultar%20por%20la%20planificación%20de%20Motion%20Lab."
                 target="_blank"
                 rel="noopener noreferrer"
                 className={`inline-flex items-center justify-center gap-2 px-4 sm:px-6 py-3.5 sm:py-4 text-[15px] sm:text-base font-bold rounded-full transition-all border touch-target ${

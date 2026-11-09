@@ -14,7 +14,7 @@ import { useTheme } from './ThemeProvider';
 
 export default function WhatsAppButton() {
   const { isSunlight } = useTheme();
-  const numeroWhatsApp = '5493624654911';
+  const numeroWhatsApp = '5493624098320';
   const mensajePredeterminado = encodeURIComponent(
     '¡Hola Coach Matías! Estuve viendo la web de Motion Lab y quisiera consultar por los planes de entrenamiento.'
   );

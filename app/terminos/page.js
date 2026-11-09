@@ -62,7 +62,7 @@ const secciones = [
   {
     titulo: 'Cambios y contacto',
     parrafos: [
-      'Podemos actualizar estos términos para reflejar cambios en el servicio. La versión vigente se publica en esta página. Consultas: motionlab@gmail.com o WhatsApp +54 9 362 465-4911.',
+      'Podemos actualizar estos términos para reflejar cambios en el servicio. La versión vigente se publica en esta página. Consultas: motionlab@gmail.com o WhatsApp +54 9 362 409-8320.',
     ],
   },
 ];

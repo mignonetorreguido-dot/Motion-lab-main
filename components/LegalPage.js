@@ -101,7 +101,7 @@ export default function LegalPage({ titulo, actualizado, intro, secciones = [] }
               : 'bg-blue-500/10 border-blue-500/25 text-slate-300'
           }`}>
             Contacto: <a href="mailto:motionlab@gmail.com" className="font-black underline underline-offset-2">motionlab@gmail.com</a>
-            {' '}· WhatsApp: <a href="https://wa.me/5493624654911" target="_blank" rel="noopener noreferrer" className="font-black underline underline-offset-2">+54 9 362 465-4911</a>
+            {' '}· WhatsApp: <a href="https://wa.me/5493624098320" target="_blank" rel="noopener noreferrer" className="font-black underline underline-offset-2">+54 9 362 409-8320</a>
           </div>
         </div>
       </main>

@@ -15,7 +15,7 @@ import { useTheme } from './ThemeProvider';
 
 export default function PricingSection() {
   const { isSunlight } = useTheme();
-  const whatsappTrainer = '5493624654911';
+  const whatsappTrainer = '5493624098320';
 
   const getLinkPlan = (planNombre) => {
     const texto = `¡Hola Equipo de MOTION LAB! Me gustaría consultar por el *${planNombre}*. ¿Cuáles son los métodos de pago y pasos para comenzar?`;

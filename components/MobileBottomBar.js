@@ -19,7 +19,7 @@ import { useTheme } from './ThemeProvider';
 export default function MobileBottomBar() {
   const { isSunlight, toggleSunlight } = useTheme();
 
-  const numeroWhatsApp = '5493624654911';
+  const numeroWhatsApp = '5493624098320';
   const mensajePredeterminado = encodeURIComponent(
     '¡Hola Coach Matías! Estuve viendo la web de Motion Lab desde el celular y quisiera consultar por los planes.'
   );

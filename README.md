@@ -128,8 +128,8 @@ Cuando el alumno presiona "Ver mi Diagnóstico":
 ## 🎨 Cómo Personalizar la Web con tus Datos
 
 1. **Tu número de WhatsApp:**
-   - Abre `components/FitnessQuiz.js`, `components/PricingSection.js`, `components/Footer.js` y `.env.local`.
-   - El número configurado para Matías es `'5493624654911'` (+54 9 362 465-4911). Puedes modificarlo en `.env.local` si cambia en el futuro.
+   - Está definido en `lib/onboarding.js` y en los componentes que muestran el botón (`Footer.js`, `Hero.js`, `PricingSection.js`, `WhatsAppButton.js`, `MobileBottomBar.js`).
+   - Si cambia, actualizalo en esos archivos.
 2. **Nombre del Entrenador:**
    - Coach Matías (Motion Lab). Puedes personalizar su biografía y certificaciones en `components/AboutTrainer.js`.
 3. **Precios de los Planes:**
