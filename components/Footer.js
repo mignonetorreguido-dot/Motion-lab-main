@@ -85,7 +85,12 @@ export default function Footer() {
               </li>
               <li className="flex items-center gap-2">
                 <Mail className={`w-4 h-4 ${isSunlight ? 'text-blue-700' : 'text-sky-400'}`} />
-                <span className={isSunlight ? 'text-slate-800' : ''}>contacto@motionlab.fit</span>
+                <a
+                  href="mailto:motionlab@gmail.com"
+                  className={`transition-colors ${isSunlight ? 'text-slate-800 hover:text-blue-700' : 'hover:text-white'}`}
+                >
+                  motionlab@gmail.com
+                </a>
               </li>
               <li className="flex items-center gap-2">
                 <Instagram className={`w-4 h-4 ${isSunlight ? 'text-blue-700' : 'text-sky-400'}`} />

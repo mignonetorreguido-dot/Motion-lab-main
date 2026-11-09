@@ -13,7 +13,7 @@ const secciones = [
   {
     titulo: 'Responsable del tratamiento',
     parrafos: [
-      'MOTION LAB es responsable de los datos personales que recopila a través de esta aplicación. Para consultas sobre privacidad podés escribir a contacto@motionlab.fit o al WhatsApp +54 9 362 465-4911.',
+      'MOTION LAB es responsable de los datos personales que recopila a través de esta aplicación. Para consultas sobre privacidad podés escribir a motionlab@gmail.com o al WhatsApp +54 9 362 465-4911.',
     ],
   },
   {
