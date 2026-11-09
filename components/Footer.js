@@ -109,7 +109,15 @@ export default function Footer() {
         }`}>
           <div className="flex flex-wrap items-center justify-center gap-x-2 gap-y-1">
             <p>
-              © {anioActual} MOTION LAB. Todos los derechos reservados.
+              © {anioActual}{' '}
+              <a
+                href="https://flegtech.vercel.app/"
+                target="_blank"
+                rel="noopener noreferrer"
+                className={`font-bold underline underline-offset-2 ${isSunlight ? 'hover:text-blue-700' : 'hover:text-sky-400'}`}
+              >
+                FLEG TECH
+              </a>. Todos los derechos reservados.
             </p>
             <span className={isSunlight ? 'text-slate-400' : 'text-slate-600'}>·</span>
             <a href="/privacidad" className={`font-bold underline underline-offset-2 ${isSunlight ? 'hover:text-blue-700' : 'hover:text-sky-400'}`}>
