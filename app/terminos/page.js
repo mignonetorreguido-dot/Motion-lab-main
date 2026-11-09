@@ -4,6 +4,9 @@ export const metadata = {
   title: 'Términos y Condiciones | MOTION LAB',
   description:
     'Condiciones de uso, planes, pagos y responsabilidad del servicio de entrenamiento MOTION LAB.',
+  alternates: {
+    canonical: '/terminos',
+  },
 };
 
 const secciones = [

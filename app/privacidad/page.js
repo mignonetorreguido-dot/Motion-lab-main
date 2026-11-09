@@ -4,6 +4,9 @@ export const metadata = {
   title: 'Política de Privacidad | MOTION LAB',
   description:
     'Cómo MOTION LAB recopila, usa y protege los datos de alumnos, entrenamiento, bienestar y relojes vinculados.',
+  alternates: {
+    canonical: '/privacidad',
+  },
 };
 
 const secciones = [
