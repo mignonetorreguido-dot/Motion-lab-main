@@ -22,7 +22,7 @@ import { useState, useEffect } from 'react';
 import { 
   Users, CheckCircle2, Clock, Dumbbell, ShieldCheck, 
   Search, Eye, EyeOff, Plus, Trash2, ArrowRight, X, Sparkles, Activity, RotateCcw,
-  HeartPulse, ChevronDown, ChevronUp
+  HeartPulse, ChevronDown, ChevronUp, Edit3
 } from 'lucide-react';
 import RoutineBuilder from './RoutineBuilder';
 import WatchSummary from './WatchSummary';
@@ -373,6 +373,45 @@ export default function DashboardTrainer() {
       setEliminando(false);
       setConfirmacionModal({ abierto: false, titulo: '', mensaje: '', tipo: '', payload: null });
     }
+  };
+
+  
+  const abrirEditorConRutinaActual = () => {
+    if (rutinaActivaAlumno && rutinaActivaAlumno.length > 0) {
+      const diasClonados = rutinaActivaAlumno.map(dia => ({
+        id: dia.id || crypto.randomUUID(),
+        nombre: dia.nombre,
+        descripcion: dia.enfoque || dia.descripcion || '',
+        bloques: ['MOVILIDAD', 'ACTIVACION', 'DESARROLLO'].map((tipo, idx) => {
+          const bloqueExistente = (dia.bloques || []).find(b => b.tipo === tipo);
+          return {
+            tipo,
+            orden: idx + 1,
+            ejercicios: (bloqueExistente?.ejercicios || []).map(ej => ({
+              id: ej.id || crypto.randomUUID(),
+              nombre: ej.nombre,
+              seriesCount: ej.series?.length > 0 ? ej.series.length : (tipo === 'DESARROLLO' ? 3 : 1),
+              repsCount: ej.series?.[0]?.repsRealizadas || (tipo === 'DESARROLLO' ? 10 : 8),
+              indicacionProfe: ej.indicacionProfe || '',
+              videoUrl: ej.videoUrl || '',
+              videoRecomendacion: ej.videoRecomendacion || '',
+              mostrarVideoInput: Boolean(ej.videoUrl || ej.videoRecomendacion)
+            }))
+          };
+        })
+      }));
+      setDiasParaConstructor(diasClonados);
+      setImportKey(crypto.randomUUID());
+    } else {
+      setDiasParaConstructor(null);
+    }
+    setMostrarConstructor(true);
+  };
+
+  const iniciarNuevaRutinaLimpia = () => {
+    setDiasParaConstructor(null);
+    setImportKey(crypto.randomUUID());
+    setMostrarConstructor(true);
   };
 
   const handleImportarRutina = async (alumnoFuenteId) => {
@@ -1666,14 +1705,27 @@ export default function DashboardTrainer() {
                       </div>
                       <div className="flex items-center gap-2 flex-wrap">
                         <button
-                          onClick={() => setMostrarConstructor(true)}
-                          className={`px-3.5 py-2 rounded-xl text-xs font-bold transition-colors border ${
+                          onClick={abrirEditorConRutinaActual}
+                          className={`px-3.5 py-2 rounded-xl text-xs font-bold transition-colors border flex items-center gap-1.5 ${
                             isSunlight
-                              ? 'bg-sky-100 text-sky-800 hover:bg-sky-200 border-sky-300'
-                              : 'bg-sky-500/10 text-sky-400 hover:bg-sky-500/20 border-sky-500/20'
+                              ? 'bg-emerald-100 text-emerald-900 hover:bg-emerald-200 border-emerald-300'
+                              : 'bg-emerald-500/15 text-emerald-300 hover:bg-emerald-500/25 border-emerald-500/30'
                           }`}
+                          title="Cargar la rutina actual en el editor para modificar o intercambiar ejercicios"
                         >
-                          Reemplazar / Asignar Nueva
+                          <Edit3 className="w-3.5 h-3.5" />
+                          <span>Editar Rutina Asignada</span>
+                        </button>
+                        <button
+                          onClick={iniciarNuevaRutinaLimpia}
+                          className={`px-3 py-2 rounded-xl text-xs font-bold transition-colors border ${
+                            isSunlight
+                              ? 'bg-slate-100 text-slate-700 hover:bg-slate-200 border-slate-300'
+                              : 'bg-slate-800 text-slate-300 hover:bg-slate-700 border-slate-700'
+                          }`}
+                          title="Comenzar una nueva planificación desde cero"
+                        >
+                          + Nueva desde Cero
                         </button>
                         <button
                           onClick={() => pedirConfirmacionEliminarRutinaActiva(alumnoSeleccionado)}
