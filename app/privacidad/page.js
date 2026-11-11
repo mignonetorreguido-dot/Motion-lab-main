@@ -42,7 +42,6 @@ const secciones = [
     parrafos: [
       'La vinculación de relojes es opcional. Al autorizar Junction, aceptás que tus datos de actividad, sueño y pulso se compartan con MOTION LAB para el seguimiento del entrenamiento. Podés revocar el acceso desde la configuración del proveedor o solicitarnos que eliminemos la conexión.',
       'La importación de Apple Health también es opcional. El archivo export.zip se procesa localmente en tu navegador; MOTION LAB solo recibe y almacena un resumen de los últimos 30 días (pasos, sueño, pulso y entrenamientos). Podés eliminar esa importación desde tu panel cuando quieras.',
-      'Las mediciones de pulso en vivo por Bluetooth se muestran en tu dispositivo y no se almacenan como historial en MOTION LAB.',
     ],
   },
   {

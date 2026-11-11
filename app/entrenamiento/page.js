@@ -33,8 +33,8 @@ export default async function EntrenamientoPage() {
   const estadoPago = session.user.estadoPago || 'ACTIVO';
 
   // La prueba de Google Fit solo se muestra en desarrollo local. En
-  // producción, sin GOOGLE_FIT_TEST=1, la tarjeta unificada queda igual que
-  // antes: Junction y pulso en vivo, sin pedidos innecesarios a la API.
+  // producción, sin GOOGLE_FIT_TEST=1, la tarjeta unificada queda con
+  // Junction y Apple Health, sin pedidos innecesarios a la API.
   const googleFitTestActivo = process.env.GOOGLE_FIT_TEST === '1';
 
   return (

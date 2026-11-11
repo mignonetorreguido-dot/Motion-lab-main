@@ -6,7 +6,7 @@
  * ========================================================================
  * - Muestra de forma dinámica el "Entrenamiento de Hoy" sugerido por Matías.
  * - Los días completados quedan marcados con tilde verde y botón de "✏️ Editar Día X".
- * - Vinculación real de relojes en la nube (Junction) y pulso en vivo por BLE.
+ * - Vinculación real de relojes en la nube (Junction) e importación manual de Apple Health.
  * - Soporte de Modo Soleado de Alto Contraste para entrenar al aire libre bajo el sol.
  */
 

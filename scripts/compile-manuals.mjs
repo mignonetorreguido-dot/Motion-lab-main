@@ -95,7 +95,7 @@ function getMasterCoverHTML() {
           <li><strong>6. La Sesión en los 3 Bloques:</strong> Movilidad, Activación y registro de Kilos/Reps/RIR en Desarrollo.</li>
           <li><strong>7. Check-in Post-Entrenamiento:</strong> Esfuerzo RPE (1 al 10), sensación anímica y guardado de sesión.</li>
           <li><strong>8. Chequeo de Bienestar Semanal:</strong> Test de 10 preguntas y consejos.</li>
-          <li><strong>9. Wearables y Smartwatches:</strong> Vinculación por Google Fit y sensor de pecho BLE.</li>
+          <li><strong>9. Wearables y Smartwatches:</strong> Vinculación por Google Fit, Junction e importación de Apple Health.</li>
         </ul>
       </div>
     </div>

@@ -2,7 +2,7 @@
 
 /**
  * ========================================================================
- * COMPONENTE: Reloj, recuperación y pulso en vivo (components/training/WatchLinkCard.js)
+ * COMPONENTE: Reloj y recuperación (components/training/WatchLinkCard.js)
  * ========================================================================
  * 1. Google Fit como puente universal para las apps que sincronizan ahí:
  *    Da Fit, Samsung Health, Mi Fitness, Huawei Health y otras. Lee pasos,
@@ -13,23 +13,19 @@
  *    Garmin, Polar, Fitbit, Oura, Withings, etc. El alumno autoriza su cuenta
  *    con OAuth y Matías ve actividad, sueño y frecuencia cardíaca.
  *
- * 3. Pulso en vivo por Bluetooth Low Energy (BLE) para bandas y relojes que
- *    exponen el servicio estándar `heart_rate`. Es una lectura real, no
- *    simulada, y no promete historial.
+ * 3. Importación manual del export.zip de Apple Salud para Apple Watch:
+ *    el ZIP se procesa en el navegador y solo se guarda un resumen de 30 días.
  *
  * Limitaciones reales:
  * - Apple Watch (HealthKit) requiere una app móvil con su SDK; no se puede
  *   vincular automáticamente desde la web. La tarjeta permite importar
  *   manualmente el export.zip de la app Salud.
  * - Google Fit está deprecado y puede dejar de funcionar durante 2026.
- * - Garmin/Samsung/Polar pueden transmitir pulso por BLE en algunos modelos,
- *   pero el historial completo se obtiene con su API o con Junction.
  */
 
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import {
   Watch,
-  Bluetooth,
   HeartPulse,
   CheckCircle2,
   Link2Off,
@@ -46,8 +42,6 @@ import {
 import { useTheme } from '@/components/ThemeProvider';
 import GoogleFitTestCard from '@/components/bienestar/GoogleFitTestCard';
 import AppleHealthImportCard from './AppleHealthImportCard';
-
-const CLAVE_ULTIMO_DISPOSITIVO = 'motion_lab_ble_hr_dispositivo';
 
 function formatearNumero(valor) {
   if (valor === null || valor === undefined || valor === '') return '—';
@@ -309,208 +303,20 @@ export default function WatchLinkCard({ googleFitTestActivo = false }) {
     (proveedor) => proveedor.estado === 'error'
   );
 
-  // ---------------------------------------------------------------------
-  // Pulso en vivo por BLE
-  // ---------------------------------------------------------------------
-  const [soportado, setSoportado] = useState(null);
-  const [conectado, setConectado] = useState(false);
-  const [conectando, setConectando] = useState(false);
-  const [bpm, setBpm] = useState(null);
-  const [dispositivo, setDispositivo] = useState(null);
-  const [ultimoDispositivo, setUltimoDispositivo] = useState(null);
-  const [error, setError] = useState('');
-
-  const dispositivoRef = useRef(null);
-  const caracteristicaRef = useRef(null);
-  const listenerRef = useRef(null);
-
-  // Detectamos compatibilidad BLE y recuperamos el nombre de la última banda.
-  useEffect(() => {
-    setSoportado(
-      typeof navigator !== 'undefined' && Boolean(navigator.bluetooth)
-    );
-
-    try {
-      const guardado = window.localStorage.getItem(CLAVE_ULTIMO_DISPOSITIVO);
-      if (guardado) setUltimoDispositivo(JSON.parse(guardado));
-    } catch {
-      // Sin almacenamiento disponible: el componente sigue funcionando.
-    }
-
-    return () => {
-      const caracteristica = caracteristicaRef.current;
-      const listener = listenerRef.current;
-
-      if (caracteristica && listener) {
-        try {
-          caracteristica.removeEventListener(
-            'characteristicvaluechanged',
-            listener
-          );
-          caracteristica.stopNotifications().catch(() => {});
-        } catch {
-          // La conexión ya puede estar cerrada.
-        }
-      }
-
-      if (dispositivoRef.current?.gatt?.connected) {
-        try {
-          dispositivoRef.current.gatt.disconnect();
-        } catch {
-          // La conexión ya puede estar cerrada.
-        }
-      }
-    };
-  }, []);
-
-  const leerMedicion = (event) => {
-    const valor = event.target.value;
-    if (!valor || valor.byteLength < 2) return;
-
-    const flags = valor.getUint8(0);
-    const usa16Bits = (flags & 0x01) === 0x01;
-    const frecuencia = usa16Bits
-      ? valor.getUint16(1, true)
-      : valor.getUint8(1);
-
-    if (frecuencia > 0) setBpm(frecuencia);
-  };
-
-  const guardarUltimoDispositivo = (info) => {
-    setUltimoDispositivo(info);
-    try {
-      window.localStorage.setItem(
-        CLAVE_ULTIMO_DISPOSITIVO,
-        JSON.stringify(info)
-      );
-    } catch {
-      // Sin persistencia: igual mostramos el dispositivo en esta sesión.
-    }
-  };
-
-  const conectarDispositivo = async (device) => {
-    const server = await device.gatt.connect();
-    const service = await server.getPrimaryService('heart_rate');
-    const caracteristica = await service.getCharacteristic(
-      'heart_rate_measurement'
-    );
-
-    const listener = (event) => leerMedicion(event);
-    caracteristica.addEventListener('characteristicvaluechanged', listener);
-    await caracteristica.startNotifications();
-
-    dispositivoRef.current = device;
-    caracteristicaRef.current = caracteristica;
-    listenerRef.current = listener;
-
-    const info = {
-      id: device.id,
-      nombre: device.name || 'Banda de pulso',
-      vinculadoEn: new Date().toISOString(),
-    };
-
-    setDispositivo(info);
-    guardarUltimoDispositivo(info);
-    setConectado(true);
-    setError('');
-
-    device.addEventListener('gattserverdisconnected', () => {
-      setConectado(false);
-      setBpm(null);
-      setError(
-        'La banda se desconectó. Acercala y volvé a conectarla para seguir midiendo.'
-      );
-    });
-  };
-
-  const conectar = async () => {
-    if (!soportado) {
-      setError(
-        'Este navegador no soporta Bluetooth web. Probá con Chrome o Edge en Android, Windows o macOS.'
-      );
-      return;
-    }
-
-    setConectando(true);
-    setError('');
-
-    try {
-      const device = await navigator.bluetooth.requestDevice({
-        filters: [{ services: ['heart_rate'] }],
-      });
-
-      await conectarDispositivo(device);
-    } catch (err) {
-      if (err?.name === 'NotFoundError') {
-        setError('No se seleccionó ninguna banda. Podés intentarlo de nuevo.');
-      } else if (err?.name === 'NetworkError') {
-        setError(
-          'No se pudo conectar. Verificá que la banda esté encendida, cerca y en modo de medición.'
-        );
-      } else if (err?.name === 'SecurityError') {
-        setError(
-          'El navegador bloqueó el acceso a Bluetooth. Usá HTTPS y permití la conexión.'
-        );
-      } else {
-        setError(
-          'No pudimos conectar la banda. Verificá que sea compatible con el servicio estándar de pulso BLE.'
-        );
-      }
-    } finally {
-      setConectando(false);
-    }
-  };
-
-  const desconectar = async () => {
-    const caracteristica = caracteristicaRef.current;
-    const listener = listenerRef.current;
-
-    if (caracteristica && listener) {
-      try {
-        caracteristica.removeEventListener(
-          'characteristicvaluechanged',
-          listener
-        );
-        await caracteristica.stopNotifications();
-      } catch {
-        // La conexión ya puede estar cerrada.
-      }
-    }
-
-    if (dispositivoRef.current?.gatt?.connected) {
-      try {
-        dispositivoRef.current.gatt.disconnect();
-      } catch {
-        // La conexión ya puede estar cerrada.
-      }
-    }
-
-    dispositivoRef.current = null;
-    caracteristicaRef.current = null;
-    listenerRef.current = null;
-
-    setConectado(false);
-    setBpm(null);
-    setDispositivo(null);
-    setError('');
-  };
-
-  // Estado general de la tarjeta unificada. Google Fit y Junction aportan
-  // historial; BLE solo aporta pulso en vivo.
+  // Estado general de la tarjeta unificada. Google Fit, Junction y la
+  // importación de Apple Health aportan historial.
   const fuentesConectadas = [
     estadoGoogleFit.conectado ? 'Google Fit' : null,
     estadoNube?.conectado ? 'Junction' : null,
     appleHealthImportado ? 'Apple Health' : null,
   ].filter(Boolean);
-  const hayConexion = fuentesConectadas.length > 0 || conectado;
+  const hayConexion = fuentesConectadas.length > 0;
   const etiquetaEstado =
     fuentesConectadas.length > 0
       ? estadoGoogleFit.conectado || estadoNube?.conectado
         ? 'Conectado'
         : 'Datos importados'
-      : conectado
-        ? 'Pulso en vivo'
-        : 'Sin conectar';
+      : 'Sin conectar';
 
   return (
     <div
@@ -546,8 +352,8 @@ export default function WatchLinkCard({ googleFitTestActivo = false }) {
               }`}
             >
               {estadoGoogleFit.disponible !== false
-                ? 'Unificá tu reloj o app: Google Fit, Junction, Apple Watch (importación) y pulso en vivo por Bluetooth.'
-                : 'Vinculá tu reloj o importá tu export de Apple Salud para que Matías vea actividad, sueño y pulso. También podés medir tu frecuencia cardíaca en vivo.'}
+                ? 'Unificá tu reloj o app: Google Fit, Junction y Apple Watch (importación manual).'
+                : 'Vinculá tu reloj o importá tu export de Apple Salud para que Matías vea actividad, sueño y pulso.'}
             </p>
             {fuentesConectadas.length > 0 && (
               <p
@@ -637,7 +443,7 @@ export default function WatchLinkCard({ googleFitTestActivo = false }) {
               }`}
             >
               La sincronización con relojes todavía no está configurada en este
-              entorno. El pulso en vivo por BLE sigue disponible abajo.
+              entorno. Si importaste Apple Health, el resumen aparece abajo.
             </p>
           </div>
         ) : estadoNube?.conectado ? (
@@ -974,200 +780,6 @@ export default function WatchLinkCard({ googleFitTestActivo = false }) {
 
       {/* APPLE WATCH: IMPORTACIÓN MANUAL DEL EXPORT DE SALUD */}
       <AppleHealthImportCard onEstadoChange={setAppleHealthImportado} />
-
-      {/* PULSO EN VIVO POR BLE */}
-      <div
-        className={`mt-6 pt-5 border-t ${
-          isSunlight ? 'border-slate-200' : 'border-slate-800'
-        }`}
-      >
-        <div className="flex items-center justify-between gap-3 flex-wrap">
-          <div className="flex items-center gap-2">
-            <Bluetooth
-              className={`w-4 h-4 ${
-                isSunlight ? 'text-blue-700' : 'text-sky-400'
-              }`}
-            />
-            <h4
-              className={`text-xs font-black uppercase tracking-wider ${
-                isSunlight ? 'text-slate-800' : 'text-slate-200'
-              }`}
-            >
-              Pulso en vivo (BLE)
-            </h4>
-          </div>
-          <span
-            className={`text-[10px] font-black uppercase tracking-wider px-2 py-0.5 rounded-full border ${
-              conectado
-                ? isSunlight
-                  ? 'bg-emerald-100 text-emerald-800 border-emerald-300'
-                  : 'bg-emerald-500/15 text-emerald-300 border-emerald-500/30'
-                : isSunlight
-                  ? 'bg-slate-100 text-slate-600 border-slate-300'
-                  : 'bg-slate-900 text-slate-400 border-slate-800'
-            }`}
-          >
-            {conectado ? 'En vivo' : 'Sin conectar'}
-          </span>
-        </div>
-
-        {conectado ? (
-          <div className="mt-4 space-y-3">
-            <div
-              className={`p-4 rounded-2xl border ${
-                isSunlight
-                  ? 'bg-emerald-50/70 border-emerald-300'
-                  : 'bg-emerald-950/20 border-emerald-500/30'
-              }`}
-            >
-              <div className="flex items-center gap-2.5 flex-wrap">
-                <CheckCircle2
-                  className={`w-5 h-5 shrink-0 ${
-                    isSunlight ? 'text-emerald-700' : 'text-emerald-400'
-                  }`}
-                />
-                <span
-                  className={`font-black text-sm ${
-                    isSunlight ? 'text-slate-900' : 'text-white'
-                  }`}
-                >
-                  {dispositivo?.nombre || 'Banda de pulso'}
-                </span>
-                <span
-                  className={`text-[10px] font-bold px-2 py-0.5 rounded-full border ${
-                    isSunlight
-                      ? 'bg-white text-slate-600 border-slate-300'
-                      : 'bg-slate-900 text-slate-400 border-slate-800'
-                  }`}
-                >
-                  BLE · Heart Rate
-                </span>
-              </div>
-
-              <div className="mt-3 flex items-end gap-2">
-                <HeartPulse
-                  className={`w-6 h-6 mb-1 ${
-                    isSunlight ? 'text-red-600' : 'text-red-400'
-                  }`}
-                />
-                <span
-                  className={`text-4xl font-black tabular-nums ${
-                    isSunlight ? 'text-slate-900' : 'text-white'
-                  }`}
-                >
-                  {bpm ?? '—'}
-                </span>
-                <span
-                  className={`text-xs font-bold mb-1 ${
-                    isSunlight ? 'text-slate-600' : 'text-slate-400'
-                  }`}
-                >
-                  BPM en vivo
-                </span>
-              </div>
-
-              <p
-                className={`text-[11px] font-bold mt-2 ${
-                  isSunlight ? 'text-slate-600' : 'text-slate-400'
-                }`}
-              >
-                Lectura real en tiempo real. No se guarda como historial.
-              </p>
-            </div>
-
-            <button
-              type="button"
-              onClick={desconectar}
-              className={`inline-flex items-center gap-2 px-4 py-2.5 rounded-xl border font-black text-xs transition-all ${
-                isSunlight
-                  ? 'bg-white hover:bg-red-50 text-red-700 border-red-300'
-                  : 'bg-slate-900 hover:bg-red-950/40 text-red-400 border-red-500/30'
-              }`}
-            >
-              <Link2Off className="w-4 h-4" />
-              <span>Desconectar</span>
-            </button>
-          </div>
-        ) : (
-          <div className="mt-4 space-y-3">
-            <div className="flex flex-col sm:flex-row sm:items-center gap-3">
-              <button
-                type="button"
-                onClick={conectar}
-                disabled={conectando || soportado !== true}
-                className="inline-flex items-center justify-center gap-2 px-5 py-3 rounded-2xl bg-blue-600 hover:bg-blue-500 disabled:opacity-60 text-white font-black text-sm transition-all shadow-md active:scale-[0.98] touch-target"
-              >
-                {conectando ? (
-                  <Loader2 className="w-4 h-4 animate-spin" />
-                ) : (
-                  <Bluetooth className="w-4 h-4" />
-                )}
-                <span>
-                  {conectando
-                    ? 'Buscando dispositivos...'
-                    : 'Conectar banda o reloj'}
-                </span>
-              </button>
-
-              {ultimoDispositivo?.nombre && (
-                <span
-                  className={`text-[11px] font-bold ${
-                    isSunlight ? 'text-slate-500' : 'text-slate-400'
-                  }`}
-                >
-                  Última banda: {ultimoDispositivo.nombre}
-                </span>
-              )}
-            </div>
-
-            {soportado === false && (
-              <div
-                className={`flex items-start gap-2 rounded-xl border p-3 text-[11px] font-medium ${
-                  isSunlight
-                    ? 'bg-amber-50 border-amber-300 text-amber-900'
-                    : 'bg-amber-500/10 border-amber-500/30 text-amber-200'
-                }`}
-              >
-                <AlertCircle className="w-4 h-4 shrink-0 mt-0.5" />
-                <span>
-                  Este navegador no soporta Bluetooth web. En iPhone, Apple Watch
-                  requiere HealthKit o una app nativa; para Garmin/Samsung hace
-                  falta su API oficial.
-                </span>
-              </div>
-            )}
-
-            {error && (
-              <div
-                className={`flex items-start gap-2 rounded-xl border p-3 text-[11px] font-medium ${
-                  isSunlight
-                    ? 'bg-red-50 border-red-300 text-red-800'
-                    : 'bg-red-500/10 border-red-500/30 text-red-200'
-                }`}
-              >
-                <AlertCircle className="w-4 h-4 shrink-0 mt-0.5" />
-                <span>{error}</span>
-              </div>
-            )}
-
-            <div
-              className={`flex items-start gap-2 rounded-xl border p-3 text-[11px] font-medium ${
-                isSunlight
-                  ? 'bg-sky-50 border-sky-200 text-sky-900'
-                  : 'bg-sky-500/10 border-sky-500/20 text-sky-200'
-              }`}
-            >
-              <Info className="w-4 h-4 shrink-0 mt-0.5" />
-              <span>
-                Compatible con bandas y dispositivos que exponen el servicio
-                estándar BLE de frecuencia cardíaca. Si tu reloj no aparece,
-                activá el modo de transmisión de pulso o usá la vinculación en
-                la nube de arriba.
-              </span>
-            </div>
-          </div>
-        )}
-      </div>
     </div>
   );
 }

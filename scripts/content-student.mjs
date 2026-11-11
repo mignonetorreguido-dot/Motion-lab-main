@@ -165,9 +165,9 @@ export function getStudentManualHTML() {
           <td>Permite corregir pesos o repeticiones si te olvidaste de anotar algo.</td>
         </tr>
         <tr>
-          <td><strong>Vincular Reloj / BLE</strong></td>
-          <td>Tarjeta para conectar tu smartwatch (Garmin, Google Fit, Apple Watch) o sensor de pecho por Bluetooth.</td>
-          <td>Medí tu pulso cardíaco en tiempo real mientras entrenás.</td>
+          <td><strong>Vincular Reloj / Apple Health</strong></td>
+          <td>Tarjeta para conectar tu smartwatch (Garmin, Google Fit) o importar el export.zip de Apple Salud.</td>
+          <td>Matías ve actividad, sueño y pulso de los últimos 30 días.</td>
         </tr>
         <tr>
           <td><strong>Modo Soleado (Luz)</strong></td>
@@ -456,9 +456,9 @@ export function getStudentManualHTML() {
       </div>
     </div>
 
-    <h2 class="sub-title">4.3. Vinculación de Reloj Inteligente (Wearables &amp; BLE)</h2>
+    <h2 class="sub-title">4.3. Vinculación de Reloj Inteligente y Apple Health</h2>
     <p>
-      En tu Hub podés conectar tu reloj para que Matías evalúe tu frecuencia cardíaca y sueño:
+      En tu Hub podés conectar tu reloj o importar tus datos de Apple Salud para que Matías evalúe tu frecuencia cardíaca y sueño:
     </p>
     <table class="doc-table">
       <thead>
@@ -475,12 +475,15 @@ export function getStudentManualHTML() {
           <td>Horas de sueño profundo, frecuencia cardíaca en reposo y pasos diarios.</td>
         </tr>
         <tr>
-          <td><strong>Banda de Pecho / Sensor BLE</strong></td>
-          <td>Presionar <em>"Conectar Sensor Bluetooth"</em> desde tu celular o computadora.</td>
-          <td>Latidos por minuto (LPM) y pulsaciones en vivo durante cada serie de fuerza.</td>
+          <td><strong>Apple Watch (importación manual)</strong></td>
+          <td>Exportar tus datos desde la app Salud del iPhone y subir el archivo <em>export.zip</em> en la tarjeta "Apple Watch".</td>
+          <td>Pasos, sueño, frecuencia cardíaca y entrenamientos de los últimos 30 días.</td>
         </tr>
       </tbody>
     </table>
+    <p style="font-size: 8pt; color: #475569;">
+      Apple Watch no se sincroniza automáticamente desde la web. La importación manual es la alternativa disponible: el ZIP se procesa en tu navegador y MOTION LAB solo guarda un resumen de 30 días.
+    </p>
 
     <div class="footer-bar">
       <span>MOTION LAB • Manual de Operaciones para el Alumno</span>
