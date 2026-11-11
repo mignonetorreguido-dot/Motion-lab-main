@@ -242,23 +242,6 @@ export default function LoginPage() {
               <div className={`flex-grow h-px ${isSunlight ? 'bg-slate-300' : 'bg-slate-700'}`} />
             </div>
 
-            {/* ACCESO RÁPIDO DE PRUEBA PARA ALUMNOS */}
-            <div className="mt-4 flex flex-wrap gap-2 justify-center">
-              <button
-                type="button"
-                onClick={() => {
-                  setEmail('alumno@motionlab.com');
-                  setPassword('alumno123');
-                }}
-                className={`text-[11px] font-bold py-1.5 px-3 rounded-full border transition-all ${
-                  isSunlight
-                    ? 'bg-emerald-50 text-emerald-800 border-emerald-300 hover:bg-emerald-100'
-                    : 'bg-emerald-500/10 text-emerald-300 border-emerald-500/30 hover:bg-emerald-500/20'
-                }`}
-              >
-                ⚡ Alumno Demo
-              </button>
-            </div>
           </div>
 
           <form onSubmit={handleSubmit} className="space-y-5">
