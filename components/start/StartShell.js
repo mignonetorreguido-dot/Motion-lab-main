@@ -40,7 +40,18 @@ export default function StartShell({ rolInicial = null }) {
           isSunlight ? 'text-slate-600' : 'text-slate-500'
         }`}
       >
-        © {new Date().getFullYear()} MOTION LAB • Matías Personal Trainer
+        © {new Date().getFullYear()}{' '}
+        <a
+          href="https://flegtech.vercel.app/"
+          target="_blank"
+          rel="noopener noreferrer"
+          className={`font-bold underline underline-offset-2 ${
+            isSunlight ? 'hover:text-blue-700' : 'hover:text-sky-400'
+          }`}
+        >
+          FLEG TECH
+        </a>{' '}
+        • Matías Personal Trainer
       </footer>
     </div>
   );

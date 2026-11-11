@@ -54,7 +54,16 @@ export default async function EntrenamientoPage() {
 
       {/* PIE */}
       <footer className="max-w-4xl mx-auto w-full text-center pt-8 pb-8 text-xs text-slate-500">
-        © {new Date().getFullYear()} MOTION LAB • Planificación Semanal y Planilla Digital de Entrenamiento.
+        © {new Date().getFullYear()}{' '}
+        <a
+          href="https://flegtech.vercel.app/"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="font-bold underline underline-offset-2 hover:text-blue-700"
+        >
+          FLEG TECH
+        </a>{' '}
+        • Planificación Semanal y Planilla Digital de Entrenamiento.
       </footer>
     </div>
   );
