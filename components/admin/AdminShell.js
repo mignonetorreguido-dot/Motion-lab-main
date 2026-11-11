@@ -64,23 +64,7 @@ export default function AdminShell({ children }) {
         {children}
       </main>
 
-      {/* PIE DISCRETO */}
-      <footer className={`max-w-7xl mx-auto w-full text-center pt-12 text-xs ${
-        isSunlight ? 'text-slate-500' : 'text-slate-600'
-      }`}>
-        © {new Date().getFullYear()}{' '}
-        <a
-          href="https://flegtech.vercel.app/"
-          target="_blank"
-          rel="noopener noreferrer"
-          className={`font-bold underline underline-offset-2 ${
-            isSunlight ? 'hover:text-blue-700' : 'hover:text-sky-400'
-          }`}
-        >
-          FLEG TECH
-        </a>{' '}
-        • Panel de Administración para Matías.
-      </footer>
+      
 
     </div>
   );

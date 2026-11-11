@@ -11,7 +11,7 @@
  * 1. Vista Cuadrícula ('grid' - Dashboard de Días):
  *    - Pseudo-calendario responsive: móvil (1 col), tablet (3 cols),
  *      desktop grande (5 columnas fijas horizontales: lg:grid-cols-5).
- *    - Flujo multilínea automático al superar 5 días.
+ *    - Flujo multilínea automático al superar 5 días con espaciado constante.
  *    - Tarjeta "+ AÑADIR DÍA" como última posición del grid, con borde
  *      punteado y botón circular con icono "+".
  *    - Tarjetas de día con badge "DÍA X", indicador "✨ ACTIVO", drag grip,
@@ -30,6 +30,8 @@
  *    - Cabecera de bloque con estado de inyección ("Bloque de Inyección Activo" / "Fijar para Inyección")
  *      y botón "+ Añadir Vacío".
  *    - Estado vacío estilizado con contenedor punteado y enlace directo a la Librería Global.
+ *    - Input "Nombre del Ejercicio" mediante ExerciseCombobox (Autocomplete Creatable) con historial
+ *      en memoria y creación libre de ejercicios.
  *    - Tarjetas de ejercicio con series, reps, notas de entrenador, video y recomendaciones.
  *
  * 3. Librería Global de Ejercicios On-Demand (Drawer Lateral Deslizante):
@@ -47,6 +49,7 @@ import {
   Video, PlayCircle, Filter, Zap, Save, ChevronRight, Layers
 } from 'lucide-react';
 import { LIBRERIA_EJERCICIOS, CATEGORIAS_EJERCICIOS } from '@/lib/exercisesLibrary';
+import ExerciseCombobox from './ExerciseCombobox';
 
 // ========================================================================
 // CATÁLOGO DE RESPALDO (Por si la biblioteca externa no cargara)
@@ -161,7 +164,12 @@ export default function RoutineBuilder({
   const [ejercicioInyectadoId, setEjercicioInyectadoId] = useState(null);
 
   // ------------------------------------------------------------------------
-  // 4. ESTADOS DE ARRASTRE Y GUARDADO
+  // 4. HISTORIAL DE EJERCICIOS PERSONALIZADOS EN MEMORIA (CREATABLE COMBOBOX)
+  // ------------------------------------------------------------------------
+  const [historialCustom, setHistorialCustom] = useState([]);
+
+  // ------------------------------------------------------------------------
+  // 5. ESTADOS DE ARRASTRE Y GUARDADO
   // ------------------------------------------------------------------------
   const [draggedDayIndex, setDraggedDayIndex] = useState(null);
   const [draggedExercise, setDraggedExercise] = useState(null); // { bIdx, eIdx }
@@ -186,6 +194,55 @@ export default function RoutineBuilder({
     return CATALOGO_FALLBACK;
   }, []);
 
+  // Historial global unificado para el Combobox: ejercicios predefinidos + personalizados creados en sesión
+  const historialEjerciciosTotal = useMemo(() => {
+    const nombresUnicos = new Set();
+    const resultado = [];
+
+    // Priorizar los ejercicios personalizados creados en esta sesión
+    for (const item of historialCustom) {
+      const nombreNorm = (item.nombre || '').toLowerCase().trim();
+      if (nombreNorm && !nombresUnicos.has(nombreNorm)) {
+        nombresUnicos.add(nombreNorm);
+        resultado.push(item);
+      }
+    }
+
+    // Agregar también los ejercicios que ya estén escritos en los días actuales
+    for (const d of dias) {
+      for (const b of d.bloques || []) {
+        for (const ej of b.ejercicios || []) {
+          const nombreNorm = (ej.nombre || '').toLowerCase().trim();
+          if (nombreNorm && !nombresUnicos.has(nombreNorm)) {
+            nombresUnicos.add(nombreNorm);
+            resultado.push({
+              id: ej.id || crypto.randomUUID(),
+              nombre: ej.nombre,
+              tipoBloque: b.tipo,
+              categoria: 'En Rutina',
+              seriesDefault: ej.seriesCount || 3,
+              repsDefault: ej.repsCount || 10,
+              indicacionDefault: ej.indicacionProfe || '',
+              videoUrl: ej.videoUrl || '',
+              videoRecomendacion: ej.videoRecomendacion || '',
+            });
+          }
+        }
+      }
+    }
+
+    // Añadir el catálogo oficial
+    for (const item of catalogoEjercicios) {
+      const nombreNorm = (item.nombre || '').toLowerCase().trim();
+      if (nombreNorm && !nombresUnicos.has(nombreNorm)) {
+        nombresUnicos.add(nombreNorm);
+        resultado.push(item);
+      }
+    }
+
+    return resultado;
+  }, [historialCustom, dias, catalogoEjercicios]);
+
   // Lista de categorías para los filtros del drawer
   const listaCategorias = useMemo(() => {
     if (Array.isArray(CATEGORIAS_EJERCICIOS) && CATEGORIAS_EJERCICIOS.length > 0) {
@@ -194,7 +251,7 @@ export default function RoutineBuilder({
     return ['TODAS', 'Tren Inferior', 'Tren Superior', 'Core & Estabilidad', 'Cadera & Tobillo', 'Pliometría & Potencia'];
   }, []);
 
-  // Filtrado reactivo en tiempo real de la librería
+  // Filtrado reactivo en tiempo real de la librería lateral
   const ejerciciosFiltrados = useMemo(() => {
     return catalogoEjercicios.filter((ej) => {
       const q = busquedaLib.toLowerCase().trim();
@@ -839,7 +896,7 @@ export default function RoutineBuilder({
                         </p>
                       </div>
                     ) : (
-                      /* LISTADO DE EJERCICIOS DEL BLOQUE */
+                      /* LISTADO DE EJERCICIOS DEL BLOQUE CON EXERCISE COMBOBOX */
                       <div className="space-y-3">
                         {bloque.ejercicios.map((ej, eIdx) => (
                           <div 
@@ -852,7 +909,7 @@ export default function RoutineBuilder({
                           >
                             <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-4">
                               
-                              {/* Nombre del ejercicio */}
+                              {/* Nombre del ejercicio con COMBOBOX (Autocomplete Creatable) */}
                               <div className="flex items-center gap-3 w-full lg:w-2/5">
                                 <span 
                                   className="text-slate-600 group-hover:text-slate-400 cursor-grab active:cursor-grabbing"
@@ -863,13 +920,40 @@ export default function RoutineBuilder({
                                 <span className="w-6 h-6 rounded-md bg-slate-800 text-slate-300 font-black text-xs flex items-center justify-center shrink-0">
                                   {eIdx + 1}
                                 </span>
-                                <input
-                                  type="text"
-                                  value={ej.nombre}
-                                  onChange={(e) => updateEjercicio(bIdx, eIdx, 'nombre', e.target.value)}
-                                  placeholder="Nombre del ejercicio (ej: Sentadilla Trasera)"
-                                  className="w-full bg-[#060b16] border border-slate-700 rounded-lg px-3 py-2 text-xs font-bold text-white placeholder-slate-600 focus:outline-none focus:border-cyan-400"
-                                />
+
+                                <div className="flex-1 min-w-0">
+                                  <ExerciseCombobox
+                                    value={ej.nombre}
+                                    bloqueTipo={bloque.tipo}
+                                    historialEjercicios={historialEjerciciosTotal}
+                                    placeholder="Nombre del ejercicio (ej: Sentadilla Trasera)"
+                                    onChange={(nuevoNombre, datosExtra) => {
+                                      updateEjercicio(bIdx, eIdx, 'nombre', nuevoNombre);
+                                      // Si se seleccionó un ejercicio con datos preconfigurados, hidratar opcionalmente
+                                      if (datosExtra) {
+                                        if (!ej.indicacionProfe && datosExtra.indicacionDefault) {
+                                          updateEjercicio(bIdx, eIdx, 'indicacionProfe', datosExtra.indicacionDefault);
+                                        }
+                                        if (!ej.videoUrl && datosExtra.videoUrl) {
+                                          updateEjercicio(bIdx, eIdx, 'videoUrl', datosExtra.videoUrl);
+                                          updateEjercicio(bIdx, eIdx, 'mostrarVideoInput', true);
+                                        }
+                                        if (!ej.videoRecomendacion && datosExtra.videoRecomendacion) {
+                                          updateEjercicio(bIdx, eIdx, 'videoRecomendacion', datosExtra.videoRecomendacion);
+                                        }
+                                        if (datosExtra.seriesDefault && (!ej.seriesCount || ej.seriesCount === 3)) {
+                                          updateEjercicio(bIdx, eIdx, 'seriesCount', datosExtra.seriesDefault);
+                                        }
+                                        if (datosExtra.repsDefault && (!ej.repsCount || ej.repsCount === 10)) {
+                                          updateEjercicio(bIdx, eIdx, 'repsCount', datosExtra.repsDefault);
+                                        }
+                                      }
+                                    }}
+                                    onRegistrarNuevo={(nuevoItem) => {
+                                      setHistorialCustom((prev) => [nuevoItem, ...prev]);
+                                    }}
+                                  />
+                                </div>
                               </div>
 
                               {/* Parámetros: Series y Repeticiones */}

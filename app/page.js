@@ -16,7 +16,7 @@ import Navbar from '@/components/Navbar';
 import Hero from '@/components/Hero';
 import AboutTrainer from '@/components/AboutTrainer';
 import GallerySection from '@/components/GallerySection';
-import Footer from '@/components/Footer';
+
 import {
   SITE_DESCRIPTION,
   SITE_NAME,
@@ -108,7 +108,7 @@ export default function Home() {
       </main>
 
       {/* 3. Pie de página con información y redes */}
-      <Footer />
+      
     </div>
   );
 }

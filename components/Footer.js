@@ -2,142 +2,68 @@
 
 /**
  * ========================================================================
- * COMPONENTE: Pie de Página MOTION LAB (Footer.js)
+ * COMPONENTE: Footer Global Institucional (components/Footer.js)
  * ========================================================================
- * Incluye logotipo oficial, enlaces rápidos, canales de contacto y
- * aviso de responsabilidad médica deportiva.
- * Optimizado para alto contraste en modo soleado y móvil.
+ * Footer institucional de Motion Lab desarrollado por FLEG TECH.
+ * Integrado globalmente en todas las vistas y rutas de la aplicación:
+ * - Izquierda: © 2026 FLEG TECH. Todos los derechos reservados. · Privacidad · Términos
+ * - Derecha: Aviso médico de consulta con profesional de la salud.
+ * - Estilo: bg-[#080c14], borde sutil border-slate-800/80, 100% responsive.
  */
 
-import { Instagram, Mail } from 'lucide-react';
-import MotionLabLogo from './MotionLabLogo';
-import WhatsAppIcon from './WhatsAppIcon';
+import Link from 'next/link';
 import { useTheme } from './ThemeProvider';
 
-export default function Footer() {
+export default function Footer({ className = '' }) {
   const anioActual = new Date().getFullYear();
   const { isSunlight } = useTheme();
 
   return (
-    <footer className={`border-t py-10 sm:py-12 pb-[calc(2.5rem+env(safe-area-inset-bottom,0px))] sm:pb-12 transition-colors duration-200 ${
-      isSunlight 
-        ? 'bg-slate-100 border-slate-300 text-slate-700' 
-        : 'bg-[#030509] border-slate-800 text-slate-300'
-    }`}>
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <footer
+      role="contentinfo"
+      aria-label="Información institucional y aviso médico"
+      className={`w-full border-t transition-colors duration-200 select-none ${
+        isSunlight
+          ? 'bg-slate-100 border-slate-300 text-slate-600'
+          : 'bg-[#080c14] border-slate-800/80 text-slate-500'
+      } ${className}`}
+    >
+      <div className="max-w-7xl mx-auto flex flex-col gap-2 text-center text-xs py-6 px-4 md:flex-row md:justify-between md:items-center md:text-left md:px-8">
         
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-8 mb-12">
-          
-          {/* COLUMNA 1: Marca y Misión */}
-          <div className="md:col-span-2 space-y-4">
-            <MotionLabLogo />
-            <p className={`text-sm sm:text-base max-w-md leading-relaxed font-semibold ${
-              isSunlight ? 'text-slate-800' : 'text-slate-300'
-            }`}>
-              Entrenamiento de fuerza y rendimiento atlético. Planes personalizados 1 a 1, seguimiento semanal y datos de tu reloj. Online, con base en Chaco, Argentina.
-            </p>
-          </div>
-
-          {/* COLUMNA 2: Enlaces Rápidos */}
-          <div>
-            <h4 className={`text-sm font-black uppercase tracking-wider mb-4 ${
-              isSunlight ? 'text-slate-950' : 'text-white'
-            }`}>
-              Navegación
-            </h4>
-            <ul className="space-y-3 text-sm sm:text-base font-bold">
-              <li>
-                <a href="/#sobre-mi" className={`transition-colors ${isSunlight ? 'hover:text-blue-700' : 'hover:text-sky-400'}`}>
-                  Metodología MOTION LAB
-                </a>
-              </li>
-              <li>
-                <a href="/#galeria" className={`transition-colors ${isSunlight ? 'hover:text-blue-700' : 'hover:text-sky-400'}`}>
-                  Resultados & Pista
-                </a>
-              </li>
-              <li>
-                <a href="/comenzar" className={`transition-colors ${isSunlight ? 'hover:text-blue-700' : 'hover:text-sky-400'}`}>
-                  Comenzar ahora
-                </a>
-              </li>
-
-            </ul>
-          </div>
-
-          {/* COLUMNA 3: Canales de Contacto */}
-          <div>
-            <h4 className={`text-sm font-black uppercase tracking-wider mb-4 ${
-              isSunlight ? 'text-slate-950' : 'text-white'
-            }`}>
-              Canales Oficiales
-            </h4>
-            <ul className="space-y-3 text-sm sm:text-base font-bold">
-              <li className="flex items-center gap-2">
-                <WhatsAppIcon className={`w-4 h-4 ${isSunlight ? 'text-emerald-700' : 'text-emerald-400'}`} />
-                <a 
-                  href="https://wa.me/5493624098320" 
-                  target="_blank" 
-                  rel="noopener noreferrer"
-                  className={`transition-colors ${isSunlight ? 'hover:text-blue-700 text-slate-800' : 'hover:text-white'}`}
-                >
-                  WhatsApp: +54 9 362 409-8320
-                </a>
-              </li>
-              <li className="flex items-center gap-2">
-                <Mail className={`w-4 h-4 ${isSunlight ? 'text-blue-700' : 'text-sky-400'}`} />
-                <a
-                  href="mailto:motionlab@gmail.com"
-                  className={`transition-colors ${isSunlight ? 'text-slate-800 hover:text-blue-700' : 'hover:text-white'}`}
-                >
-                  motionlab@gmail.com
-                </a>
-              </li>
-              <li className="flex items-center gap-2">
-                <Instagram className={`w-4 h-4 ${isSunlight ? 'text-blue-700' : 'text-sky-400'}`} />
-                <a
-                  href="https://www.instagram.com/motionlab_pf/"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className={`transition-colors ${isSunlight ? 'text-slate-800 hover:text-blue-700' : 'hover:text-white'}`}
-                >
-                  @motionlab_pf
-                </a>
-              </li>
-            </ul>
-          </div>
-
+        {/* IZQUIERDA: DERECHOS RESERVADOS Y ENLACES LEGALES */}
+        <div className="flex flex-wrap items-center justify-center md:justify-start gap-x-2 gap-y-1">
+          <span>
+            &copy; {anioActual}{' '}
+            <a
+              href="https://flegtech.vercel.app/"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="font-bold text-slate-400 hover:text-cyan-400 hover:underline transition-colors"
+            >
+              FLEG TECH
+            </a>
+            . Todos los derechos reservados.
+          </span>
+          <span className="text-slate-600 select-none">&middot;</span>
+          <Link
+            href="/privacidad"
+            className="hover:text-cyan-400 hover:underline transition-colors"
+          >
+            Privacidad
+          </Link>
+          <span className="text-slate-600 select-none">&middot;</span>
+          <Link
+            href="/terminos"
+            className="hover:text-cyan-400 hover:underline transition-colors"
+          >
+            Términos
+          </Link>
         </div>
 
-        {/* LÍNEA FINAL */}
-        <div className={`pt-8 border-t flex flex-col sm:flex-row items-center justify-between gap-4 text-sm font-semibold ${
-          isSunlight ? 'border-slate-300 text-slate-600' : 'border-slate-800/80 text-slate-400'
-        }`}>
-          <div className="flex flex-wrap items-center justify-center gap-x-2 gap-y-1">
-            <p>
-              © {anioActual}{' '}
-              <a
-                href="https://flegtech.vercel.app/"
-                target="_blank"
-                rel="noopener noreferrer"
-                className={`font-bold underline underline-offset-2 ${isSunlight ? 'hover:text-blue-700' : 'hover:text-sky-400'}`}
-              >
-                FLEG TECH
-              </a>. Todos los derechos reservados.
-            </p>
-            <span className={isSunlight ? 'text-slate-400' : 'text-slate-600'}>·</span>
-            <a href="/privacidad" className={`font-bold underline underline-offset-2 ${isSunlight ? 'hover:text-blue-700' : 'hover:text-sky-400'}`}>
-              Privacidad
-            </a>
-            <span className={isSunlight ? 'text-slate-400' : 'text-slate-600'}>·</span>
-            <a href="/terminos" className={`font-bold underline underline-offset-2 ${isSunlight ? 'hover:text-blue-700' : 'hover:text-sky-400'}`}>
-              Términos
-            </a>
-          </div>
-          <p className="text-xs max-w-sm text-center sm:text-right font-medium">
-            Aviso médico: Consulta con un profesional de la salud antes de iniciar planes de entrenamiento de alta exigencia.
-          </p>
-        </div>
+        {/* DERECHA: AVISO MÉDICO OFICIAL */}
+        <p className="text-[11px] sm:text-xs font-normal text-slate-500 max-w-md md:text-right leading-relaxed">
+          Aviso médico: Consulta con un profesional de la salud antes de iniciar planes de entrenamiento de alta exigencia.
+        </p>
 
       </div>
     </footer>

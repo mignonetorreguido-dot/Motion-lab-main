@@ -35,24 +35,7 @@ export default function StartShell({ rolInicial = null }) {
         <StartRoleSelector rolInicial={rolInicial} />
       </main>
 
-      <footer
-        className={`relative z-10 text-center pb-8 px-4 text-[11px] sm:text-xs font-medium ${
-          isSunlight ? 'text-slate-600' : 'text-slate-500'
-        }`}
-      >
-        © {new Date().getFullYear()}{' '}
-        <a
-          href="https://flegtech.vercel.app/"
-          target="_blank"
-          rel="noopener noreferrer"
-          className={`font-bold underline underline-offset-2 ${
-            isSunlight ? 'hover:text-blue-700' : 'hover:text-sky-400'
-          }`}
-        >
-          FLEG TECH
-        </a>{' '}
-        • Matías Personal Trainer
-      </footer>
+      
     </div>
   );
 }

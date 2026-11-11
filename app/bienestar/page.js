@@ -11,7 +11,7 @@ import { redirect } from 'next/navigation';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/app/api/auth/[...nextauth]/route';
 import Navbar from '@/components/Navbar';
-import Footer from '@/components/Footer';
+
 import BienestarTest from '@/components/bienestar/BienestarTest';
 
 export const dynamic = 'force-dynamic';
@@ -42,7 +42,7 @@ export default async function BienestarPage() {
         />
       </main>
 
-      <Footer />
+      
     </div>
   );
 }

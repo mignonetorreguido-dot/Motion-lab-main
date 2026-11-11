@@ -1,3 +1,4 @@
+import Footer from '@/components/Footer';
 import './globals.css';
 import { ThemeProvider } from '@/components/ThemeProvider';
 import {
@@ -100,7 +101,10 @@ export default function RootLayout({ children }) {
       </head>
       <body className="bg-[#05070c] text-slate-100 antialiased min-h-screen selection:bg-blue-500 selection:text-white transition-colors duration-200">
         <ThemeProvider>
-          {children}
+          <div className="flex-grow flex flex-col">
+            {children}
+          </div>
+          <Footer />
         </ThemeProvider>
       </body>
     </html>

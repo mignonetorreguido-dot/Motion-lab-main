@@ -188,61 +188,6 @@ export const authOptions = {
           );
         }
 
-        // 1. Alumnos de prueba / demostración instantánea
-        const alumnosDemo = {
-          'alumno@motionlab.com': {
-            id: 'demo-alumno-1',
-            name: 'Lucas González',
-            email: 'alumno@motionlab.com',
-            pass: 'alumno123',
-            rol: 'ALUMNO',
-            estadoPago: 'ACTIVO',
-            tipoPlan: 'PREMIUM',
-          },
-          'juan.perez@ejemplo.com': {
-            id: 'demo-alumno-1',
-            name: 'Juan Pérez',
-            email: 'juan.perez@ejemplo.com',
-            pass: 'alumno123',
-            rol: 'ALUMNO',
-            estadoPago: 'ACTIVO',
-            tipoPlan: 'PREMIUM',
-          },
-          'lucia.f@ejemplo.com': {
-            id: 'demo-alumno-2',
-            name: 'Lucía Fernández',
-            email: 'lucia.f@ejemplo.com',
-            pass: 'alumno123',
-            rol: 'ALUMNO',
-            estadoPago: 'ACTIVO',
-            tipoPlan: 'BASE',
-          },
-          'martin.b@ejemplo.com': {
-            id: 'demo-alumno-3',
-            name: 'Martín Benítez',
-            email: 'martin.b@ejemplo.com',
-            pass: 'alumno123',
-            rol: 'ALUMNO',
-            estadoPago: 'ACTIVO',
-            tipoPlan: 'PREMIUM',
-          },
-        };
-
-        if (
-          alumnosDemo[inputUser] &&
-          (inputPass === alumnosDemo[inputUser].pass || inputPass === '123456' || inputPass === 'laboratorio123')
-        ) {
-          const alumno = alumnosDemo[inputUser];
-          return {
-            id: alumno.id,
-            name: alumno.name,
-            email: alumno.email,
-            rol: alumno.rol,
-            estadoPago: alumno.estadoPago,
-            tipoPlan: alumno.tipoPlan,
-          };
-        }
-
         // 2. Buscar al usuario en la base de datos por email
         let usuario = null;
         try {
@@ -263,12 +208,10 @@ export const authOptions = {
           // Si tiene passwordHash encriptado con bcrypt
           if (usuario.passwordHash) {
             const passwordValida = await bcrypt.compare(inputPass, usuario.passwordHash);
-            if (!passwordValida && inputPass !== '123456' && inputPass !== 'laboratorio123') {
+            if (!passwordValida) {
               throw new Error('La contraseña ingresada es incorrecta');
             }
-          } else if (inputPass !== '123456' && inputPass !== 'laboratorio123') {
-            // Los usuarios creados sin contraseña solo pueden entrar con la
-            // clave temporal de demo, nunca con cualquier contraseña.
+          } else {
             throw new Error('Este usuario todavía no tiene una contraseña configurada');
           }
 
