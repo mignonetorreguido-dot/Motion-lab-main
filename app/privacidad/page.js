@@ -3,7 +3,7 @@ import LegalPage from '@/components/LegalPage';
 export const metadata = {
   title: 'Política de Privacidad | MOTION LAB',
   description:
-    'Cómo MOTION LAB recopila, usa y protege los datos de alumnos, entrenamiento, bienestar y relojes vinculados.',
+    'Cómo MOTION LAB recopila, usa y protege los datos de alumnos, entrenamiento, bienestar, relojes vinculados e importaciones de Apple Health.',
   alternates: {
     canonical: '/privacidad',
   },
@@ -24,6 +24,7 @@ const secciones = [
       'Datos de entrenamiento: rutinas asignadas, series, cargas, notas, observaciones y días completados.',
       'Datos de bienestar: respuestas semanales sobre descanso, estrés, ánimo, energía y motivación.',
       'Datos de relojes: actividad, pasos, calorías, sueño y frecuencia cardíaca que autorices compartir a través de Junction. Estos datos sólo se reciben si vinculás una cuenta compatible.',
+      'Datos de Apple Health: si subís manualmente el archivo export.zip de la app Salud, el archivo se procesa en tu navegador y no se envía completo. Guardamos un resumen de pasos, sueño, frecuencia cardíaca y entrenamientos de los últimos 30 días.',
     ],
   },
   {
@@ -40,6 +41,7 @@ const secciones = [
     titulo: 'Relojes y datos de salud',
     parrafos: [
       'La vinculación de relojes es opcional. Al autorizar Junction, aceptás que tus datos de actividad, sueño y pulso se compartan con MOTION LAB para el seguimiento del entrenamiento. Podés revocar el acceso desde la configuración del proveedor o solicitarnos que eliminemos la conexión.',
+      'La importación de Apple Health también es opcional. El archivo export.zip se procesa localmente en tu navegador; MOTION LAB solo recibe y almacena un resumen de los últimos 30 días (pasos, sueño, pulso y entrenamientos). Podés eliminar esa importación desde tu panel cuando quieras.',
       'Las mediciones de pulso en vivo por Bluetooth se muestran en tu dispositivo y no se almacenan como historial en MOTION LAB.',
     ],
   },
@@ -88,7 +90,7 @@ export default function PrivacidadPage() {
   return (
     <LegalPage
       titulo="Política de Privacidad"
-      actualizado="21 de octubre de 2026"
+      actualizado="10 de noviembre de 2026"
       intro="En MOTION LAB cuidamos los datos que nos confiás. Esta política explica qué información recopilamos, para qué la usamos y cómo podés ejercer tus derechos."
       secciones={secciones}
     />

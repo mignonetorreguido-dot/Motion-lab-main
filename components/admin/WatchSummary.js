@@ -23,6 +23,7 @@ import {
   Flame,
 } from 'lucide-react';
 import { useTheme } from '@/components/ThemeProvider';
+import AppleHealthSummary from './AppleHealthSummary';
 
 function formatearNumero(valor) {
   if (valor === null || valor === undefined || valor === '') return '—';
@@ -197,7 +198,8 @@ export default function WatchSummary({ alumnoId }) {
                 isSunlight ? 'text-slate-600' : 'text-slate-400'
               }`}
             >
-              Actividad, sueño y pulso de los últimos 7 días.
+              Actividad, sueño y pulso. Incluye relojes en la nube y Apple
+              Health importado.
             </p>
           </div>
         </div>
@@ -218,6 +220,8 @@ export default function WatchSummary({ alumnoId }) {
           </button>
         )}
       </div>
+
+      <AppleHealthSummary alumnoId={alumnoId} />
 
       {cargando ? (
         <div className="flex items-center gap-2 py-4 text-xs font-bold">
@@ -243,7 +247,8 @@ export default function WatchSummary({ alumnoId }) {
               : 'text-slate-400 bg-slate-900/40 border-slate-800'
           }`}
         >
-          La integración con relojes no está configurada en este entorno.
+          La integración con relojes en la nube no está configurada en este
+          entorno. Si el alumno importó Apple Health, el resumen aparece arriba.
         </p>
       ) : estado?.conectado ? (
         <>
@@ -379,9 +384,10 @@ export default function WatchSummary({ alumnoId }) {
               : 'text-slate-400 bg-slate-900/40 border-slate-800'
           }`}
         >
-          Este alumno todavía no vinculó un reloj. Puede hacerlo desde su panel
-          de entrenamiento con Garmin, Polar, Fitbit, Google Health/Pixel,
-          Oura o Withings.
+          Este alumno todavía no vinculó un reloj en la nube ni importó un
+          export de Apple Salud. Puede hacerlo desde su panel de entrenamiento
+          con Garmin, Polar, Fitbit, Google Health/Pixel, Oura, Withings o la
+          importación manual de Apple Watch.
         </p>
       )}
     </div>

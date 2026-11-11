@@ -19,7 +19,8 @@
  *
  * Limitaciones reales:
  * - Apple Watch (HealthKit) requiere una app móvil con su SDK; no se puede
- *   vincular desde la web. La tarjeta lo informa.
+ *   vincular automáticamente desde la web. La tarjeta permite importar
+ *   manualmente el export.zip de la app Salud.
  * - Google Fit está deprecado y puede dejar de funcionar durante 2026.
  * - Garmin/Samsung/Polar pueden transmitir pulso por BLE en algunos modelos,
  *   pero el historial completo se obtiene con su API o con Junction.
@@ -44,6 +45,7 @@ import {
 } from 'lucide-react';
 import { useTheme } from '@/components/ThemeProvider';
 import GoogleFitTestCard from '@/components/bienestar/GoogleFitTestCard';
+import AppleHealthImportCard from './AppleHealthImportCard';
 
 const CLAVE_ULTIMO_DISPOSITIVO = 'motion_lab_ble_hr_dispositivo';
 
@@ -109,6 +111,10 @@ function Dato({ icono: Icono, etiqueta, valor, detalle, isSunlight }) {
 
 export default function WatchLinkCard({ googleFitTestActivo = false }) {
   const { isSunlight } = useTheme();
+
+  // Importación manual del export.zip de Apple Salud. La tarjeta hija avisa
+  // cuando hay datos guardados para reflejarlo en el estado general.
+  const [appleHealthImportado, setAppleHealthImportado] = useState(false);
 
   // ---------------------------------------------------------------------
   // Sincronización en la nube (Junction)
@@ -494,11 +500,14 @@ export default function WatchLinkCard({ googleFitTestActivo = false }) {
   const fuentesConectadas = [
     estadoGoogleFit.conectado ? 'Google Fit' : null,
     estadoNube?.conectado ? 'Junction' : null,
+    appleHealthImportado ? 'Apple Health' : null,
   ].filter(Boolean);
   const hayConexion = fuentesConectadas.length > 0 || conectado;
   const etiquetaEstado =
     fuentesConectadas.length > 0
-      ? 'Conectado'
+      ? estadoGoogleFit.conectado || estadoNube?.conectado
+        ? 'Conectado'
+        : 'Datos importados'
       : conectado
         ? 'Pulso en vivo'
         : 'Sin conectar';
@@ -537,8 +546,8 @@ export default function WatchLinkCard({ googleFitTestActivo = false }) {
               }`}
             >
               {estadoGoogleFit.disponible !== false
-                ? 'Unificá tu reloj o app en un solo lugar: Google Fit, Junction y pulso en vivo por Bluetooth.'
-                : 'Vinculá tu reloj para que Matías vea tu actividad, sueño y pulso. También podés medir tu frecuencia cardíaca en vivo.'}
+                ? 'Unificá tu reloj o app: Google Fit, Junction, Apple Watch (importación) y pulso en vivo por Bluetooth.'
+                : 'Vinculá tu reloj o importá tu export de Apple Salud para que Matías vea actividad, sueño y pulso. También podés medir tu frecuencia cardíaca en vivo.'}
             </p>
             {fuentesConectadas.length > 0 && (
               <p
@@ -886,8 +895,9 @@ export default function WatchLinkCard({ googleFitTestActivo = false }) {
                 isSunlight ? 'text-slate-500' : 'text-slate-500'
               }`}
             >
-              Apple Watch (HealthKit) necesita una app móvil y no se puede
-              vincular desde la web.
+              Apple Watch (HealthKit) no se vincula automáticamente desde la
+              web: importá tu export de Salud en la sección &quot;Apple Watch&quot;
+              de abajo.
               {estadoGoogleFit.disponible
                 ? ' Si usás Samsung Health, Da Fit, Mi Fitness o Huawei Health, conectá Google Fit arriba.'
                 : ''}{' '}
@@ -961,6 +971,9 @@ export default function WatchLinkCard({ googleFitTestActivo = false }) {
           </>
         )}
       </div>
+
+      {/* APPLE WATCH: IMPORTACIÓN MANUAL DEL EXPORT DE SALUD */}
+      <AppleHealthImportCard onEstadoChange={setAppleHealthImportado} />
 
       {/* PULSO EN VIVO POR BLE */}
       <div

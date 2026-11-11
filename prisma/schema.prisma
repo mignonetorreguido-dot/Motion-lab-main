@@ -304,3 +304,22 @@ model ChequeoBienestar {
   @@index([alumnoId, fecha])
   @@map("chequeos_bienestar")
 }
+
+// ========================================================================
+// MODELO: ImportacionAppleHealth (Resumen manual del export de Apple Salud)
+// ========================================================================
+// El ZIP completo se procesa en el navegador del alumno. Acá solo se guarda
+// un resumen JSON de los últimos 30 días (pasos, pulso, sueño y workouts).
+// La tabla se crea automáticamente en el primer uso desde
+// lib/appleHealthStore.js para no depender de una migración manual.
+model ImportacionAppleHealth {
+  id            String   @id @default(cuid())
+  alumnoId      String   @unique
+  resumen       Json
+  archivoNombre String?
+  archivoBytes  Int?
+  importadoEn   DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  @@map("apple_health_imports")
+}
