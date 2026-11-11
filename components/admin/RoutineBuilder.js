@@ -26,29 +26,21 @@
  *    - Listado de los 3 bloques metodológicos de Motion Lab:
  *      * Bloque 1: MOVILIDAD (Sky blue)
  *      * Bloque 2: ACTIVACIÓN (Cyan)
- *      * Bloque 3: DESARROLLO / FUERZA (Amber)
- *    - Cabecera de bloque con estado de inyección ("Bloque de Inyección Activo" / "Fijar para Inyección")
- *      y botón "+ Añadir Vacío".
- *    - Estado vacío estilizado con contenedor punteado y enlace directo a la Librería Global.
- *    - Input "Nombre del Ejercicio" mediante ExerciseCombobox (Autocomplete Creatable) con historial
- *      en memoria y creación libre de ejercicios.
- *    - Tarjetas de ejercicio con series, reps, notas de entrenador, video y recomendaciones.
- *
- * 3. Librería Global de Ejercicios On-Demand (Drawer Lateral Deslizante):
- *    - Oculta por defecto para no consumir espacio en pantalla.
- *    - Drawer lateral derecho deslizante (`fixed inset-y-0 right-0 w-full sm:w-96 md:w-[440px]`)
- *      con backdrop blur oscuro (`bg-black/60 backdrop-blur-sm`).
- *    - Cabecera con selector de bloque destino, buscador en tiempo real, filtros de categoría y
- *      tarjetas de ejercicios con botón "+ Inyectar al bloque" con feedback visual inmediato.
+ *      * Bloque 3: FUERZA / DESARROLLO (Amber)
+ *    - Cabecera limpia de bloque con título, contador y botón `+ Añadir Vacío`.
+ *      (Sin referencias a inyección ni librerías laterales).
+ *    - Input "Nombre del Ejercicio" con ExerciseCombobox (Autocomplete Creatable)
+ *      con filtrado reactivo letra por letra, resaltado en cyan, sugerencias frecuentes
+ *      y creación libre de nuevos ejercicios persistidos en memoria.
+ *    - Fila de ejercicio fluida y adaptable en móvil (`flex flex-wrap sm:flex-nowrap`).
  */
 
 import { useState, useMemo, useCallback } from 'react';
 import { 
   Calendar, Plus, Trash2, Copy, GripVertical, ArrowLeft, 
-  Dumbbell, Search, X, Sparkles, Check, Pin, BookOpen, 
-  Video, PlayCircle, Filter, Zap, Save, ChevronRight, Layers
+  Dumbbell, Sparkles, Video, PlayCircle, Save
 } from 'lucide-react';
-import { LIBRERIA_EJERCICIOS, CATEGORIAS_EJERCICIOS } from '@/lib/exercisesLibrary';
+import { LIBRERIA_EJERCICIOS } from '@/lib/exercisesLibrary';
 import ExerciseCombobox from './ExerciseCombobox';
 
 // ========================================================================
@@ -154,22 +146,12 @@ export default function RoutineBuilder({
   });
 
   // ------------------------------------------------------------------------
-  // 3. ESTADOS DE INYECCIÓN Y DRAWER DE LA LIBRERÍA GLOBAL
-  // ------------------------------------------------------------------------
-  // bloqueInyeccionActivo: 0 = Movilidad, 1 = Activación, 2 = Desarrollo
-  const [bloqueInyeccionActivo, setBloqueInyeccionActivo] = useState(0);
-  const [drawerAbierto, setDrawerAbierto] = useState(false);
-  const [busquedaLib, setBusquedaLib] = useState('');
-  const [categoriaFiltro, setCategoriaFiltro] = useState('TODAS');
-  const [ejercicioInyectadoId, setEjercicioInyectadoId] = useState(null);
-
-  // ------------------------------------------------------------------------
-  // 4. HISTORIAL DE EJERCICIOS PERSONALIZADOS EN MEMORIA (CREATABLE COMBOBOX)
+  // 3. HISTORIAL DE EJERCICIOS PERSONALIZADOS EN MEMORIA (CREATABLE COMBOBOX)
   // ------------------------------------------------------------------------
   const [historialCustom, setHistorialCustom] = useState([]);
 
   // ------------------------------------------------------------------------
-  // 5. ESTADOS DE ARRASTRE Y GUARDADO
+  // 4. ESTADOS DE ARRASTRE Y GUARDADO
   // ------------------------------------------------------------------------
   const [draggedDayIndex, setDraggedDayIndex] = useState(null);
   const [draggedExercise, setDraggedExercise] = useState(null); // { bIdx, eIdx }
@@ -243,32 +225,6 @@ export default function RoutineBuilder({
     return resultado;
   }, [historialCustom, dias, catalogoEjercicios]);
 
-  // Lista de categorías para los filtros del drawer
-  const listaCategorias = useMemo(() => {
-    if (Array.isArray(CATEGORIAS_EJERCICIOS) && CATEGORIAS_EJERCICIOS.length > 0) {
-      return CATEGORIAS_EJERCICIOS;
-    }
-    return ['TODAS', 'Tren Inferior', 'Tren Superior', 'Core & Estabilidad', 'Cadera & Tobillo', 'Pliometría & Potencia'];
-  }, []);
-
-  // Filtrado reactivo en tiempo real de la librería lateral
-  const ejerciciosFiltrados = useMemo(() => {
-    return catalogoEjercicios.filter((ej) => {
-      const q = busquedaLib.toLowerCase().trim();
-      const coincideBusqueda = 
-        !q ||
-        ej.nombre?.toLowerCase().includes(q) ||
-        ej.categoria?.toLowerCase().includes(q) ||
-        ej.tipoBloque?.toLowerCase().includes(q) ||
-        ej.indicacionDefault?.toLowerCase().includes(q);
-
-      const coincideCategoria = 
-        categoriaFiltro === 'TODAS' || ej.categoria === categoriaFiltro;
-
-      return coincideBusqueda && coincideCategoria;
-    });
-  }, [catalogoEjercicios, busquedaLib, categoriaFiltro]);
-
   // Metadatos y colores temáticos por bloque
   const getBloqueEstilo = (tipo) => {
     switch (tipo) {
@@ -300,7 +256,7 @@ export default function RoutineBuilder({
   // ------------------------------------------------------------------------
   // ACCIONES SOBRE DÍAS
   // ------------------------------------------------------------------------
-  const agregarDia = useCallback(() => {
+  const agregarDia = () => {
     const nuevoNumero = dias.length + 1;
     const nuevoDia = {
       id: crypto.randomUUID(),
@@ -313,40 +269,41 @@ export default function RoutineBuilder({
       ]
     };
     setDias((prev) => [...prev, nuevoDia]);
-  }, [dias.length]);
+    setDiaActivoIndex(dias.length);
+    setCurrentView('editDay');
+  };
 
-  const duplicarDia = useCallback((e, index) => {
-    e.stopPropagation();
-    const diaOriginal = dias[index];
-    const diaClon = JSON.parse(JSON.stringify(diaOriginal));
-    diaClon.id = crypto.randomUUID();
-    diaClon.nombre = `${diaClon.nombre} (Copia)`;
-
-    setDias((prev) => {
-      const copia = [...prev];
-      copia.splice(index + 1, 0, diaClon);
-      return copia;
-    });
-  }, [dias]);
-
-  const eliminarDia = useCallback((e, index) => {
+  const eliminarDia = (e, index) => {
     e.stopPropagation();
     if (dias.length <= 1) return;
-    setDias((prev) => prev.filter((_, i) => i !== index));
+    setDias((prev) => {
+      const nuevoArr = prev.filter((_, idx) => idx !== index);
+      return nuevoArr;
+    });
     if (diaActivoIndex >= dias.length - 1) {
       setDiaActivoIndex(Math.max(0, dias.length - 2));
     }
-  }, [dias.length, diaActivoIndex]);
+  };
+
+  const duplicarDia = (e, index) => {
+    e.stopPropagation();
+    const diaOriginal = dias[index];
+    const diaClonado = {
+      ...JSON.parse(JSON.stringify(diaOriginal)),
+      id: crypto.randomUUID(),
+      nombre: `${diaOriginal.nombre} (Copia)`,
+    };
+    setDias((prev) => {
+      const copia = [...prev];
+      copia.splice(index + 1, 0, diaClonado);
+      return copia;
+    });
+  };
 
   const updateDiaCampo = (campo, valor) => {
     setDias((prev) => {
       const copia = [...prev];
-      if (copia[diaActivoIndex]) {
-        copia[diaActivoIndex] = {
-          ...copia[diaActivoIndex],
-          [campo]: valor
-        };
-      }
+      copia[diaActivoIndex][campo] = valor;
       return copia;
     });
   };
@@ -402,32 +359,6 @@ export default function RoutineBuilder({
       });
       return copia;
     });
-  };
-
-  const inyectarEjercicioDesdeLibreria = (ejLib) => {
-    setDias((prev) => {
-      const copia = [...prev];
-      const bloqueDestino = copia[diaActivoIndex].bloques[bloqueInyeccionActivo];
-
-      bloqueDestino.ejercicios.push({
-        id: crypto.randomUUID(),
-        nombre: ejLib.nombre || 'Ejercicio',
-        seriesCount: ejLib.seriesDefault || (bloqueInyeccionActivo === 2 ? 3 : 2),
-        repsCount: ejLib.repsDefault || 10,
-        indicacionProfe: ejLib.indicacionDefault || '',
-        videoUrl: ejLib.videoUrl || '',
-        videoRecomendacion: ejLib.videoRecomendacion || '',
-        mostrarVideoInput: Boolean(ejLib.videoUrl),
-      });
-
-      return copia;
-    });
-
-    // Feedback visual momentáneo
-    setEjercicioInyectadoId(ejLib.id);
-    setTimeout(() => {
-      setEjercicioInyectadoId(null);
-    }, 1200);
   };
 
   const eliminarEjercicio = (bloqueIndex, ejIndex) => {
@@ -497,26 +428,23 @@ export default function RoutineBuilder({
             const seriesArr = [];
             if (bloque.tipo === 'DESARROLLO') {
               for (let i = 1; i <= (Number(ej.seriesCount) || 1); i++) {
-                seriesArr.push({ 
-                  numeroSerie: i, 
-                  repsRealizadas: Number(ej.repsCount) || 0 
+                seriesArr.push({
+                  numero: i,
+                  reps: Number(ej.repsCount) || 10,
+                  peso: 0,
+                  rir: 2,
                 });
               }
             }
 
-            let indicacion = ej.indicacionProfe;
-            if (!indicacion && ej.seriesCount && ej.repsCount) {
-              indicacion = `${ej.seriesCount} series de ${ej.repsCount} repeticiones.`;
-            }
-
             return {
-              nombre: ej.nombre?.trim() || 'Ejercicio sin nombre',
-              indicacionProfe: indicacion || '',
+              nombre: ej.nombre?.trim() || 'Ejercicio General',
+              series: seriesArr,
+              indicacionProfe: ej.indicacionProfe || '',
               videoUrl: ej.videoUrl || '',
               videoRecomendacion: ej.videoRecomendacion || '',
-              series: seriesArr,
             };
-          })
+          }),
         }));
 
         return {
@@ -561,17 +489,6 @@ export default function RoutineBuilder({
               <span className="text-xs font-bold text-slate-400 px-3 py-1.5 rounded-xl bg-slate-900 border border-slate-800">
                 {dias.length} {dias.length === 1 ? 'día planificado' : 'días planificados'}
               </span>
-
-              {/* BOTÓN ON-DEMAND PARA ABRIR LA LIBRERÍA */}
-              <button
-                type="button"
-                onClick={() => setDrawerAbierto(true)}
-                className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold bg-[#0c1322] hover:bg-slate-800 text-cyan-300 border border-cyan-500/30 hover:border-cyan-400 transition-all shadow-sm shadow-cyan-500/10"
-                title="Abrir el catálogo global de ejercicios para inyectar"
-              >
-                <BookOpen className="w-3.5 h-3.5 text-cyan-400" />
-                <span>Librería Global</span>
-              </button>
             </div>
           </div>
 
@@ -748,33 +665,22 @@ export default function RoutineBuilder({
               <span>Volver a la cuadrícula de días</span>
             </button>
 
-            {/* SELECTOR RÁPIDO ENTRE DÍAS Y BOTÓN LIBRERÍA */}
-            <div className="flex items-center gap-2 flex-wrap self-start sm:self-center">
-              <div className="flex items-center gap-1 bg-slate-900/80 p-1 rounded-xl border border-slate-800">
-                {dias.map((d, i) => (
-                  <button
-                    key={d.id}
-                    type="button"
-                    onClick={() => setDiaActivoIndex(i)}
-                    className={`px-2.5 py-1 rounded-lg text-xs font-black transition-all ${
-                      diaActivoIndex === i
-                        ? 'bg-cyan-500 text-slate-950 shadow-sm'
-                        : 'text-slate-400 hover:text-white hover:bg-slate-800'
-                    }`}
-                  >
-                    Día {i + 1}
-                  </button>
-                ))}
-              </div>
-
-              <button
-                type="button"
-                onClick={() => setDrawerAbierto(true)}
-                className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold bg-[#0c1322] hover:bg-slate-800 text-cyan-300 border border-cyan-500/30 hover:border-cyan-400 transition-all shadow-sm shadow-cyan-500/10"
-              >
-                <BookOpen className="w-3.5 h-3.5 text-cyan-400" />
-                <span className="hidden sm:inline">Librería Global</span>
-              </button>
+            {/* SELECTOR RÁPIDO ENTRE DÍAS */}
+            <div className="flex items-center gap-1 bg-slate-900/80 p-1 rounded-xl border border-slate-800 self-start sm:self-center">
+              {dias.map((d, i) => (
+                <button
+                  key={d.id}
+                  type="button"
+                  onClick={() => setDiaActivoIndex(i)}
+                  className={`px-3 py-1 rounded-lg text-xs font-black transition-all ${
+                    diaActivoIndex === i
+                      ? 'bg-cyan-500 text-slate-950 shadow-sm'
+                      : 'text-slate-400 hover:text-white hover:bg-slate-800'
+                  }`}
+                >
+                  Día {i + 1}
+                </button>
+              ))}
             </div>
           </div>
 
@@ -817,21 +723,18 @@ export default function RoutineBuilder({
           <div className="space-y-6">
             {diaActivo.bloques.map((bloque, bIdx) => {
               const estilo = getBloqueEstilo(bloque.tipo);
-              const esInyeccionTarget = bloqueInyeccionActivo === bIdx;
 
               return (
                 <div 
                   key={bloque.tipo}
-                  className={`rounded-2xl p-5 border bg-[#0d1527] transition-all duration-200 ${
-                    esInyeccionTarget ? 'border-cyan-500/60 shadow-lg shadow-cyan-500/5' : 'border-slate-800'
-                  }`}
+                  className="rounded-2xl p-5 border border-slate-800 bg-[#0d1527] transition-all duration-200"
                 >
                   
-                  {/* CABECERA DEL BLOQUE */}
-                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-4 mb-4 border-b border-slate-800/80">
+                  {/* CABECERA DEL BLOQUE LIMPIA: Título con contador a la izquierda, botón único a la derecha */}
+                  <div className="flex items-center justify-between gap-3 pb-3 mb-4 border-b border-slate-800/80">
                     
-                    {/* Badge y nombre del bloque */}
-                    <div className="flex items-center gap-2.5 flex-wrap">
+                    {/* Badge y nombre del bloque con contador */}
+                    <div className="flex items-center gap-2.5">
                       <span className={`px-3 py-1 rounded-xl text-xs font-black uppercase tracking-wider border ${estilo.badgeBg}`}>
                         {estilo.titulo}
                       </span>
@@ -840,60 +743,34 @@ export default function RoutineBuilder({
                       </span>
                     </div>
 
-                    {/* Acciones del bloque: Estado de inyección y Añadir Vacío */}
-                    <div className="flex items-center gap-2 flex-wrap">
-                      {/* ESTADO DE INYECCIÓN / FIJAR PARA INYECCIÓN */}
-                      {esInyeccionTarget ? (
-                        <span className="px-3 py-1.5 rounded-lg text-xs font-extrabold bg-cyan-500/20 text-cyan-300 border border-cyan-500/40 flex items-center gap-1.5 shadow-sm shadow-cyan-500/20">
-                          <Pin className="w-3.5 h-3.5 fill-cyan-400 text-cyan-400" />
-                          <span>Bloque de Inyección Activo</span>
-                        </span>
-                      ) : (
-                        <button
-                          type="button"
-                          onClick={() => setBloqueInyeccionActivo(bIdx)}
-                          className="px-3 py-1.5 rounded-lg text-xs font-bold bg-slate-800/80 hover:bg-slate-700 text-slate-300 border border-slate-700 hover:border-slate-600 transition-colors flex items-center gap-1.5"
-                          title="Fijar este bloque como destino para los ejercicios de la librería"
-                        >
-                          <Pin className="w-3.5 h-3.5" />
-                          <span>Fijar para Inyección</span>
-                        </button>
-                      )}
-
-                      {/* BOTÓN + AÑADIR VACÍO */}
-                      <button
-                        type="button"
-                        onClick={() => agregarEjercicioVacio(bIdx)}
-                        className="px-3 py-1.5 rounded-lg text-xs font-bold bg-slate-800 hover:bg-slate-700 text-white border border-slate-700 hover:border-cyan-500/40 transition-colors flex items-center gap-1.5"
-                      >
-                        <Plus className="w-3.5 h-3.5 text-cyan-400" />
-                        <span>+ Añadir Vacío</span>
-                      </button>
-                    </div>
+                    {/* Botón único a la derecha: + Añadir Vacío */}
+                    <button
+                      type="button"
+                      onClick={() => agregarEjercicioVacio(bIdx)}
+                      className="px-3.5 py-1.5 rounded-xl text-xs font-bold bg-[#121c32] hover:bg-slate-800 text-cyan-300 border border-slate-700/80 hover:border-cyan-500/50 transition-all flex items-center gap-1.5 shadow-sm"
+                    >
+                      <Plus className="w-3.5 h-3.5 text-cyan-400 stroke-[2.5]" />
+                      <span>+ Añadir Vacío</span>
+                    </button>
 
                   </div>
 
                   {/* CONTENIDO DEL BLOQUE */}
                   <div>
                     {bloque.ejercicios.length === 0 ? (
-                      /* ESTADO VACÍO ESTILIZADO CON BORDE PUNTEADO Y LINK A LA LIBRERÍA */
-                      <div className="border-2 border-dashed border-slate-700/60 rounded-xl p-8 text-center bg-[#090f1e]/40 space-y-2">
+                      /* ESTADO VACÍO ESTILIZADO CON BORDE PUNTEADO */
+                      <div className="border-2 border-dashed border-slate-700/60 rounded-xl p-8 text-center bg-[#090f1e]/40 space-y-3">
                         <p className="text-xs sm:text-sm font-semibold text-slate-400">
                           No hay ejercicios en este bloque.
                         </p>
-                        <p className="text-xs text-slate-500">
-                          Añade uno en blanco con el botón superior o inyéctalo desde la{' '}
-                          <button
-                            type="button"
-                            onClick={() => {
-                              setBloqueInyeccionActivo(bIdx);
-                              setDrawerAbierto(true);
-                            }}
-                            className="text-cyan-400 hover:text-cyan-300 font-bold underline transition-colors"
-                          >
-                            Librería Global
-                          </button>.
-                        </p>
+                        <button
+                          type="button"
+                          onClick={() => agregarEjercicioVacio(bIdx)}
+                          className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl text-xs font-bold bg-[#121c32] hover:bg-slate-800 text-cyan-300 border border-cyan-500/30 hover:border-cyan-400 transition-all shadow-sm"
+                        >
+                          <Plus className="w-3.5 h-3.5 text-cyan-400 stroke-[2.5]" />
+                          <span>+ Añadir Vacío</span>
+                        </button>
                       </div>
                     ) : (
                       /* LISTADO DE EJERCICIOS DEL BLOQUE CON EXERCISE COMBOBOX */
@@ -907,12 +784,12 @@ export default function RoutineBuilder({
                             onDrop={(e) => handleDropExercise(e, bIdx, eIdx)}
                             className="bg-[#090f1f] border border-slate-800 hover:border-slate-700 rounded-xl p-4 transition-colors relative group"
                           >
-                            <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-4">
+                            <div className="flex flex-wrap lg:flex-nowrap items-center gap-3">
                               
-                              {/* Nombre del ejercicio con COMBOBOX (Autocomplete Creatable) */}
-                              <div className="flex items-center gap-3 w-full lg:w-2/5">
+                              {/* Drag handle + Número de ejercicio */}
+                              <div className="flex items-center gap-2 shrink-0">
                                 <span 
-                                  className="text-slate-600 group-hover:text-slate-400 cursor-grab active:cursor-grabbing"
+                                  className="text-slate-600 group-hover:text-slate-400 cursor-grab active:cursor-grabbing p-1"
                                   title="Arrastra para reordenar ejercicios"
                                 >
                                   <GripVertical className="w-4 h-4" />
@@ -920,71 +797,77 @@ export default function RoutineBuilder({
                                 <span className="w-6 h-6 rounded-md bg-slate-800 text-slate-300 font-black text-xs flex items-center justify-center shrink-0">
                                   {eIdx + 1}
                                 </span>
-
-                                <div className="flex-1 min-w-0">
-                                  <ExerciseCombobox
-                                    value={ej.nombre}
-                                    bloqueTipo={bloque.tipo}
-                                    historialEjercicios={historialEjerciciosTotal}
-                                    placeholder="Nombre del ejercicio (ej: Sentadilla Trasera)"
-                                    onChange={(nuevoNombre, datosExtra) => {
-                                      updateEjercicio(bIdx, eIdx, 'nombre', nuevoNombre);
-                                      // Si se seleccionó un ejercicio con datos preconfigurados, hidratar opcionalmente
-                                      if (datosExtra) {
-                                        if (!ej.indicacionProfe && datosExtra.indicacionDefault) {
-                                          updateEjercicio(bIdx, eIdx, 'indicacionProfe', datosExtra.indicacionDefault);
-                                        }
-                                        if (!ej.videoUrl && datosExtra.videoUrl) {
-                                          updateEjercicio(bIdx, eIdx, 'videoUrl', datosExtra.videoUrl);
-                                          updateEjercicio(bIdx, eIdx, 'mostrarVideoInput', true);
-                                        }
-                                        if (!ej.videoRecomendacion && datosExtra.videoRecomendacion) {
-                                          updateEjercicio(bIdx, eIdx, 'videoRecomendacion', datosExtra.videoRecomendacion);
-                                        }
-                                        if (datosExtra.seriesDefault && (!ej.seriesCount || ej.seriesCount === 3)) {
-                                          updateEjercicio(bIdx, eIdx, 'seriesCount', datosExtra.seriesDefault);
-                                        }
-                                        if (datosExtra.repsDefault && (!ej.repsCount || ej.repsCount === 10)) {
-                                          updateEjercicio(bIdx, eIdx, 'repsCount', datosExtra.repsDefault);
-                                        }
-                                      }
-                                    }}
-                                    onRegistrarNuevo={(nuevoItem) => {
-                                      setHistorialCustom((prev) => [nuevoItem, ...prev]);
-                                    }}
-                                  />
-                                </div>
                               </div>
 
-                              {/* Parámetros: Series y Repeticiones */}
-                              <div className="flex items-center gap-3 w-full lg:w-auto flex-wrap">
+                              {/* Nombre del ejercicio con COMBOBOX (Autocomplete Creatable) */}
+                              <div className="flex-1 min-w-[220px] w-full sm:w-auto">
+                                <label className="block text-[11px] font-bold text-slate-400 mb-1">
+                                  Nombre del ejercicio
+                                </label>
+                                <ExerciseCombobox
+                                  value={ej.nombre}
+                                  bloqueTipo={bloque.tipo}
+                                  historialEjercicios={historialEjerciciosTotal}
+                                  placeholder="Pre..."
+                                  onChange={(nuevoNombre, datosExtra) => {
+                                    updateEjercicio(bIdx, eIdx, 'nombre', nuevoNombre);
+                                    if (datosExtra) {
+                                      if (!ej.indicacionProfe && datosExtra.indicacionDefault) {
+                                        updateEjercicio(bIdx, eIdx, 'indicacionProfe', datosExtra.indicacionDefault);
+                                      }
+                                      if (!ej.videoUrl && datosExtra.videoUrl) {
+                                        updateEjercicio(bIdx, eIdx, 'videoUrl', datosExtra.videoUrl);
+                                        updateEjercicio(bIdx, eIdx, 'mostrarVideoInput', true);
+                                      }
+                                      if (!ej.videoRecomendacion && datosExtra.videoRecomendacion) {
+                                        updateEjercicio(bIdx, eIdx, 'videoRecomendacion', datosExtra.videoRecomendacion);
+                                      }
+                                      if (datosExtra.seriesDefault && (!ej.seriesCount || ej.seriesCount === 3)) {
+                                        updateEjercicio(bIdx, eIdx, 'seriesCount', datosExtra.seriesDefault);
+                                      }
+                                      if (datosExtra.repsDefault && (!ej.repsCount || ej.repsCount === 10)) {
+                                        updateEjercicio(bIdx, eIdx, 'repsCount', datosExtra.repsDefault);
+                                      }
+                                    }
+                                  }}
+                                  onRegistrarNuevo={(nuevoItem) => {
+                                    setHistorialCustom((prev) => [nuevoItem, ...prev]);
+                                  }}
+                                />
+                              </div>
+
+                              {/* Parámetros: Series, Reps, Video y Acciones */}
+                              <div className="flex items-center gap-2.5 flex-wrap sm:flex-nowrap shrink-0 self-end sm:self-center pt-2 sm:pt-0">
+                                
+                                {/* SERIES */}
                                 <div className="flex items-center gap-1.5">
-                                  <span className="text-[10px] font-bold uppercase text-slate-400">Series:</span>
+                                  <span className="text-[10px] font-extrabold uppercase text-slate-400">SERIES:</span>
                                   <input
                                     type="number"
                                     min="1"
                                     value={ej.seriesCount}
                                     onChange={(e) => updateEjercicio(bIdx, eIdx, 'seriesCount', e.target.value)}
-                                    className="w-16 bg-[#060b16] border border-slate-700 rounded-lg px-2 py-1.5 text-xs font-bold text-center text-cyan-300 focus:outline-none focus:border-cyan-400"
+                                    className="w-14 bg-[#0a101d] border border-slate-700/80 rounded-lg px-2 py-1.5 text-xs font-bold text-center text-cyan-300 focus:outline-none focus:border-cyan-400"
                                   />
                                 </div>
 
+                                {/* REPS */}
                                 <div className="flex items-center gap-1.5">
-                                  <span className="text-[10px] font-bold uppercase text-slate-400">Reps:</span>
+                                  <span className="text-[10px] font-extrabold uppercase text-slate-400">REPS:</span>
                                   <input
                                     type="number"
                                     min="1"
                                     value={ej.repsCount}
                                     onChange={(e) => updateEjercicio(bIdx, eIdx, 'repsCount', e.target.value)}
-                                    className="w-16 bg-[#060b16] border border-slate-700 rounded-lg px-2 py-1.5 text-xs font-bold text-center text-white focus:outline-none focus:border-cyan-400"
+                                    className="w-14 bg-[#0a101d] border border-slate-700/80 rounded-lg px-2 py-1.5 text-xs font-bold text-center text-white focus:outline-none focus:border-cyan-400"
                                   />
                                 </div>
 
-                                {/* Botón toggle de video */}
+                                {/* BOTÓN VIDEO */}
                                 <button
                                   type="button"
                                   onClick={() => updateEjercicio(bIdx, eIdx, 'mostrarVideoInput', !ej.mostrarVideoInput)}
-                                  className={`px-2.5 py-1.5 rounded-lg text-xs font-bold transition-all flex items-center gap-1.5 ${
+                                  className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all flex items-center gap-1.5 ${
                                     ej.videoUrl
                                       ? 'bg-sky-500/20 text-sky-400 border border-sky-500/40'
                                       : 'bg-slate-800 text-slate-400 hover:text-white'
@@ -995,7 +878,7 @@ export default function RoutineBuilder({
                                   <span>{ej.videoUrl ? 'Video ✓' : 'Video'}</span>
                                 </button>
 
-                                {/* Duplicar y Eliminar ejercicio */}
+                                {/* DUPLICAR */}
                                 <button
                                   type="button"
                                   onClick={() => duplicarEjercicio(bIdx, eIdx)}
@@ -1004,6 +887,8 @@ export default function RoutineBuilder({
                                 >
                                   <Copy className="w-3.5 h-3.5" />
                                 </button>
+
+                                {/* ELIMINAR */}
                                 <button
                                   type="button"
                                   onClick={() => eliminarEjercicio(bIdx, eIdx)}
@@ -1017,7 +902,7 @@ export default function RoutineBuilder({
                             </div>
 
                             {/* Campo de indicación técnica rápida */}
-                            <div className="mt-3 pl-0 sm:pl-9">
+                            <div className="mt-2.5 pl-0 sm:pl-8">
                               <input
                                 type="text"
                                 value={ej.indicacionProfe}
@@ -1029,7 +914,7 @@ export default function RoutineBuilder({
 
                             {/* Panel desplegable de Video */}
                             {ej.mostrarVideoInput && (
-                              <div className="mt-3 pl-0 sm:pl-9 space-y-2 p-3 rounded-xl bg-[#060b16] border border-slate-800 animate-fadeIn">
+                              <div className="mt-3 pl-0 sm:pl-8 space-y-2 p-3 rounded-xl bg-[#060b16] border border-slate-800 animate-fadeIn">
                                 <div className="flex items-center gap-2">
                                   <PlayCircle className="w-4 h-4 text-cyan-400 shrink-0" />
                                   <input
@@ -1098,184 +983,6 @@ export default function RoutineBuilder({
             </div>
           </div>
 
-        </div>
-      )}
-
-      {/* ==================================================================== */}
-      {/* 3. LIBRERÍA GLOBAL DE EJERCICIOS ON-DEMAND (DRAWER LATERAL DERECHO)  */}
-      {/* ==================================================================== */}
-      {drawerAbierto && (
-        <div className="fixed inset-0 z-50 overflow-hidden">
-          {/* Overlay oscuro de fondo */}
-          <div 
-            onClick={() => setDrawerAbierto(false)}
-            className="fixed inset-0 bg-black/70 backdrop-blur-sm transition-opacity animate-fadeIn" 
-          />
-
-          {/* Panel deslizante lateral derecho */}
-          <div className="fixed inset-y-0 right-0 max-w-full flex pl-10">
-            <div className="w-screen max-w-md bg-[#0c1322] border-l border-slate-800 shadow-2xl flex flex-col justify-between animate-slideLeft">
-              
-              {/* CABECERA DEL DRAWER */}
-              <div className="p-5 border-b border-slate-800 bg-[#080d19]">
-                <div className="flex items-center justify-between gap-2 mb-3">
-                  <div className="flex items-center gap-2">
-                    <BookOpen className="w-5 h-5 text-cyan-400" />
-                    <h3 className="text-base font-black text-white uppercase tracking-wider">
-                      Librería Global
-                    </h3>
-                  </div>
-                  <button
-                    type="button"
-                    onClick={() => setDrawerAbierto(false)}
-                    className="p-1.5 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 transition-colors"
-                    title="Cerrar librería"
-                  >
-                    <X className="w-5 h-5" />
-                  </button>
-                </div>
-
-                {/* SELECTOR DEL BLOQUE DE INYECCIÓN DESTINO */}
-                <div className="p-3 rounded-xl bg-slate-900 border border-slate-800 flex items-center justify-between gap-2">
-                  <span className="text-[11px] font-bold text-slate-400">Inyectar en:</span>
-                  <select
-                    value={bloqueInyeccionActivo}
-                    onChange={(e) => setBloqueInyeccionActivo(Number(e.target.value))}
-                    className="bg-[#080d19] border border-cyan-500/40 text-cyan-300 font-extrabold text-xs rounded-lg px-2.5 py-1.5 focus:outline-none cursor-pointer"
-                  >
-                    <option value={0}>Bloque 1: Movilidad</option>
-                    <option value={1}>Bloque 2: Activación</option>
-                    <option value={2}>Bloque 3: Desarrollo</option>
-                  </select>
-                </div>
-
-                {/* BARRA DE BÚSQUEDA EN TIEMPO REAL */}
-                <div className="relative mt-3">
-                  <Search className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
-                  <input
-                    type="text"
-                    value={busquedaLib}
-                    onChange={(e) => setBusquedaLib(e.target.value)}
-                    placeholder="Buscar ejercicio, músculo o patrón..."
-                    className="w-full bg-[#080d19] border border-slate-700 rounded-xl pl-9 pr-4 py-2 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-cyan-400"
-                  />
-                  {busquedaLib && (
-                    <button
-                      type="button"
-                      onClick={() => setBusquedaLib('')}
-                      className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-500 hover:text-white"
-                    >
-                      <X className="w-3.5 h-3.5" />
-                    </button>
-                  )}
-                </div>
-
-                {/* FILTROS POR CATEGORÍA */}
-                <div className="flex items-center gap-1.5 overflow-x-auto pt-3 scrollbar-hide">
-                  {listaCategorias.map((cat) => (
-                    <button
-                      key={cat}
-                      type="button"
-                      onClick={() => setCategoriaFiltro(cat)}
-                      className={`whitespace-nowrap px-2.5 py-1 rounded-lg text-[10px] font-bold transition-all ${
-                        categoriaFiltro === cat
-                          ? 'bg-cyan-500 text-slate-950 font-black'
-                          : 'bg-slate-900 text-slate-400 hover:text-white border border-slate-800'
-                      }`}
-                    >
-                      {cat}
-                    </button>
-                  ))}
-                </div>
-              </div>
-
-              {/* LISTADO DE EJERCICIOS DEL CATÁLOGO */}
-              <div className="flex-1 overflow-y-auto p-5 space-y-3">
-                {ejerciciosFiltrados.length === 0 ? (
-                  <div className="text-center py-12 text-slate-500 text-xs">
-                    No se encontraron ejercicios con ese criterio.
-                  </div>
-                ) : (
-                  ejerciciosFiltrados.map((ej) => {
-                    const fueInyectado = ejercicioInyectadoId === ej.id;
-
-                    return (
-                      <div
-                        key={ej.id}
-                        className="bg-[#090f1f] border border-slate-800 hover:border-cyan-500/40 rounded-xl p-3.5 transition-all space-y-2 group"
-                      >
-                        <div className="flex items-start justify-between gap-2">
-                          <div>
-                            <span className={`text-[9px] font-black uppercase px-2 py-0.5 rounded-md border ${
-                              ej.tipoBloque === 'MOVILIDAD'
-                                ? 'bg-sky-500/10 text-sky-400 border-sky-500/20'
-                                : ej.tipoBloque === 'ACTIVACION'
-                                  ? 'bg-cyan-500/10 text-cyan-400 border-cyan-500/20'
-                                  : 'bg-amber-500/10 text-amber-400 border-amber-500/20'
-                            }`}>
-                              {ej.tipoBloque || ej.categoria}
-                            </span>
-                            <h4 className="font-bold text-xs text-white mt-1.5 leading-snug">
-                              {ej.nombre}
-                            </h4>
-                          </div>
-
-                          {/* BOTÓN INYECTAR */}
-                          <button
-                            type="button"
-                            onClick={() => inyectarEjercicioDesdeLibreria(ej)}
-                            className={`px-3 py-1.5 rounded-lg text-xs font-black transition-all flex items-center gap-1 shrink-0 ${
-                              fueInyectado
-                                ? 'bg-emerald-500 text-white shadow-md shadow-emerald-500/25'
-                                : 'bg-cyan-500 hover:bg-cyan-400 text-slate-950 shadow-md shadow-cyan-500/10'
-                            }`}
-                          >
-                            {fueInyectado ? (
-                              <>
-                                <Check className="w-3.5 h-3.5" />
-                                <span>Inyectado</span>
-                              </>
-                            ) : (
-                              <>
-                                <Plus className="w-3.5 h-3.5" />
-                                <span>Inyectar</span>
-                              </>
-                            )}
-                          </button>
-                        </div>
-
-                        <p className="text-[11px] text-slate-400 line-clamp-2">
-                          {ej.indicacionDefault || 'Sin indicación específica.'}
-                        </p>
-
-                        <div className="pt-2 border-t border-slate-800/80 flex items-center justify-between text-[10px] text-slate-500">
-                          <span>{ej.categoria}</span>
-                          <span className="font-bold text-slate-400">
-                            {ej.seriesDefault || 3} series × {ej.repsDefault || 10} reps
-                          </span>
-                        </div>
-                      </div>
-                    );
-                  })
-                )}
-              </div>
-
-              {/* PIE DEL DRAWER */}
-              <div className="p-4 border-t border-slate-800 bg-[#080d19] flex items-center justify-between">
-                <span className="text-[11px] text-slate-400 font-bold">
-                  {ejerciciosFiltrados.length} ejercicios disponibles
-                </span>
-                <button
-                  type="button"
-                  onClick={() => setDrawerAbierto(false)}
-                  className="px-4 py-2 rounded-xl text-xs font-bold bg-slate-800 hover:bg-slate-700 text-white transition-colors"
-                >
-                  Listo / Cerrar
-                </button>
-              </div>
-
-            </div>
-          </div>
         </div>
       )}
 
