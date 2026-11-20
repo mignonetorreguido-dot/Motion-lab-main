@@ -12,7 +12,6 @@
 import Link from 'next/link';
 import { ArrowLeft, ShieldCheck } from 'lucide-react';
 import Navbar from './Navbar';
-import Footer from './Footer';
 import { useTheme } from './ThemeProvider';
 
 export default function LegalPage({ titulo, actualizado, intro, secciones = [] }) {
@@ -105,8 +104,6 @@ export default function LegalPage({ titulo, actualizado, intro, secciones = [] }
           </div>
         </div>
       </main>
-
-      <Footer />
     </div>
   );
 }
